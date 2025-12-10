@@ -237,7 +237,7 @@ export default function DashboardMapSection({
   return (
     <>
       {/* MAP CARD */}
-      <Card className="mb-6 bg-card">
+      <Card className="mb-0 bg-card border border-none">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <PlayCircle size={18} className="text-red-400" />
@@ -249,9 +249,9 @@ export default function DashboardMapSection({
           <div className="flex gap-2">
             <button
               onClick={() => setMapMode("2d")}
-              className={`px-3 py-1 rounded-md text-sm ${
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${
                 mapMode === "2d"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#dc2626] text-white"
                   : "bg-gray-800 text-gray-300"
               }`}
             >
@@ -260,9 +260,9 @@ export default function DashboardMapSection({
 
             <button
               onClick={() => setMapMode("3d")}
-              className={`px-3 py-1 rounded-md text-sm ${
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${
                 mapMode === "3d"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#dc2626] text-white"
                   : "bg-gray-800 text-gray-300"
               }`}
             >
@@ -271,12 +271,13 @@ export default function DashboardMapSection({
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 overflow-hidden">
+        <CardContent className="pb-0 overflow-hidden">
           <div
             id="liveMap"
             style={{
               display: mapMode === "2d" ? "block" : "none",
               height: "350px",
+              borderRadius:"10px"
             }}
           ></div>
 
@@ -284,14 +285,14 @@ export default function DashboardMapSection({
             id="map-container"
             style={{
               display: mapMode === "3d" ? "block" : "none",
-              height: "500px",
+              height: "350px",
             }}
           ></div>
         </CardContent>
       </Card>
 
       {/* ACTIVE DRONES */}
-      <Card className="bg-card border-border">
+      <Card className="border-none">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Active Drones</CardTitle>
         </CardHeader>
@@ -315,7 +316,7 @@ export default function DashboardMapSection({
                     (d) => (
                       <Card
                         key={d.drone_code}
-                        className="bg-muted/30 hover:bg-muted/50 transition"
+                        className="bg-muted/30 hover: transition border-[#2E2E2E] hover:border-[#dc2626]"
                       >
                         <CardContent className="px-4 py-2">
                           <div className="flex justify-between">
@@ -340,7 +341,7 @@ export default function DashboardMapSection({
                                 {d.battery}% Battery
                               </p>
 
-                              <div className="w-20 h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
+                              {/* <div className="w-20 h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
                                 <div
                                   className={`h-full ${
                                     d.battery > 70
@@ -351,7 +352,7 @@ export default function DashboardMapSection({
                                   }`}
                                   style={{ width: `${d.battery}%` }}
                                 ></div>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         </CardContent>
@@ -363,7 +364,7 @@ export default function DashboardMapSection({
 
               <Card
                 onClick={() => setShowAll(!showAll)}
-                className="mt-3 cursor-pointer bg-muted/30 hover:bg-muted/50"
+                className="mt-3 cursor-pointer border-[#2E2E2E] hover:border-[#dc2626] hover:bg-[#dc2626]"
               >
                 <CardContent className="py-2 text-center text-sm text-primary">
                   {showAll ? "Hide Drones ▲" : "View All Drones ▼"}

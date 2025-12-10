@@ -88,7 +88,7 @@ export default function DashboardContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* LEFT: MAP + ACTIVE DRONES */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 border border-[#2E2E2E] rounded-xl">
           <DashboardMapSection
             mapMode={mapMode}
             setMapMode={setMapMode}
@@ -98,7 +98,7 @@ export default function DashboardContent() {
         </div>
 
         {/* RIGHT: QUICK ACCESS */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 rounded-xl p-6 border border-[#2E2E2E]">
           <QuickAccessLinks />
         </div>
 

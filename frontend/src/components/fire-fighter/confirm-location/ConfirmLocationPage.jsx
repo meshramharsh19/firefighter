@@ -65,7 +65,7 @@ export default function ConfirmLocationPage() {
 
   if (loading) return <p style={{ color: "white", padding: 40 }}>Loading...</p>;
 
-  // Dummy asset/station logic (future DB connection possible)
+  // Dummy data (future DB connection possible)
   const assets = [
     { id:"T-1", name:"Fire Truck A", type:"fire", distance:1.2 },
     { id:"D-1", name:"Drone Recon", type:"drone", distance:0.8 },
@@ -76,9 +76,10 @@ export default function ConfirmLocationPage() {
     { id:"FS-221", name:"East Division", distance:2.3, vehicles:4 },
   ];
 
+  // 🔥 Redirect to vehicle-drone-selection page
   const confirmAndProceed = () => {
     alert(`📍 Location Confirmed for ${id}\nLat:${currentLat}, Lng:${currentLng}`);
-    navigate(`/dispatch/${id}`);   // Next page redirect (you can change path)
+    navigate(`/vehicle-drone-selection/${id}`);  // <-- Updated Route
   };
 
   return (
@@ -97,7 +98,7 @@ export default function ConfirmLocationPage() {
 
             <Box>
               <Typography variant="h4" fontWeight={800}>Confirm Incident Location</Typography>
-              <Typography variant="body2" color="text.secondary">Adjust the marker precisely before dispatch</Typography>
+              <Typography variant="body2" color="text.secondary">Adjust marker precisely before dispatch</Typography>
             </Box>
           </Stack>
 
@@ -115,8 +116,8 @@ export default function ConfirmLocationPage() {
           </Card>
 
           <Stack direction={{xs:"column", lg:"row"}} spacing={3}>
-            
-            {/* Map area */}
+
+            {/* Map */}
             <Box flex={2}>
               <MapWithDraggableMarker
                 initialLat={currentLat}
@@ -125,20 +126,20 @@ export default function ConfirmLocationPage() {
               />
             </Box>
 
-            {/* Right Panel */}
+            {/* Right section */}
             <Stack flex={1} spacing={3}>
               <NearbyAssetsPanel assets={assets} />
               <SuggestedStationsPanel stations={stations} />
 
               <Stack spacing={2}>
-                <Button fullWidth variant="contained" size="large" startIcon={<CheckIcon />} 
+                <Button fullWidth variant="contained" size="large" startIcon={<CheckIcon />}
                   onClick={confirmAndProceed}>
-                    Confirm Location & Continue
+                  Confirm Location & Continue
                 </Button>
 
                 <Button fullWidth variant="outlined" size="large" startIcon={<ChevronLeftIcon />}
                   onClick={()=>navigate(-1)}>
-                    Back to Dashboard
+                  Back to Dashboard
                 </Button>
               </Stack>
 
