@@ -1,0 +1,85 @@
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import SafeIcon from "@/components/common/SafeIcon";
+
+export default function StatusCard({
+  title,
+  value,
+  icon,
+  variant = "default",
+  trend,
+}) {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case "danger": // for incidents (Red)
+        return "border-red-500/40 bg-red-500/10 shadow-[0_0_15px_-2px_rgba(255,0,0,0.25)]";
+      case "warning": // yellow/orange
+        return "border-yellow-400/40 bg-yellow-500/10 shadow-[0_0_15px_-2px_rgba(255,200,0,0.25)]";
+      case "success": // green
+        return "border-green-500/40 bg-green-500/10 shadow-[0_0_15px_-2px_rgba(0,255,0,0.25)]";
+      default:
+        return "border-[#2A2B2E] bg-[#17181A]"; // default card dark
+    }
+  };
+
+  const getIconBg = () => {
+    switch (variant) {
+      case "danger": return "bg-red-500/20";
+      case "warning": return "bg-yellow-400/20";
+      case "success": return "bg-green-500/20";
+      default: return "bg-[#242528]";
+    }
+  };
+
+  const getIconColor = () => {
+    switch (variant) {
+      case "danger": return "text-red-400";
+      case "warning": return "text-yellow-300";
+      case "success": return "text-green-400";
+      default: return "text-gray-300";
+    }
+  };
+
+  return (
+    <Card
+      className={`
+        ${getVariantStyles()} text-gray-200 
+        rounded-xl border transition-all duration-200 
+        hover:scale-[1.03] hover:border-gray-500/40
+      `}
+      style={{ backgroundColor: "transparent" }} // ensures MUI doesn't override bg
+    >
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between">
+
+          {/* Title + Number */}
+          <div className="space-y-1">
+            <p className="text-xs tracking-wide text-gray-400">{title}</p>
+
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-white">{value}</p>
+
+              {trend && (
+                <span
+                  className={`text-sm font-semibold ${
+                    trend.isPositive ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {trend.isPositive ? "+" : ""}
+                  {trend.value}%
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* ICON */}
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-lg ${getIconBg()}`}
+          >
+            <SafeIcon name={icon} className={`h-6 w-6 ${getIconColor()}`} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "INC-20251120-003",
+        "name": "Major Structural Fire - Downtown",
+        "location": "False Street A-123, Commercial District",
+        "type": "structure file",
+        "coordinates": {
+            "lat": 18.453737, 
+            "lng": 73.858119,
+            "stationName": "Katraj fire station"
+        },
+        "timeReported": "2025-11-20T10:35:00Z",
+        "status": "new",
+        "isNewAlert": true
+    }
+]

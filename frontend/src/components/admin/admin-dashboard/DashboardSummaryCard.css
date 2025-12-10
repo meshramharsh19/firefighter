@@ -1,0 +1,77 @@
+/* --- Theme Variables --- */
+.dark {
+  /* Dark Theme Defaults (Matching original style) */
+  --card-bg: #14171b;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-title-color: #9ca3af;
+  --card-value-color: white;
+  --card-hover-border: #f87171; /* Red hover accent */
+  --card-hover-shadow: 0 0 12px rgba(255, 0, 0, 0.35);
+  --card-green: #34d399;
+  --card-red: #f87171;
+}
+
+/* --- Light Theme Overrides --- */
+.light {
+    --card-bg: #ffffff;
+    --card-border: #e5e7eb;
+    --card-title-color: #6b7280; /* Darker gray for title */
+    --card-value-color: #1f2937; /* Dark text for value */
+    --card-hover-border: #3b82f6; /* Blue hover accent */
+    --card-hover-shadow: 0 0 12px rgba(59, 130, 246, 0.35); /* Blue shadow */
+    --card-green: #059669; /* Darker green for contrast */
+    --card-red: #dc2626; /* Darker red for contrast */
+  
+}
+
+/* Dashboard Summary Card */
+.dashboard-summary-card {
+  /* Using Variables */
+  background-color: var(--card-bg);
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--card-border);
+  transition: all 0.3s ease;
+}
+
+.dashboard-summary-card:hover {
+  /* Using Variables */
+  border-color: var(--card-hover-border);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Card Title */
+.dashboard-summary-card__title {
+  /* Using Variable */
+  color: var(--card-title-color);
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+/* Card Value */
+.dashboard-summary-card__value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  /* Using Variable */
+  color: var(--card-value-color);
+  margin: 0 0 0.5rem 0;
+}
+
+/* Card Description */
+.dashboard-summary-card__description {
+  /* Note: Reusing the title color for description as it's typically muted */
+  color: var(--card-title-color);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+/* Color Classes (for value/description text) */
+.dashboard-card--green {
+  /* Using Variable */
+  color: var(--card-green);
+}
+
+.dashboard-card--red {
+  /* Using Variable */
+  color: var(--card-red);
+}

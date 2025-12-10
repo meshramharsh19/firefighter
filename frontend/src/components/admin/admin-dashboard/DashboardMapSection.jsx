@@ -1,0 +1,378 @@
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import { PlayCircle } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import StatusBadge from "@/components/common/StatusBadge";
+import SafeIcon from "@/components/common/SafeIcon";
+
+// Helper to load scripts dynamically
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    // already loaded?
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+}
+
+// Helper to load CSS dynamically
+function loadCss(href) {
+  if (document.querySelector(`link[href="${href}"]`)) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  document.head.appendChild(link);
+}
+
+export default function DashboardMapSection({
+  droneLocations = [],
+  mapMode,
+  setMapMode,
+  activeDrones = [],
+}) {
+  const mapRef = useRef(null);
+  const retryRef = useRef(0);
+  const [showAll, setShowAll] = useState(false);
+  const cesiumInitRef = useRef(false);
+
+  // ---------------- 2D MAP INIT ----------------
+  const init2DMap = () => {
+    const div = document.getElementById("liveMap");
+    if (!div) return;
+
+    if (div.offsetHeight === 0) {
+      retryRef.current++;
+      if (retryRef.current < 20) {
+        setTimeout(init2DMap, 150);
+      }
+      return;
+    }
+
+    retryRef.current = 0;
+
+    if (!mapRef.current) {
+      mapRef.current = L.map("liveMap").setView([18.527693, 73.853166], 14);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap",
+      }).addTo(mapRef.current);
+    }
+
+    if (window.markerLayer) window.markerLayer.clearLayers();
+    window.markerLayer = L.layerGroup().addTo(mapRef.current);
+
+    (Array.isArray(droneLocations) ? droneLocations : []).forEach((d) => {
+      if (!d.latitude || !d.longitude) return;
+
+      L.marker([d.latitude, d.longitude])
+        .bindPopup(`<b>${d.drone_name}</b><br>${d.drone_code}`)
+        .addTo(window.markerLayer);
+    });
+
+    setTimeout(() => mapRef.current.invalidateSize(), 80);
+    setTimeout(() => mapRef.current.invalidateSize(), 200);
+  };
+
+  useEffect(() => {
+    if (mapMode !== "2d") return;
+
+    setTimeout(init2DMap, 50);
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) init2DMap();
+      },
+      { threshold: 0.1 }
+    );
+
+    const div = document.getElementById("liveMap");
+    if (div) obs.observe(div);
+
+    return () => obs.disconnect();
+  }, [mapMode, droneLocations]);
+
+  // ---------------- 3D MAP INIT ----------------
+  useEffect(() => {
+    if (mapMode !== "3d") return;
+
+    async function initCesium() {
+      try {
+        loadCss(
+          "https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
+        );
+        loadCss("/assets/css/style.css");
+
+        if (!cesiumInitRef.current) {
+          await loadScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
+          );
+          await loadScript("/assets/js/globel.js");
+          await loadScript("/assets/js/map.js");
+          cesiumInitRef.current = true;
+        }
+
+        if (window.initMap) {
+          window.initMap();
+        }
+      } catch (err) {
+        console.error("Error loading Cesium scripts:", err);
+      }
+    }
+
+    initCesium();
+  }, [mapMode]);
+
+  // ---------------- SHOW ALL DRONES IN 3D ----------------
+  // ---------------- SHOW ALL DRONES IN 3D ----------------
+  useEffect(() => {
+    if (mapMode !== "3d") return;
+
+    const locs = Array.isArray(droneLocations) ? droneLocations : [];
+    if (locs.length === 0) return;
+
+    let cancelled = false;
+
+    async function placeAllDrones() {
+      const Cesium = window.Cesium;
+
+      const viewer =
+        window.viewer ||
+        window.VIEWER ||
+        window.cesiumViewer ||
+        window.V ||
+        window.v;
+
+      if (!Cesium || !viewer) {
+        setTimeout(() => {
+          if (!cancelled) placeAllDrones();
+        }, 400);
+        return;
+      }
+
+      for (const d of locs) {
+        if (!d.latitude || !d.longitude) continue;
+
+        const id = `drone_${d.drone_code}`;
+
+        const carto = Cesium.Cartographic.fromDegrees(d.longitude, d.latitude);
+        const updated = await Cesium.sampleTerrainMostDetailed(
+          viewer.terrainProvider,
+          [carto]
+        );
+
+        if (cancelled) return;
+
+        const groundHeight = updated[0].height || 0;
+        const finalHeight = groundHeight + 600;
+
+        const pos = Cesium.Cartesian3.fromDegrees(
+          d.longitude,
+          d.latitude,
+          finalHeight
+        );
+
+        let entity = viewer.entities.getById(id);
+
+        if (!entity) {
+          viewer.entities.add({
+            id,
+            position: pos,
+            model: {
+              uri: "../assets/model/drone.glb",
+              scale: 0.5,
+              minimumPixelSize: 64,
+              // color: Cesium.Color.fromCssColorString("#FFFFFF"),
+              // colorBlendMode: Cesium.ColorBlendMode.MIX,
+              // colorBlendAmount: 0.8,
+            },
+          });
+        } else {
+          entity.position = pos;
+        }
+      }
+
+      // -------------------------------------------
+      // 📌 Camera Auto-Zoom (All drones visible)
+      // -------------------------------------------
+      setTimeout(() => {
+        try {
+          viewer.zoomTo(
+            viewer.entities,
+            new Cesium.HeadingPitchRange(
+              0,
+              -0.8,
+              1000 
+            )
+          );
+        } catch (e) {
+          console.log("Zoom error:", e);
+        }
+      }, 1200);
+    }
+
+    placeAllDrones();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mapMode, droneLocations]);
+
+  const dronesArray = Array.isArray(activeDrones) ? activeDrones : [];
+
+  const getStatusType = (status) => {
+    if (status === "active_mission") return "busy";
+    if (status === "standby") return "warning";
+    return "available";
+  };
+
+  // ---------------- UI STARTS ----------------
+  return (
+    <>
+      {/* MAP CARD */}
+      <Card className="mb-6 bg-card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PlayCircle size={18} className="text-red-400" />
+            <CardTitle className="text-lg font-semibold">
+              Live Monitoring
+            </CardTitle>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMapMode("2d")}
+              className={`px-3 py-1 rounded-md text-sm ${
+                mapMode === "2d"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              2D Map
+            </button>
+
+            <button
+              onClick={() => setMapMode("3d")}
+              className={`px-3 py-1 rounded-md text-sm ${
+                mapMode === "3d"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              3D Map
+            </button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0 overflow-hidden">
+          <div
+            id="liveMap"
+            style={{
+              display: mapMode === "2d" ? "block" : "none",
+              height: "350px",
+            }}
+          ></div>
+
+          <div
+            id="map-container"
+            style={{
+              display: mapMode === "3d" ? "block" : "none",
+              height: "500px",
+            }}
+          ></div>
+        </CardContent>
+      </Card>
+
+      {/* ACTIVE DRONES */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Active Drones</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          {dronesArray.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No active drones currently.
+            </p>
+          ) : (
+            <>
+              <div
+                className={`transition-all duration-300 ${
+                  showAll
+                    ? "max-h-[350px] overflow-y-auto"
+                    : "max-h-[180px] overflow-y-hidden"
+                }`}
+              >
+                <div className="flex flex-col gap-3">
+                  {(showAll ? dronesArray : dronesArray.slice(0, 3)).map(
+                    (d) => (
+                      <Card
+                        key={d.drone_code}
+                        className="bg-muted/30 hover:bg-muted/50 transition"
+                      >
+                        <CardContent className="px-4 py-2">
+                          <div className="flex justify-between">
+                            <div>
+                              <p className="text-sm font-semibold flex items-center gap-1">
+                                <SafeIcon name="Plane" size={15} />
+                                {d.drone_name}
+                              </p>
+                              <p className="text-xs opacity-70">
+                                {d.drone_code}
+                              </p>
+                              <p className="text-xs opacity-70">{d.location}</p>
+                            </div>
+
+                            <div className="flex flex-col items-end">
+                              <StatusBadge
+                                status={getStatusType(d.status)}
+                                label={d.status.replace("_", " ")}
+                              />
+
+                              <p className="text-[10px] opacity-70 mt-1">
+                                {d.battery}% Battery
+                              </p>
+
+                              <div className="w-20 h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
+                                <div
+                                  className={`h-full ${
+                                    d.battery > 70
+                                      ? "bg-emerald-600"
+                                      : d.battery > 40
+                                      ? "bg-amber-600"
+                                      : "bg-red-600"
+                                  }`}
+                                  style={{ width: `${d.battery}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <Card
+                onClick={() => setShowAll(!showAll)}
+                className="mt-3 cursor-pointer bg-muted/30 hover:bg-muted/50"
+              >
+                <CardContent className="py-2 text-center text-sm text-primary">
+                  {showAll ? "Hide Drones ▲" : "View All Drones ▼"}
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
+  );
+}
