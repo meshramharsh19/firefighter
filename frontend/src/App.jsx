@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLayout from "./layout/AdminLayout";
 import FireFighterLayout from "./layout/FireFighterLayout";
 
+///common
+
 import LoginForm from "./components/common/login/LoginForm";
 import ProtectedRoute from "./components/common/auth/ProtectedRoute";
 import RedirectIfLoggedIn from "./components/common/auth/RedirectIfLoggedIn";
@@ -10,6 +12,8 @@ import RoleProtectedRoute from "./components/common/auth/RoleProtectedRoute";
 import { ThemeProvider } from "./Context/ThemeContext";
 import { Toaster } from "react-hot-toast";
 
+// Admin Pages
+
 import AdminDroneMonitoring from "./pages/admin/AdminDroneMonitoring";
 import VehicleManagementPage from "./pages/admin/AdminVehicles";
 import DroneDetailsPage from "./pages/admin/DroneDetails";
@@ -17,6 +21,8 @@ import SOPManagement from "./pages/admin/AdminSop";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserRoles from "./pages/admin/UserRole"
 
+
+// Fire Fighter Pages
 import FireOpsDashboard from "./pages/fire-fighter/DroneActivation";
 import ConfirmLocation from "./pages/fire-fighter/ConfirmLocation";
 import VehicleDroneSelection from "./pages/fire-fighter/VehicleDroneSelection";
