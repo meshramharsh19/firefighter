@@ -2,35 +2,34 @@ import React from "react";
 import { useTheme } from "@/Context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import SafeIcon from "@/components/common/SafeIcon";
+import pilotBg from "../../../public/assets/images/pilot-bg.jpg"; // 👈 JPG import
 
 export default function PilotDashboardContent() {
   const { isDark } = useTheme();
-
-  const handleGoToLogin = () => {
-    sessionStorage.clear();
-    window.location.href = "/";
-  };
 
   const handleGoToPilot = () => {
     window.location.href = "http://52.66.237.31:8081/";
   };
 
-
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen px-6"
-      style={{
-        backgroundColor: isDark ? "#0d0f12" : "#f7f7f7",
-        color: isDark ? "white" : "black",
-      }}
-    >
+  className="flex flex-col items-center justify-center min-h-screen px-6 bg-cover bg-center"
+  style={{
+    backgroundImage: `
+      linear-gradient(
+        rgba(0, 0, 0, 0.90),
+        rgba(0, 0, 0, 0.85)
+      ),
+      url(${pilotBg})
+    `,
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    color: "white",
+  }}
+>
       {/* ICON */}
-      <div className="p-6 rounded-full bg-red-600/20 mb-4">
-        <SafeIcon
-          name="Plane"
-          size={60}
-          className="text-red-500"
-        />
+      <div className="p-6 rounded-full bg-red-600/20 mb-4 backdrop-blur-sm">
+        <SafeIcon name="Plane" size={60} className="text-red-500" />
       </div>
 
       {/* TITLE */}
@@ -39,11 +38,12 @@ export default function PilotDashboardContent() {
       </h1>
 
       {/* SUB-TEXT */}
-      <p className="text-gray-400 text-center max-w-md mb-6">
+      <p className="text-gray-200 text-center max-w-md mb-6">
         Our development team is currently building the full Pilot control panel.
         You will soon be able to manage flight operations, route approvals,
         mission logs, and more.
-        You can also use our Beta version 
+        <br />
+        You can also use our Beta version.
       </p>
 
       {/* BUTTON */}
@@ -52,7 +52,7 @@ export default function PilotDashboardContent() {
         className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
       >
         <SafeIcon name="LogIn" size={18} />
-        Visit Beta Version
+        Visit Drone Control Beta
       </Button>
     </div>
   );
