@@ -34,16 +34,13 @@ export default function PilotDashboardContent() {
 
       {/* TITLE */}
       <h1 className="text-3xl font-bold mb-2 text-center">
-        Pilot Dashboard is Under Development
+        Welcome to the Pilot Dashboard
       </h1>
 
       {/* SUB-TEXT */}
       <p className="text-gray-200 text-center max-w-md mb-6">
-        Our development team is currently building the full Pilot control panel.
-        You will soon be able to manage flight operations, route approvals,
-        mission logs, and more.
-        <br />
-        You can also use our Beta version.
+        A next-generation control hub built to streamline flight operations, enhance situational awareness, and empower pilots with intelligent insights.
+      
       </p>
 
       {/* BUTTON */}
@@ -52,7 +49,7 @@ export default function PilotDashboardContent() {
         className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
       >
         <SafeIcon name="LogIn" size={18} />
-        Visit Drone Control Beta
+        Drone Control panel
       </Button>
     </div>
   );
