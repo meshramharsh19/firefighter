@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
+    />
+
+    <link rel="stylesheet" href="/assets/css/style.css" />
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map-container" style="width: 100vw; height: 100vh"></div>
+
+    <!-- Cesium + your JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"></script>
+    <script src="/assets/js/globel.js"></script>
+    <script src="/assets/js/map.js"></script>
+
+    <script>
+      console.log("🚀 drone-map.html loaded");
+
+      if (window.initMap) {
+        console.log("🗺️ initMap() starting...");
+        window.initMap();
+      }
+
+      function getViewer() {
+        return (
+          window.viewer ||
+          window.VIEWER ||
+          window.v ||
+          window.cesiumViewer ||
+          window.V ||
+          null
+        );
+      }
+
+      function clearOldDrones(viewer, exceptId) {
+        viewer.entities.values
+          .filter((e) => e.id.startsWith("drone_") && e.id !== exceptId)
+          .forEach((e) => viewer.entities.remove(e));
+      }
+
+      /* --------------------------------------------
+         ✅ SMOOTH CINEMATIC CAMERA FOLLOW FUNCTION
+      ---------------------------------------------*/
+      function flyCameraToDrone(viewer, d) {
+        const Cesium = window.Cesium;
+
+        const lon = Number(d.longitude);
+        const lat = Number(d.latitude);
+
+        const behind = 1000;
+        const height = -50;
+
+        const dronePos = Cesium.Cartesian3.fromDegrees(lon, lat, 0);
+
+        const offset = new Cesium.Cartesian3(behind, behind, height);
+
+        const finalPos = Cesium.Cartesian3.add(
+          dronePos,
+          offset,
+          new Cesium.Cartesian3()
+        );
+
+        viewer.camera.flyTo({
+          destination: finalPos,
+          orientation: {
+            heading: Cesium.Math.toRadians(45),
+            pitch: Cesium.Math.toRadians(-40),
+            roll: 0,
+          },
+          duration: 2.0,
+        });
+      }
+
+      // Receive data from React
+      window.addEventListener("message", async (event) => {
+        if (!event.data || event.data.type !== "DRONE_POSITIONS") return;
+
+        const locs = event.data.data || [];
+        console.log("📩 Received Drone:", locs);
+
+        const viewer = getViewer();
+        const Cesium = window.Cesium;
+
+        if (!viewer || !Cesium) {
+          console.log("❌ Viewer not ready");
+          return;
+        }
+
+        if (locs.length === 0) return;
+
+        const d = locs[0];
+
+        if (!d.latitude || !d.longitude) return;
+
+        const entityId = "drone_" + d.drone_code;
+
+        clearOldDrones(viewer, entityId);
+
+        try {
+          const carto = Cesium.Cartographic.fromDegrees(
+            d.longitude,
+            d.latitude
+          );
+
+          const terrain = await Cesium.sampleTerrainMostDetailed(
+            viewer.terrainProvider,
+            [carto]
+          );
+
+          const height = (terrain[0]?.height || 0) + 50;
+
+          const pos = Cesium.Cartesian3.fromDegrees(
+            d.longitude,
+            d.latitude,
+            height
+          );
+
+          let entity = viewer.entities.getById(entityId);
+
+          if (!entity) {
+            console.log("➕ Adding drone model:", entityId);
+
+            entity = viewer.entities.add({
+              id: entityId,
+              position: pos,
+              model: {
+                uri: "/assets/model/drone.glb",
+                scale: 0.5,
+                minimumPixelSize: 64,
+              },
+            });
+
+            // ⭐ FIRST TIME → SMOOTH CINEMATIC FLY
+            flyCameraToDrone(viewer, d);
+          } else {
+            entity.position = pos;
+
+            // ⭐ If drone is far → Fly camera again
+            const cameraPos = viewer.camera.position;
+            const dronePos = entity.position.getValue(Date.now());
+            const distance = Cesium.Cartesian3.distance(cameraPos, dronePos);
+
+            if (distance > 1200) {
+              console.log("🎥 Drone moved far → reflying:", distance);
+              flyCameraToDrone(viewer, d);
+            }
+          }
+        } catch (err) {
+          console.error("❌ Cesium drone update error:", err);
+        }
+      });
+
+      window.addEventListener("message", (event) => {
+        if (!event.data) return;
+
+        // 🔥 INCIDENT FIRE HAZARD
+        if (event.data.type === "FIRE_HAZARD_POINT") {
+          const { lat, lng, height } = event.data.payload;
+
+          console.log("🔥 Incident Fire:", lat, lng);
+
+          if (window.addFireHazardPoint) {
+            window.addFireHazardPoint(lat, lng, 100);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

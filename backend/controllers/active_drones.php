@@ -18,6 +18,7 @@ $sql = "SELECT
 $result = $conn->query($sql);
 
 $data = [];
+$response = [];
 
 while ($row = $result->fetch_assoc()) {
     $data[] = $row;

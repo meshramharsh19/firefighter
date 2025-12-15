@@ -11,6 +11,11 @@ export default function PilotDashboardContent() {
     window.location.href = "/";
   };
 
+  const handleGoToPilot = () => {
+    window.location.href = "http://52.66.237.31:8081/";
+  };
+
+
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen px-6"
@@ -38,15 +43,16 @@ export default function PilotDashboardContent() {
         Our development team is currently building the full Pilot control panel.
         You will soon be able to manage flight operations, route approvals,
         mission logs, and more.
+        You can also use our Beta version 
       </p>
 
       {/* BUTTON */}
       <Button
-        onClick={handleGoToLogin}
+        onClick={handleGoToPilot}
         className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
       >
         <SafeIcon name="LogIn" size={18} />
-        Go to Login Page
+        Visit Beta Version
       </Button>
     </div>
   );

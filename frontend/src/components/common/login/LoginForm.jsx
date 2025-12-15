@@ -8,43 +8,38 @@ import {
   Typography,
   TextField,
   Button,
-  Alert,
   CircularProgress,
   Grid,
 } from "@mui/material";
 
-// Icons
 import {
   Flame,
   Phone,
   Send,
-  AlertCircle,
   CheckCircle,
   ArrowLeft,
   RotateCw,
-  Clock,
   Lock,
 } from "lucide-react";
 
 
-// ----------------------- OTP INPUT -----------------------
+// ---------------- OTP INPUT ----------------
 const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   const inputRefs = useRef([]);
+
   const otpArray = Array(length)
-    .fill(0)
+    .fill("")
     .map((_, i) => value[i] || "");
 
   const handleChange = (e, index) => {
-    const input = e.target.value.replace(/[^0-9]/g, "").slice(-1);
-    const newOtp = otpArray.map((digit, i) =>
-      i === index ? input : digit
-    ).join("");
+    const digit = e.target.value.replace(/\D/g, "").slice(-1);
+    const newOtp = otpArray.map((d, i) => (i === index ? digit : d)).join("");
 
-    if (input && index < length - 1) {
+    if (digit && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    if (newOtp.length <= length) onChange(newOtp);
+    onChange(newOtp);
   };
 
   const handleKeyDown = (e, index) => {
@@ -69,18 +64,16 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
             value={digit}
             onChange={(e) => handleChange(e, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            variant="outlined"
-            size="medium"
+            disabled={disabled}
             inputProps={{
               maxLength: 1,
               style: {
                 textAlign: "center",
-                fontSize: "1.25rem",
-                padding: "12px",
+                fontSize: "20px",
+                padding: "10px",
               },
             }}
-            style={{ width: "48px" }}
-            disabled={disabled}
+            sx={{ width: 48 }}
           />
         </Grid>
       ))}
@@ -89,35 +82,35 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
 };
 
 
-// ----------------------- MAIN LOGIN FORM -----------------------
+// ---------------- MAIN LOGIN COMPONENT ----------------
 export default function LoginForm() {
   const [state, setState] = useState({
     step: "mobile",
     mobileNumber: "",
     otp: "",
     isLoading: false,
-    error: null,
-    successMessage: null,
   });
+
+  const isMobileStep = state.step === "mobile";
+  const isOTPStep = state.step === "otp";
 
 
   // ---------------- Mobile Submit ----------------
   const handleMobileSubmit = async (e) => {
     e.preventDefault();
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
     const mobile = state.mobileNumber.trim();
-    const mobileRegex = /^[+]?[0-9]{10,13}$/;
+    const regex = /^[0-9]{10}$/;
 
-    if (!mobileRegex.test(mobile)) {
-      toast.error("Please enter a valid mobile number");
-      setState((p) => ({ ...p, isLoading: false }));
+    if (!regex.test(mobile)) {
+      toast.error("Enter a valid 10-digit mobile number");
       return;
     }
 
+    setState((p) => ({ ...p, isLoading: true }));
+
     try {
-      const response = await fetch(
+      const res = await fetch(
         "http://localhost/fire-fighter-new/backend/controllers/check_mobile.php",
         {
           method: "POST",
@@ -126,50 +119,39 @@ export default function LoginForm() {
         }
       );
 
-      const result = await response.json();
+      const result = await res.json();
 
       if (!result.exists) {
-        toast.error("This mobile number is not registered");
+        toast.error("Mobile number not registered");
         setState((p) => ({ ...p, isLoading: false }));
         return;
       }
 
-      toast.success("OTP sent! (Use 123456)");
+      toast.success("OTP Sent! (Use 123456)");
 
       setState((p) => ({
         ...p,
         step: "otp",
         isLoading: false,
-        successMessage: "OTP sent! (Use: 123456)",
       }));
-    } catch (error) {
-      toast.error("Server error, try again");
+    } catch (e) {
+      toast.error("Server error");
       setState((p) => ({ ...p, isLoading: false }));
     }
   };
 
 
-  // ---------------- OTP Change ----------------
-  const handleOtpChange = (newOtp) => {
-    setState((prev) => ({ ...prev, otp: newOtp }));
-  };
-
-
-  // ---------------- ROLE-BASED REDIRECT ----------------
+  // ---------------- Redirect by Role ----------------
   const redirectBasedOnRole = (role) => {
     switch (role) {
       case "Admin":
         return "/AdminDashboard";
-
       case "Fire Station Command Control":
         return "/fire-fighter-dashboard";
-
       case "Vehicle Driver":
         return "/vehicle-driver";
-
       case "Pilot":
         return "/pilot-dashboard";
-
       default:
         return "/AdminDashboard";
     }
@@ -177,95 +159,63 @@ export default function LoginForm() {
 
 
   // ---------------- OTP Submit ----------------
- const handleOTPSubmit = async () => {
-  const otp = state.otp;
-
-  if (otp !== "123456") {
-    toast.error("Invalid OTP");
-    setState((p) => ({ ...p, otp: "" }));
-    return;
-  }
-
-  setState((p) => ({ ...p, isLoading: true }));
-
-  try {
-    const response = await fetch(
-      "http://localhost/fire-fighter-new/backend/controllers/get_user.php",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: state.mobileNumber }),
-      }
-    );
-
-    const result = await response.json();
-
-    if (!result.success) {
-      toast.error("User not found");
-      setState((p) => ({ ...p, isLoading: false }));
+  const handleOTPSubmit = async () => {
+    if (state.otp !== "123456") {
+      toast.error("Invalid OTP");
+      setState((p) => ({ ...p, otp: "" }));
       return;
     }
 
-    const user = result.user;
+    setState((p) => ({ ...p, isLoading: true }));
 
-    // 🔥 CHECK USER STATUS
-    if (user.status === 0) {
-      toast.error(
-        `Your account is deactivated.\nReason: ${user.deactivation_reason || "No reason provided"}`
+    try {
+      const res = await fetch(
+        "http://localhost/fire-fighter-new/backend/controllers/get_user.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: state.mobileNumber }),
+        }
       );
 
+      const result = await res.json();
+
+      if (!result.success) {
+        toast.error("User not found");
+        setState((p) => ({ ...p, isLoading: false }));
+        return;
+      }
+
+      const user = result.user;
+
+      if (user.status === 0) {
+        toast.error("Account Deactivated");
+        setState((p) => ({ ...p, isLoading: false }));
+        return;
+      }
+
+      sessionStorage.setItem(
+        "fireOpsSession",
+        JSON.stringify({
+          userId: user.id,
+          name: user.fullName,
+          phone: user.phone,
+          role: user.role,
+          station: user.station,
+          designation: user.designation,
+        })
+      );
+
+      toast.success("Login successful!");
+
+      setTimeout(() => {
+        window.location.href = redirectBasedOnRole(user.role);
+      }, 600);
+    } catch (e) {
+      toast.error("Server error");
       setState((p) => ({ ...p, isLoading: false }));
-      return; // Stop login here
     }
-
-    // 🔥 Save active user session
-    sessionStorage.setItem(
-      "fireOpsSession",
-      JSON.stringify({
-        userId: user.id,
-        name: user.fullName,
-        phone: user.phone,
-        role: user.role,
-        station: user.station,
-        designation: user.designation,
-        loginTime: new Date().toISOString(),
-        sessionExpiry: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-      })
-    );
-
-    toast.success("Login Successful!");
-
-    const redirectTo = redirectBasedOnRole(user.role);
-
-    setTimeout(() => {
-      window.location.href = redirectTo;
-    }, 800);
-
-  } catch (error) {
-    toast.error("Server error during login");
-    setState((p) => ({ ...p, isLoading: false }));
-  }
-};
-
-
-
-  // ---------------- Other Actions ----------------
-  const handleBackToMobile = () => {
-    setState((prev) => ({
-      ...prev,
-      step: "mobile",
-      otp: "",
-      error: null,
-      successMessage: null,
-    }));
   };
-
-  const handleResendOTP = () =>
-    toast("OTP resent!", { icon: "🔄" });
-
-
-  const isMobileStep = state.step === "mobile";
-  const isOTPStep = state.step === "otp";
 
 
   // ---------------- UI ----------------
@@ -273,14 +223,13 @@ export default function LoginForm() {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 400,
-        margin: "0 auto",
-        padding: 3,
+        maxWidth: 450,
+        mx: "auto",
+        mt: 4,
+        p: 2,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        minHeight: "100vh",
-        justifyContent: "center",
       }}
     >
       {/* HEADER */}
@@ -291,8 +240,8 @@ export default function LoginForm() {
         </Typography>
       </Box>
 
-      {/* LOGIN CARD */}
-      <Card sx={{ width: "100%", boxShadow: 3 }}>
+      {/* CARD */}
+      <Card sx={{ width: "100%", p: 1, boxShadow: 4 }}>
         <CardHeader
           title={
             <Typography variant="h5">
@@ -302,7 +251,7 @@ export default function LoginForm() {
         />
 
         <CardContent>
-          {/* MOBILE STEP */}
+          {/* MOBILE FORM */}
           {isMobileStep && (
             <Box component="form" onSubmit={handleMobileSubmit}>
               <TextField
@@ -322,11 +271,11 @@ export default function LoginForm() {
               />
 
               <Button
-                type="submit"
                 fullWidth
+                type="submit"
+                sx={{ mt: 3, height: 48 }}
                 variant="contained"
                 color="error"
-                sx={{ mt: 3 }}
                 disabled={state.isLoading}
                 startIcon={
                   state.isLoading ? (
@@ -341,20 +290,19 @@ export default function LoginForm() {
             </Box>
           )}
 
-          {/* OTP STEP */}
+          {/* OTP FORM */}
           {isOTPStep && (
-            <Box sx={{ mt: 3 }}>
+            <>
               <OTPInput
                 value={state.otp}
-                onChange={handleOtpChange}
-                length={6}
+                onChange={(otp) => setState((p) => ({ ...p, otp }))}
                 disabled={state.isLoading}
               />
 
               <Button
+                fullWidth
                 variant="contained"
                 color="error"
-                fullWidth
                 sx={{ mt: 3, height: 48 }}
                 disabled={state.otp.length !== 6 || state.isLoading}
                 onClick={handleOTPSubmit}
@@ -369,24 +317,28 @@ export default function LoginForm() {
                 {state.isLoading ? "Verifying..." : "Verify OTP"}
               </Button>
 
-              {/* CONTROLS */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Button
-                  variant="text"
-                  onClick={handleBackToMobile}
                   startIcon={<ArrowLeft size={16} />}
+                  onClick={() => setState((p) => ({ ...p, step: "mobile" }))}
                 >
                   Change Number
                 </Button>
+
                 <Button
-                  variant="text"
-                  onClick={handleResendOTP}
                   startIcon={<RotateCw size={16} />}
+                  onClick={() => toast.success("OTP Resent!")}
                 >
                   Resend OTP
                 </Button>
               </Box>
-            </Box>
+            </>
           )}
         </CardContent>
       </Card>

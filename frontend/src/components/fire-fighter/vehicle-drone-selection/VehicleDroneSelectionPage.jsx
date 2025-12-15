@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// VehicleDroneSelectionPage.jsx
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,8 +9,10 @@ import {
   CardHeader,
   Typography,
   Chip,
-  Divider,
   Stack,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 // Icons
@@ -18,32 +22,21 @@ import FlightIcon from "@mui/icons-material/Flight";
 import BusinessIcon from "@mui/icons-material/Business";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
-// Converted Components
+// Components
 import VehicleSelectionCard from "./VehicleSelectionCard";
 import DroneSelectionCard from "./DroneSelectionCard";
 import StationSuggestionCard from "./StationSuggestionCard";
 import SelectionSummary from "./SelectionSummary";
 
-// Data
-import { NEARBY_ASSETS } from "@/data/fire-fighter/vehicle";
-
-// Tactical Theme (Same System)
+// Theme
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 
 const darkIncidentTheme = createTheme({
   palette: {
     mode: "dark",
-    background: {
-      default: "#0F0F10",
-      paper: "#131314",
-    },
+    background: { default: "#0F0F10", paper: "#131314" },
     primary: { main: "#E53935" },
-    success: { main: "#27C47A" },
-    warning: { main: "#F3C241" },
-    text: {
-      primary: "#EDEDED",
-      secondary: "#9A9A9A",
-    },
+    text: { primary: "#EDEDED", secondary: "#9A9A9A" },
     divider: "#2A2A2A",
   },
   components: {
@@ -56,219 +49,288 @@ const darkIncidentTheme = createTheme({
         },
       },
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 10,
-          textTransform: "none",
-          fontWeight: 700,
-          fontSize: "0.92rem",
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          fontWeight: 700,
-          fontSize: "0.75rem",
-        },
-      },
-    },
   },
 });
 
+// helpers
+const safeNumber = (v) =>
+  v === null || v === undefined || v === "" ? null : Number(v);
+
+// ✅ Vehicle normalizer (unchanged)
+const normalizeVehicleRow = (v = {}) => ({
+  ...v,
+  id: v.id,
+  name: v.name ?? "Unnamed Vehicle",
+  type: v.type ?? "—",
+  station: v.station,
+  vehicle_status:
+    v.vehicle_status ??
+    v.vehicle_availability_status ??
+    v.status ??
+    "unknown",
+  distanceKm: safeNumber(v.distanceKm),
+  etaMinutes: safeNumber(v.etaMinutes),
+});
+
+// ✅ FIXED Drone normalizer
+const normalizeDroneRow = (row = {}) => ({
+  id: row.id,
+
+  // 🔥 CORRECT FIELD FROM API
+  drone_id: row.drone_code,   // <-- THIS IS THE FIX
+  name: row.name,
+
+  status: row.status,
+  battery: row.battery,
+  flight_hours: row.flight_hours,
+  station: row.station,
+
+  pilot_name: row.pilot_name,
+  pilot_number: row.pilot_number,
+  is_ready: Boolean(row.is_ready),
+
+  _raw: row,
+});
+
+
 export default function VehicleDroneSelectionPage() {
+  const navigate = useNavigate();
+
+  // 🔐 USER STATION (LOCKED)
+  const session = JSON.parse(
+    sessionStorage.getItem("fireOpsSession") || "{}"
+  );
+  const userStation = session.station;
+  const incidentId = session.incidentId || "INC-20251120-003";
+
+  const [vehicles, setVehicles] = useState([]);
+  const [drones, setDrones] = useState([]);
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [selectedAssets, setSelectedAssets] = useState({
-    vehicleIds: NEARBY_ASSETS.vehicles.filter((v) => v.isSelected).map((v) => v.id),
-    droneIds: NEARBY_ASSETS.drones.filter((d) => d.isSelected).map((d) => d.id),
+    vehicleIds: [],
+    droneIds: [],
   });
 
-  const handleVehicleToggle = (vehicleId) => {
-    setSelectedAssets((prev) => ({
-      ...prev,
-      vehicleIds: prev.vehicleIds.includes(vehicleId)
-        ? prev.vehicleIds.filter((id) => id !== vehicleId)
-        : [...prev.vehicleIds, vehicleId],
-    }));
-  };
+  const [snack, setSnack] = useState({
+    open: false,
+    severity: "info",
+    message: "",
+  });
 
-  const handleDroneToggle = (droneId) => {
-    setSelectedAssets((prev) => ({
-      ...prev,
-      droneIds: prev.droneIds.includes(droneId)
-        ? prev.droneIds.filter((id) => id !== droneId)
-        : [...prev.droneIds, droneId],
-    }));
-  };
+  // ---------------- FETCH ----------------
+  useEffect(() => {
+    if (!userStation) return;
 
-  const selectedVehicles = NEARBY_ASSETS.vehicles.filter((v) =>
-    selectedAssets.vehicleIds.includes(v.id)
+    let mounted = true;
+
+    async function fetchAll() {
+      setLoading(true);
+      try {
+        // Vehicles
+        const vehRes = await fetch(
+          "http://localhost/fire-fighter-new/backend/controllers/get_vehicles.php"
+        );
+        const vehJson = await vehRes.json();
+
+        // Drones (station-filtered from backend)
+        const droneRes = await fetch(
+          "http://localhost/fire-fighter-new/backend/controllers/get_drones.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ station: userStation }),
+          }
+        );
+        const droneJson = await droneRes.json();
+
+        // Stations (only for suggestion card)
+        const stationRes = await fetch(
+          "http://localhost/fire-fighter-new/backend/controllers/get_firestations.php"
+        );
+        const stationJson = await stationRes.json();
+
+        if (!mounted) return;
+
+        const normalizedVehicles = (vehJson || [])
+          .map(normalizeVehicleRow)
+          .filter((v) => v.station === userStation);
+
+        const normalizedDrones = (droneJson?.drones || [])
+          .map(normalizeDroneRow)
+          .filter((d) => d.station === userStation);
+
+        setVehicles(normalizedVehicles);
+        setDrones(normalizedDrones);
+        setStations(stationJson?.stations || []);
+        setLoading(false);
+      } catch (e) {
+        console.error(e);
+        setSnack({
+          open: true,
+          severity: "error",
+          message: "Failed to load station assets",
+        });
+        setLoading(false);
+      }
+    }
+
+    fetchAll();
+    return () => (mounted = false);
+  }, [userStation]);
+
+  // ---------------- SELECTION ----------------
+  const selectedVehicleObjects = useMemo(
+    () => vehicles.filter((v) => selectedAssets.vehicleIds.includes(v.id)),
+    [vehicles, selectedAssets]
   );
-  const selectedDrones = NEARBY_ASSETS.drones.filter((d) =>
-    selectedAssets.droneIds.includes(d.id)
+
+  const selectedDroneObjects = useMemo(
+    () => drones.filter((d) => selectedAssets.droneIds.includes(d.id)),
+    [drones, selectedAssets]
   );
 
-  const canActivate = selectedDrones.length > 0;
+  const canActivate = selectedDroneObjects.length > 0;
 
+  // ---------------- UI ----------------
   return (
     <ThemeProvider theme={darkIncidentTheme}>
       <CssBaseline />
 
       <Box sx={{ minHeight: "100vh", p: 4 }}>
-        <Box maxWidth="1280px" mx="auto" sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <Box maxWidth="1280px" mx="auto">
 
-          {/* Header */}
-          <Stack spacing={1}>
+          {/* HEADER */}
+          <Stack spacing={1} mb={3}>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Box
-                sx={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 2,
-                  bgcolor: "#1E1E1F",
-                  border: "1px solid #2A2A2A",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FlightIcon sx={{ color: "primary.main" }} />
-              </Box>
+              <FlightIcon color="primary" />
               <Box>
                 <Typography variant="h4" fontWeight={800}>
                   Vehicle & Drone Selection
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Select required assets for incident response
+                  Station: {userStation}
                 </Typography>
               </Box>
             </Stack>
 
-            {/* Breadcrumb */}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<ArrowBackIcon />}
-                sx={{ color: "text.secondary", fontSize: "0.8rem" }}
-                onClick={() => window.history.back()}
-              >
-                Back
-              </Button>
-              <Typography>/</Typography>
-              <Typography fontSize="0.85rem" fontWeight={600}>
-                Asset Selection
-              </Typography>
-            </Stack>
+            <Button
+              size="small"
+              startIcon={<ArrowBackIcon />}
+              sx={{ color: "text.secondary", width: "fit-content" }}
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </Button>
           </Stack>
 
-          {/* Grid Layout */}
-          <Box sx={{ display: "grid", gridTemplateColumns: { lg: "2fr 1fr" }, gap: 4 }}>
-
-            {/* LEFT — Vehicles, Drones, Stations */}
+          {/* GRID */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 4 }}>
             <Stack spacing={4}>
-              {/* Vehicles */}
               <AssetSection
                 icon={<LocalShippingIcon color="primary" />}
                 title="Available Vehicles"
                 count={selectedAssets.vehicleIds.length}
-                total={NEARBY_ASSETS.vehicles.length}
+                total={vehicles.length}
               >
-                {NEARBY_ASSETS.vehicles.length === 0 ? (
-                  <NoAssetPlaceholder message="No vehicles available nearby" />
+                {loading ? (
+                  <CircularProgress />
+                ) : vehicles.length === 0 ? (
+                  <NoAssetPlaceholder message="No vehicles for this station" />
                 ) : (
-                  NEARBY_ASSETS.vehicles.map((vehicle) => (
+                  vehicles.map((v) => (
                     <VehicleSelectionCard
-                      key={vehicle.id}
-                      vehicle={vehicle}
-                      isSelected={selectedAssets.vehicleIds.includes(vehicle.id)}
-                      onToggle={() => handleVehicleToggle(vehicle.id)}
+                      key={v.id}
+                      vehicle={v}
+                      isSelected={selectedAssets.vehicleIds.includes(v.id)}
+                      onToggle={() =>
+                        setSelectedAssets((p) => ({
+                          ...p,
+                          vehicleIds: p.vehicleIds.includes(v.id)
+                            ? p.vehicleIds.filter((id) => id !== v.id)
+                            : [...p.vehicleIds, v.id],
+                        }))
+                      }
                     />
                   ))
                 )}
               </AssetSection>
 
-              {/* Drones */}
               <AssetSection
                 icon={<FlightIcon color="primary" />}
                 title="Available Drones"
                 count={selectedAssets.droneIds.length}
-                total={NEARBY_ASSETS.drones.length}
+                total={drones.length}
               >
-                {NEARBY_ASSETS.drones.length === 0 ? (
-                  <NoAssetPlaceholder message="No drones available nearby" />
+                {loading ? (
+                  <CircularProgress />
+                ) : drones.length === 0 ? (
+                  <NoAssetPlaceholder message="No drones for this station" />
                 ) : (
-                  NEARBY_ASSETS.drones.map((drone) => (
+                  drones.map((d) => (
                     <DroneSelectionCard
-                      key={drone.id}
-                      drone={drone}
-                      isSelected={selectedAssets.droneIds.includes(drone.id)}
-                      onToggle={() => handleDroneToggle(drone.id)}
+                      key={d.id}
+                      drone={d}
+                      isSelected={selectedAssets.droneIds.includes(d.id)}
+                      onToggle={() =>
+                        setSelectedAssets((p) => ({
+                          ...p,
+                          droneIds: p.droneIds.includes(d.id)
+                            ? p.droneIds.filter((id) => id !== d.id)
+                            : [...p.droneIds, d.id],
+                        }))
+                      }
                     />
                   ))
                 )}
               </AssetSection>
-
-              {/* Stations */}
-              <AssetSection
-                icon={<BusinessIcon color="action" />}
-                title="Nearby Fire Stations"
-                sub="Top 3 suggested stations if assets unavailable"
-              >
-                {NEARBY_ASSETS.stations.map((station, index) => (
-                  <StationSuggestionCard key={station.stationId} station={station} rank={index + 1} />
-                ))}
-              </AssetSection>
             </Stack>
 
-            {/* RIGHT — Selection Summary */}
+            {/* STICKY SUMMARY */}
             <SelectionSummary
-              selectedVehicles={selectedVehicles}
-              selectedDrones={selectedDrones}
+              selectedVehicles={selectedVehicleObjects}
+              selectedDrones={selectedDroneObjects}
               canActivate={canActivate}
-              onActivate={() => canActivate && (window.location.href = "./live-incident-command.html")}
-              onBack={() => window.history.back()}
+              onActivate={() =>
+                navigate(
+                  `/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`
+                )
+              }
+              onBack={() => navigate(-1)}
             />
           </Box>
         </Box>
+
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={4000}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        >
+          <Alert severity={snack.severity}>{snack.message}</Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );
 }
 
-// ➤ Small Reusable Components
-function AssetSection({ icon, title, count, total, sub, children }) {
+// ---------------- HELPERS ----------------
+function AssetSection({ icon, title, count, total, children }) {
   return (
     <Card>
       <CardHeader
         title={
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               {icon}
-              <Box>
-                <Typography fontWeight={600}>{title}</Typography>
-                {sub && (
-                  <Typography variant="body2" color="text.secondary">
-                    {sub}
-                  </Typography>
-                )}
-                {!sub && (
-                  <Typography variant="body2" color="text.secondary">
-                    {total} nearby
-                  </Typography>
-                )}
-              </Box>
+              <Typography fontWeight={600}>{title}</Typography>
             </Box>
-            {typeof count === "number" && (
-              <Chip label={`${count} Selected`} variant="outlined" size="small" />
-            )}
+            <Chip label={`${count} Selected`} size="small" />
           </Box>
         }
+        subheader={`${total} assets`}
       />
-      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-        {children}
-      </CardContent>
+      <CardContent>{children}</CardContent>
     </Card>
   );
 }
@@ -276,10 +338,8 @@ function AssetSection({ icon, title, count, total, sub, children }) {
 function NoAssetPlaceholder({ message }) {
   return (
     <Box textAlign="center" py={4}>
-      <WarningAmberIcon color="warning" fontSize="large" />
-      <Typography variant="body2" color="text.secondary" mt={1}>
-        {message}
-      </Typography>
+      <WarningAmberIcon />
+      <Typography color="text.secondary">{message}</Typography>
     </Box>
   );
 }
