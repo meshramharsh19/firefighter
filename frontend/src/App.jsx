@@ -73,12 +73,12 @@ function App() {
           }>
             <Route path="/fire-dashboard" element={<FireOpsDashboard />} />
             <Route path="/confirm-location/:id" element={<ConfirmLocation />} />
-            <Route path="/vehicle-drone-selection" element={<VehicleDroneSelection />} />
+            <Route path="/vehicle-drone-selection/:id" element={<VehicleDroneSelection />} />
             <Route path="/fire-fighter-dashboard" element={<FireFighterPage/>} />
             <Route path="/map-toggle" element={<MapTogglePage/>} />
           </Route>
 
-                    {/* ---------------- VEHICLE DRIVER ONLY ---------------- */}
+          {/* ---------------- VEHICLE DRIVER ONLY ---------------- */}
           <Route path="/vehicle-driver-dashboard" element={
             <ProtectedRoute>
               <RoleProtectedRoute allowedRoles={["Vehicle Driver"]}>
