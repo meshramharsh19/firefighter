@@ -24,6 +24,7 @@ import WhatshotIcon from "@mui/icons-material/Whatshot";
 import logoutUser from "../auth/logout";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 import { useTheme } from "@/Context/ThemeContext";
+import { useNavigate } from "react-router-dom";
 import SafeIcon from "@/components/common/SafeIcon";   // ✅ IMPORTANT FIX
 
 export default function DashboardHeader({ sessionStartTime }) {
@@ -33,6 +34,8 @@ export default function DashboardHeader({ sessionStartTime }) {
 
   const { isDark, toggleTheme } = useTheme();
   const { name, role, initials } = useUserInfo();
+
+  const navigate = useNavigate();
 
   // Timer logic
   useEffect(() => {
@@ -84,7 +87,12 @@ export default function DashboardHeader({ sessionStartTime }) {
             <Typography variant="h6" fontWeight="bold" sx={{ color: "#ff5252" }}>
               FireOps Command
             </Typography>
-            <Typography fontSize={12} sx={{ color: "#bbbbbb" }}>
+            <Typography 
+              fontSize={12}
+              sx={{ color: "#bbbbbb", 
+                    cursor: "pointer", 
+                    "&:hover": {textDecoration: "underline",}, }}
+              onClick={() => navigate("/fire-fighter-dashboard")}>
               Emergency Operations Dashboard
             </Typography>
           </Box>

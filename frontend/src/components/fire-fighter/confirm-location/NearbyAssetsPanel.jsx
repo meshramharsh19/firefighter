@@ -24,11 +24,11 @@ import NearMeIcon from '@mui/icons-material/NearMe';
 
 // Mock Data
 const mockAssets = [
-  { id: 'a1', name: 'Engine 42', type: 'fire-truck', status: 'available', distance: 0.8, eta: 3 },
+  { id: 'a1', name: 'Engine 42', type: 'fire-truck', status: 'available', distance: 0.8, capacity: 1200 },
   { id: 'a2', name: 'Ambulance 19', type: 'ambulance', status: 'en-route', distance: 2.1, eta: 5 },
   { id: 'a3', name: 'Drone X-55', type: 'drone', status: 'available', distance: 0.3, eta: 1, battery: 85 },
   { id: 'a4', name: 'Drone Recon 1', type: 'drone', status: 'maintenance', distance: 5.5, eta: 12, battery: 15 },
-  { id: 'a5', name: 'Engine 01', type: 'fire-truck', status: 'busy', distance: 1.5, eta: 4 },
+  { id: 'a5', name: 'Engine 01', type: 'fire-truck', status: 'busy', distance: 1.5, capacity: 900 },
 ];
 
 // Icon Mapper
@@ -121,21 +121,43 @@ function NearbyAssetsPanelMui({ assets }) {
                       </Box>
 
                       <Box sx={{ typography: 'caption', mt: 1 }}>
+                        {/* Distance (Both Fire Truck & Drone) */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
-                            <NearMeIcon sx={{ fontSize: 14 }} />Distance:
+                            <NearMeIcon sx={{ fontSize: 14 }} />
+                            Distance from Fire:
                           </Box>
-                          <Typography variant="caption" sx={{ fontWeight: 500 }}>{asset.distance} km</Typography>
-                        </Box>
-
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: .5 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
-                            <AccessTimeIcon sx={{ fontSize: 14 }} />ETA:
-                          </Box>
-                          <Typography variant="caption" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            {asset.eta} min
+                          <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                            {asset.distance} km
                           </Typography>
                         </Box>
+
+                        {/* Fire Truck → Capacity */}
+                        {asset.type === 'fire-truck' && asset.capacity && (
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: .5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
+                              <BuildIcon sx={{ fontSize: 14 }} />
+                              Capacity:
+                            </Box>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                              {asset.capacity} LPM
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {/* Drone → ETA (as it is) */}
+                        {asset.type === 'drone' && asset.eta !== undefined && (
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: .5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
+                              <AccessTimeIcon sx={{ fontSize: 14 }} />
+                              ETA:
+                            </Box>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                              {asset.eta} min
+                            </Typography>
+                          </Box>
+                        )}
+
 
                         {asset.type === 'drone' && asset.battery !== undefined && (
                           <Box sx={{ mt: 1.5 }}>

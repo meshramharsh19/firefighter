@@ -1,5 +1,7 @@
 import React from "react";
 import SafeIcon from "@/components/common/SafeIcon";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import {useNavigate } from "react-router-dom";
 
 // MUI Components
 import {
@@ -20,6 +22,9 @@ export default function CommandToolbar({
   incidentId,
   incidentName,
 }) {
+
+  const navigate = useNavigate();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
@@ -131,13 +136,14 @@ export default function CommandToolbar({
           </div>
 
           {/* Exit Command */}
-          <IconButton
-            size="small"
-            className="text-muted-foreground"
-            title="Back to Dashboard"
-          >
-            <SafeIcon name="X" className="h-4 w-4" />
-          </IconButton>
+          <Button
+                size="small"
+                startIcon={<ArrowBackIcon />}
+                sx={{ color: "text.secondary", width: "fit-content", ":hover": { backgroundColor: '#dc2626' } }}
+                onClick={() => navigate(-1)}
+              >
+                Back
+              </Button>
         </div>
       </div>
     </div>
