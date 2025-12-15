@@ -28,15 +28,15 @@ export default function DroneMonitoringContent() {
   const [viewMode, setViewMode] = useState("map");
 
   const [drones, setDrones] = useState([]);
-  const [wards, setWards] = useState([]);
-  const [selectedWard, setSelectedWard] = useState("all");
+  const [stations, setStations] = useState([]);
+  const [selectedStation, setSelectedStation] = useState("all");
 
-  // 🔥 Fetch drones and auto-refresh every 5 sec
-  function loadDrones() {
+  /* ---------------- Fetch drones (auto refresh) ---------------- */
+  const loadDrones = () => {
     fetch(`${API}/get_drone_locations.php`)
       .then((res) => res.json())
       .then((data) => setDrones(data));
-  }
+  };
 
   useEffect(() => {
     loadDrones();
@@ -44,14 +44,14 @@ export default function DroneMonitoringContent() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load Wards
+  /* ---------------- Fetch stations ---------------- */
   useEffect(() => {
-    fetch(`${API}/wards.php`)
+    fetch(`${API}/getStations.php`)
       .then((res) => res.json())
-      .then((data) => setWards(data));
+      .then((data) => setStations(data));
   }, []);
 
-  // 🟡 Normalizing status to single format
+  /* ---------------- Status normalize ---------------- */
   const normalizeStatus = (status) => {
     if (!status) return "unknown";
     const s = status.toLowerCase();
@@ -62,21 +62,23 @@ export default function DroneMonitoringContent() {
     return "unknown";
   };
 
-  // 🟢 Apply Ward Filter
+  /* ---------------- Station filter ---------------- */
   const filteredDrones =
-    selectedWard === "all"
+    selectedStation === "all"
       ? drones
-      : drones.filter((d) => d.ward == selectedWard);
+      : drones.filter((d) => d.station === selectedStation);
 
-  // 🟢 Status counts calculated based on filtered drones
+  /* ---------------- Counts ---------------- */
   const activeDrones = filteredDrones.filter(
     (d) => normalizeStatus(d.status) === "active"
   );
+
   const maintenanceDrones = filteredDrones.filter(
     (d) =>
       normalizeStatus(d.status) === "maintenance" ||
       normalizeStatus(d.status) === "offline"
   );
+
   const standbyDrones = filteredDrones.filter(
     (d) => normalizeStatus(d.status) === "standby"
   );
@@ -92,26 +94,32 @@ export default function DroneMonitoringContent() {
       : "unknown";
   };
 
-  const prettyLabel = (text) =>
+  const prettyLabel = (text = "") =>
     text.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  useEffect(() => {
+  console.log("Selected Station:", selectedStation);
+  console.log("Drones sample:", drones[0]);
+}, [selectedStation, drones]);
+
 
   return (
     <div className="space-y-6 p-6">
 
-      {/* 🔥 Ward Dropdown Filter */}
+      {/* 🔥 Station Dropdown */}
       <div className="flex justify-start">
-        <div className="w-48">
-          <Select value={selectedWard} onValueChange={setSelectedWard}>
+        <div className="w-64">
+          <Select value={selectedStation} onValueChange={setSelectedStation}>
             <SelectTrigger className="border">
-              <SelectValue placeholder="Select Ward" />
+              <SelectValue placeholder="Select Station" />
             </SelectTrigger>
 
             <SelectContent className="bg-gray-900 border text-white">
-              <SelectItem value="all">All Wards</SelectItem>
+              <SelectItem value="all">All Stations</SelectItem>
 
-              {wards.map((ward) => (
-                <SelectItem key={ward} value={ward}>
-                  Ward {ward}
+              {stations.map((station) => (
+                <SelectItem key={station} value={station}>
+                  {station}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -119,7 +127,7 @@ export default function DroneMonitoringContent() {
         </div>
       </div>
 
-      {/* Summary → Counts change per ward */}
+      {/* Summary */}
       <DroneMonitoringHeader
         totalDrones={filteredDrones.length}
         activeDrones={activeDrones.length}
@@ -128,9 +136,8 @@ export default function DroneMonitoringContent() {
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
-
         <div className="lg:col-span-2 space-y-4">
-          <Card className="border border-white/10 transition-all duration-300">
+          <Card className="border border-white/10">
             <CardContent>
               {viewMode === "map" ? (
                 <DroneMonitoringMap drones={filteredDrones} />
@@ -145,47 +152,100 @@ export default function DroneMonitoringContent() {
           </Card>
         </div>
 
-        {/* Right side stats */}
+        {/* Right stats */}
         <div className="space-y-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">Fleet Status</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">Fleet Status</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span>Total</span><Badge>{filteredDrones.length}</Badge>
+                <span>Total</span>
+                <Badge>{filteredDrones.length}</Badge>
               </div>
               <div className="flex justify-between">
-                <span>Active</span><StatusBadge status="available" label={activeDrones.length.toString()} showIcon={false}/>
+                <span>Active</span>
+                <StatusBadge
+                  status="available"
+                  label={activeDrones.length.toString()}
+                  showIcon={false}
+                />
               </div>
               <div className="flex justify-between">
-                <span>Maintenance</span><StatusBadge status="maintenance" label={maintenanceDrones.length.toString()} showIcon={false}/>
+                <span>Maintenance</span>
+                <StatusBadge
+                  status="maintenance"
+                  label={maintenanceDrones.length.toString()}
+                  showIcon={false}
+                />
               </div>
               <div className="flex justify-between">
-                <span>Standby</span><StatusBadge status="warning" label={standbyDrones.length.toString()} showIcon={false}/>
+                <span>Standby</span>
+                <StatusBadge
+                  status="warning"
+                  label={standbyDrones.length.toString()}
+                  showIcon={false}
+                />
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Full detailed table */}
+      {/* Detailed table */}
       <Card>
         <CardHeader>
           <CardTitle>Drone Fleet Details</CardTitle>
-          <CardDescription>Monitor detailed status & readiness</CardDescription>
+          <CardDescription>Station-wise drone monitoring</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="grid grid-cols-4">
-              <TabsTrigger value="all">All ({filteredDrones.length})</TabsTrigger>
-              <TabsTrigger value="active">Active ({activeDrones.length})</TabsTrigger>
-              <TabsTrigger value="maintenance">Maintenance ({maintenanceDrones.length})</TabsTrigger>
-              <TabsTrigger value="standby">Standby ({standbyDrones.length})</TabsTrigger>
+              <TabsTrigger value="all">
+                All ({filteredDrones.length})
+              </TabsTrigger>
+              <TabsTrigger value="active">
+                Active ({activeDrones.length})
+              </TabsTrigger>
+              <TabsTrigger value="maintenance">
+                Maintenance ({maintenanceDrones.length})
+              </TabsTrigger>
+              <TabsTrigger value="standby">
+                Standby ({standbyDrones.length})
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all"><DroneListTable drones={filteredDrones} getUIStatus={getUIStatus} prettyLabel={prettyLabel}/></TabsContent>
-            <TabsContent value="active"><DroneListTable drones={activeDrones} getUIStatus={getUIStatus} prettyLabel={prettyLabel}/></TabsContent>
-            <TabsContent value="maintenance"><DroneListTable drones={maintenanceDrones} getUIStatus={getUIStatus} prettyLabel={prettyLabel}/></TabsContent>
-            <TabsContent value="standby"><DroneListTable drones={standbyDrones} getUIStatus={getUIStatus} prettyLabel={prettyLabel}/></TabsContent>
+            <TabsContent value="all">
+              <DroneListTable
+                drones={filteredDrones}
+                getUIStatus={getUIStatus}
+                prettyLabel={prettyLabel}
+              />
+            </TabsContent>
+
+            <TabsContent value="active">
+              <DroneListTable
+                drones={activeDrones}
+                getUIStatus={getUIStatus}
+                prettyLabel={prettyLabel}
+              />
+            </TabsContent>
+
+            <TabsContent value="maintenance">
+              <DroneListTable
+                drones={maintenanceDrones}
+                getUIStatus={getUIStatus}
+                prettyLabel={prettyLabel}
+              />
+            </TabsContent>
+
+            <TabsContent value="standby">
+              <DroneListTable
+                drones={standbyDrones}
+                getUIStatus={getUIStatus}
+                prettyLabel={prettyLabel}
+              />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>

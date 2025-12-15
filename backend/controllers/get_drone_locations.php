@@ -10,7 +10,7 @@ $sql = "
     SELECT 
         d.drone_code,
         d.drone_name,
-        d.ward,
+        d.station,
         d.status,
         d.battery,
         g.latitude,
@@ -18,9 +18,19 @@ $sql = "
         g.timestamp
     FROM drones d
     LEFT JOIN (
-        SELECT drone_code, latitude, longitude, timestamp
+        SELECT 
+            drone_code,
+            latitude,
+            longitude,
+            timestamp
         FROM drone_gps_logs
-        ORDER BY timestamp DESC
+        WHERE (drone_code, timestamp) IN (
+            SELECT 
+                drone_code,
+                MAX(timestamp)
+            FROM drone_gps_logs
+            GROUP BY drone_code
+        )
     ) g ON d.drone_code = g.drone_code
 ";
 
