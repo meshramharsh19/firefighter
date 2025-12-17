@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useUserInfo from "@/components/common/auth/useUserInfo";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
@@ -10,21 +11,31 @@ const API = "http://localhost/fire-fighter-new/backend/controllers";
 
 export default function VehicleAvailabilityPanel() {
 
+  const { station } = useUserInfo();  // 🔥 get station of logged-in user
+
   const [vehicles, setVehicles] = useState([]);
   const [drones, setDrones] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(()=>{
-    async function load(){
-      const v = await fetch(`${API}/get_vehicles.php`).then(r=>r.json());
-      const d = await fetch(`${API}/active_drones.php`).then(r=>r.json());
 
-      setVehicles(v);    // direct use your structure
+    if (!station) return;
+
+    async function load() {
+      const v = await fetch(`${API}/get_vehicles.php?station=${encodeURIComponent(station)}`)
+                        .then(r=>r.json());
+
+      const d = await fetch(`${API}/active_drones.php?station=${encodeURIComponent(station)}`)
+                        .then(r=>r.json());
+
+      setVehicles(v);
       setDrones(d);
       setLoading(false);
     }
+
     load();
-  },[]);
+
+  }, [station]);
 
   if(loading) return <p className="text-white p-4">Loading assets...</p>;
 
@@ -42,7 +53,7 @@ export default function VehicleAvailabilityPanel() {
       
       <CardHeader
         title={<div className="flex items-center gap-2 font-semibold">
-          <SafeIcon name="Radio" className="text-blue-400" /> Station Assets
+          <SafeIcon name="Radio" className="text-blue-400" /> Station Assets – {station}
         </div>}
         sx={{borderBottom:"1px solid #26282b"}}
       />
@@ -63,59 +74,56 @@ export default function VehicleAvailabilityPanel() {
 
         <Divider sx={{borderColor:"#26282b"}} />
 
-        {/* VEHICLES LIST */}
+        {/* Vehicles */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <SafeIcon name="Truck" className="text-blue-400"/> Vehicles ({vehicles.length})
         </h3>
 
         <div className="space-y-2">
           {vehicles.map(v=>(
-            <div key={v.id} 
-              className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
-              
+            <div key={v.id} className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
+
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-white">{v.name}</p>
                   <p className="text-[11px] text-gray-400">{v.type} • {v.ward}</p>
                 </div>
 
-                <Chip label={v.status} 
-                  className={`text-[10px] px-2 border ${statusColor(v.status)}`}/>
+                <Chip label={v.status} className={`text-[10px] px-2 border ${statusColor(v.status)}`}/>
               </div>
+
               <p className="text-[10px] mt-1 text-gray-500">{v.registration} | {v.location}</p>
+
             </div>
           ))}
         </div>
 
         <Divider sx={{borderColor:"#26282b"}} />
 
-        {/* DRONES */}
+        {/* Drones */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <SafeIcon name="Plane" className="text-blue-400"/> Drones ({drones.length})
         </h3>
 
         <div className="space-y-2">
           {drones.map(d=>(
-            <div key={d.drone_code}
-              className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
+            <div key={d.drone_code} className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-gray-200">{d.drone_name}</p>
                   <p className="text-[11px] text-gray-400">{d.location} • {d.status}</p>
                 </div>
                 <Chip label={`${d.battery}%`} 
-                  className={`text-[10px] px-2 ${d.battery>50?"text-green-400":d.battery>25?"text-yellow-300":"text-red-400"}`} />
+                  className={`text-[10px] px-2 ${
+                    d.battery>50 ? "text-green-400" :
+                    d.battery>25 ? "text-yellow-300" :
+                    "text-red-400"
+                  }`} 
+                />
               </div>
             </div>
           ))}
         </div>
-
-        <Divider sx={{borderColor:"#26282b"}} />
-
-        <button className="w-full py-3 rounded bg-blue-500/20 text-blue-300 hover:bg-blue-500/30">
-          <SafeIcon name="AlertTriangle" className="inline mr-2" />
-          Request Additional Assets
-        </button>
 
       </CardContent>
     </Card>

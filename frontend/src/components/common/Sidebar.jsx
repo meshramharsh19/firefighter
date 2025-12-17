@@ -6,7 +6,6 @@ import {
   Plane,
   FileText,
   Users,
-  Activity
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -18,31 +17,19 @@ const Sidebar = () => {
     { name: "Drones", icon: Plane, link: "/drones" },
     { name: "SOPs", icon: FileText, link: "/sops" },
     { name: "User Roles", icon: Users, link: "/user-roles" },
-    // { name: "Logs", icon: Activity, link: "/logs" },
   ];
 
   return (
-    <aside className="w-64 bg-[#121417] border-r border-gray-800 p-5 sidebar-container">
+    <aside className="sidebar-container">
       {menu.map((item, index) => (
         <NavLink
           key={index}
           to={item.link}
           className={({ isActive }) =>
-            `flex items-center gap-3 p-3 mb-3 rounded-lg sidebar-menu-item transition-all ${
-              isActive
-  ? "bg-[rgba(198,35,35,1)] text-white font-semibold shadow-lg"
-  : "hover:bg-gray-800 text-gray-300"
-
-
-            }`
+            `sidebar-menu-item ${isActive ? "active" : ""}`
           }
         >
-          {/* Icon dynamic color */}
-          <item.icon
-            size={18}
-            color={({ isActive }) => (isActive ? "white" : "#a0a0a0")}
-          />
-
+          <item.icon size={18} className="sidebar-icon" />
           {item.name}
         </NavLink>
       ))}

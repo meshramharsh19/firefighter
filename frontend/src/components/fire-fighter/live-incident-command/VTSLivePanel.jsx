@@ -1,83 +1,84 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SafeIcon from "@/components/common/SafeIcon";
-import { Button, Chip } from "@mui/material";
+import { Chip } from "@mui/material";
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) return resolve();
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    s.onload = resolve;
-    s.onerror = reject;
-    document.body.appendChild(s);
-  });
-}
-
-function loadCss(href) {
-  if (document.querySelector(`link[href="${href}"]`)) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = href;
-  document.head.appendChild(link);
-}
-
-function forceCesiumResize() {
-  const viewer = window.viewer;
-  if (!viewer) return;
-  setTimeout(() => {
-    try {
-      viewer.resize();
-      viewer.scene.requestRender();
-    } catch (_) {}
-  }, 300);
-}
+const INCIDENT_API =
+  "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php";
 
 export default function VTSLivePanel({
   onMaximize,
   isMaximized = false,
   onExit,
 }) {
-  const cesiumInitRef = useRef(false);
+  const iframeRef = useRef(null);
+  const [iframeReady, setIframeReady] = useState(false);
+  const [incident, setIncident] = useState(null);
 
+  /* ---------- Fetch Incident ---------- */
   useEffect(() => {
-    async function initCesium() {
+    async function fetchIncident() {
       try {
-        loadCss("https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css");
-        loadCss("/assets/css/style.css");
-
-        if (!cesiumInitRef.current) {
-          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js");
-          await loadScript("/assets/js/globel.js");
-          await loadScript("/assets/js/map.js");
-          cesiumInitRef.current = true;
-        }
-
-        if (window.initMap) {
-          window.initMap();
-          forceCesiumResize();
-        }
+        const res = await fetch(INCIDENT_API);
+        const data = await res.json();
+        const activeIncident = data?.[0] || null;
+        setIncident(activeIncident);
       } catch (err) {
-        console.error("VTSLivePanel Cesium Error:", err);
+        console.error("❌ Incident fetch error:", err);
       }
     }
 
-    initCesium();
+    fetchIncident();
   }, []);
 
-  useEffect(() => {
-    forceCesiumResize();
-  }, [isMaximized]);
+  /* ---------- IFRAME READY ---------- */
+  const handleIframeLoad = () => {
+    setIframeReady(true);
+  };
 
+  /* ---------- SEND DATA TO IFRAME ---------- */
+  useEffect(() => {
+    if (!iframeReady || !iframeRef.current?.contentWindow) return;
+
+    // 🔥 Send Fire / Incident point
+    if (incident?.coordinates) {
+      iframeRef.current.contentWindow.postMessage(
+        {
+          type: "FIRE_HAZARD_POINT",
+          payload: {
+            lat: incident.coordinates.lat,
+            lng: incident.coordinates.lng,
+            height: 100,
+          },
+        },
+        "*"
+      );
+    }
+
+    // 🔥 AUTO CALL ROUTE (same logic, iframe ke andar)
+    iframeRef.current.contentWindow.postMessage(
+      {
+        type: "DRAW_ROUTE",
+        payload: {
+          incidentLat: "18.4591925674",
+          incidentLng: "73.8562810721",
+          stationLat: "18.4545",
+          stationLng: "73.85625",
+          deviceIds: ["0453aa40-80a0-11f0-902d-59ff54eea995"],
+        },
+      },
+      "*"
+    );
+  }, [iframeReady, incident]);
+
+  /* ---------- UI ---------- */
   return (
     <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
-
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <SafeIcon name="Navigation" className="h-5 w-5  text-[#dc2626]" />
+          <SafeIcon name="Navigation" className="h-5 w-5 text-[#dc2626]" />
           <h3 className={`font-semibold ${isMaximized ? "text-xl" : "text-lg"}`}>
             VTS Live 3D Map
           </h3>
@@ -85,20 +86,18 @@ export default function VTSLivePanel({
 
         <div className="flex items-center gap-2">
           <Chip
-            label={
-              <span className="px-2 py-0.5 text-xs bg-red-600 text-white rounded animate-pulse">
-                LIVE
-              </span>
-            }
-            color="error"
+            label="LIVE"
             size="small"
-            className="animate-pulse text-xs"
+            color="error"
+            className="animate-pulse"
           />
+
           {!isMaximized && (
             <button onClick={onMaximize} className="p-1 hover:bg-muted rounded">
               <SafeIcon name="Maximize2" className="h-4 w-4" />
             </button>
           )}
+
           {isMaximized && (
             <button onClick={onExit} className="p-1 hover:bg-muted rounded">
               <SafeIcon name="X" className="h-4 w-4" />
@@ -107,16 +106,15 @@ export default function VTSLivePanel({
         </div>
       </div>
 
-      {/* CESIUM MAP */}
-      <div
-        id="map-container"
-        className="rounded-lg overflow-hidden border-2 border border-dashed border-[#2E2E2E]"
-        style={{
-          height: isMaximized ? "100%" : "300px",
-          width: "100%",
-        }}
-      ></div>
-
+      {/* MAP (iframe – SAME AS DroneLivePanel) */}
+      <div className="flex-1 border border-dashed border-[#2E2E2E] rounded-lg overflow-hidden">
+        <iframe
+          ref={iframeRef}
+          onLoad={handleIframeLoad}
+          src="/drone-map.html"
+          className="w-full h-full border-none"
+        />
+      </div>
     </div>
   );
 }

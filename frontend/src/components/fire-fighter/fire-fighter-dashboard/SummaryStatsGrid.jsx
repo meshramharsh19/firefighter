@@ -9,24 +9,31 @@ export default function SummaryStatsGrid() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!station) {
-      setLoading(false);
-      return;
-    }
+  console.log("Station from user:", station);
 
-    fetch(`http://localhost/fire-fighter-new/backend/controllers/get_summary.php?station=${encodeURIComponent(station)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status) {
-          setStats(data.summary);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Summary fetch failed:", err);
-        setLoading(false);
-      });
-  }, [station]);
+  if (!station) {
+    setLoading(false);
+    return;
+  }
+
+  const url = `http://localhost/fire-fighter-new/backend/controllers/get_summary.php?station=${encodeURIComponent(station)}`;
+
+  console.log("Calling API:", url);
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      console.log("API Response:", data);
+      if (data.status) {
+        setStats(data.summary);
+      }
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Summary fetch failed:", err);
+      setLoading(false);
+    });
+}, [station]);
 
   if (loading) return <p className="text-white p-3">Loading statistics...</p>;
   if (!stats) return <p className="text-red-500 p-3">No summary found</p>;

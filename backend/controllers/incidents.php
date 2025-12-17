@@ -8,20 +8,23 @@ require "../config/db.php";
 
 $station = $_GET['station'] ?? null;
 
-if(!$station){
-    echo json_encode(["status"=>false,"message"=>"Station missing"]);
+if (!$station) {
+    echo json_encode(["status" => false, "message" => "Station missing"]);
     exit;
 }
 
-$station = trim($station);
+$stationSafe = mysqli_real_escape_string($conn, trim($station));
 
-// 👇 Correct column name
-$query = "SELECT * FROM incidents WHERE LOWER(TRIM(stationName)) = LOWER('$station') ORDER BY id DESC";
+$query = "
+    SELECT * FROM incidents 
+    WHERE LOWER(TRIM(stationName)) = LOWER(TRIM('$stationSafe'))
+    ORDER BY timeReported DESC
+";
 
 $result = mysqli_query($conn, $query);
 
-if(!$result){
-    echo json_encode(["status"=>false,"message"=>mysqli_error($conn)]);
+if (!$result) {
+    echo json_encode(["status" => false, "message" => mysqli_error($conn)]);
     exit;
 }
 
@@ -36,10 +39,10 @@ while ($row = mysqli_fetch_assoc($result)) {
         "longitude"  => $row["longitude"],
         "status"     => $row["status"],
         "time"       => $row["timeReported"],
-        "isNewAlert" => $row["isNewAlert"],
+        "isNewAlert" => $row["isNewAlert"] ?? 0,
         "station"    => $row["stationName"],
-        "ackBy"      => $row["acknowledgedBy"]
+        "ackBy"      => $row["acknowledgedBy"] ?? null   // ✔ FIXED
     ];
 }
 
-echo json_encode(["status"=>true,"data"=>$incidents]);
+echo json_encode(["status" => true, "data" => $incidents]);

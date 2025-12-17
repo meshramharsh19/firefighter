@@ -5,7 +5,7 @@
     --item-hover-bg: #f3f4f6; /* Very light gray for hover */
     --item-hover-color: #111827; /* Dark text on hover */
     --item-active-bg: #e5e7eb; /* Light gray for active state */
-    --item-active-color: #111827; /* Dark text on active */
+    --item-active-color: #000000; /* Dark text on active */
 }
 
 /* --- dark Theme Overrides --- */
@@ -15,7 +15,7 @@
   --item-hover-bg: #1f2937; 
   --item-hover-color: #f9fafb;
   --item-active-bg: #374151;
-  --item-active-color: #f9fafb;
+  --item-active-color: #ffffff;
 }
 
 .sidebar-container {
@@ -44,4 +44,16 @@
 .sidebar-menu-item:hover {
      background-color: var(--item-hover-bg);
   color: var(--item-hover-color);
+}
+.sidebar-icon {
+  color: var(--item-default-color);
+  transition: color 0.2s ease;
+}
+
+.sidebar-menu-item:hover .sidebar-icon {
+  color: var(--item-hover-color);
+}
+
+.sidebar-menu-item.active .sidebar-icon {
+  color: var(--item-active-color);
 }
