@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -14,6 +14,7 @@ import StatusBadge from "@/components/common/StatusBadge";
 import DroneMonitoringMap from "./DroneMonitoringMap";
 import DroneListTable from "./DroneListTable";
 import DroneMonitoringHeader from "./DroneMonitoringHeader";
+import { toast } from "react-hot-toast"; 
 import {
   Select,
   SelectTrigger,
@@ -26,30 +27,54 @@ const API = "http://localhost/fire-fighter-new/backend/controllers";
 
 export default function DroneMonitoringContent() {
   const [viewMode, setViewMode] = useState("map");
-
   const [drones, setDrones] = useState([]);
   const [stations, setStations] = useState([]);
   const [selectedStation, setSelectedStation] = useState("all");
 
   /* ---------------- Fetch drones (auto refresh) ---------------- */
-  const loadDrones = () => {
-    fetch(`${API}/get_drone_locations.php`)
-      .then((res) => res.json())
-      .then((data) => setDrones(data));
-  };
-
-  useEffect(() => {
-    loadDrones();
-    const interval = setInterval(loadDrones, 5000);
-    return () => clearInterval(interval);
+  const loadDrones = useCallback(async (isAutoRefresh = false) => {
+    try {
+      const res = await fetch(`${API}/get_drone_locations.php`);
+      if (!res.ok) throw new Error("Failed to fetch drones");
+      const data = await res.json();
+      setDrones(data);
+    } catch (err) {
+      console.error(err);
+      // Only show error toast if it's NOT an auto-refresh
+      if (!isAutoRefresh) toast.error("Failed to load drone fleet data");
+    }
   }, []);
 
   /* ---------------- Fetch stations ---------------- */
-  useEffect(() => {
-    fetch(`${API}/getStations.php`)
-      .then((res) => res.json())
-      .then((data) => setStations(data));
+  const loadStations = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/getStations.php`);
+      if (!res.ok) throw new Error("Failed to fetch stations");
+      const data = await res.json();
+      setStations(data);
+    } catch (err) {
+      console.error(err);
+      // Critical error: Always show
+      toast.error("Failed to load stations list");
+    }
   }, []);
+
+  /* ---------------- Initial Load & Interval ---------------- */
+  useEffect(() => {
+    const initData = async () => {
+      // Load initial data quietly
+      await Promise.all([loadDrones(false), loadStations()]);
+    };
+
+    initData();
+
+    const interval = setInterval(() => {
+      // Pass true so background connection errors don't spam the user
+      loadDrones(true); 
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [loadDrones, loadStations]);
 
   /* ---------------- Status normalize ---------------- */
   const normalizeStatus = (status) => {
@@ -97,35 +122,43 @@ export default function DroneMonitoringContent() {
   const prettyLabel = (text = "") =>
     text.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  useEffect(() => {
-  console.log("Selected Station:", selectedStation);
-  console.log("Drones sample:", drones[0]);
-}, [selectedStation, drones]);
-
-
   return (
     <div className="space-y-6 p-6">
+      {/* Station Dropdown */}
+    <div className="flex justify-start">
+  <div className="w-64">
+    <label className="text-sm font-medium">Station</label> {/* Added label to match theme */}
+    <Select value={selectedStation} onValueChange={setSelectedStation}>
+      
+      {/* Trigger matches Status/Ward: bg-[#141414], border-gray-700, and no focus ring */}
+      <SelectTrigger className="w-full p-2 bg-[#141414] text-white border border-gray-700 rounded focus:ring-0 focus:ring-offset-0 focus:outline-none">
+        <SelectValue placeholder="Select Station" />
+      </SelectTrigger>
 
-      {/* 🔥 Station Dropdown */}
-      <div className="flex justify-start">
-        <div className="w-64">
-          <Select value={selectedStation} onValueChange={setSelectedStation}>
-            <SelectTrigger className="border">
-              <SelectValue placeholder="Select Station" />
-            </SelectTrigger>
+      {/* Content matches the dropdown theme */}
+      <SelectContent className="bg-[#141414] border-gray-700 text-white">
+        {/* Hide the default checkmark and add spacing */}
+        <SelectItem 
+          value="all" 
+          className="focus:bg-gray-800 focus:text-white cursor-pointer [&>span:first-child]:hidden"
+        >
+          All Stations
+        </SelectItem>
 
-            <SelectContent className="bg-gray-900 border text-white">
-              <SelectItem value="all">All Stations</SelectItem>
+        {stations.map((station) => (
+          <SelectItem 
+            key={station} 
+            value={station} 
+            className="focus:bg-gray-800 focus:text-white cursor-pointer [&>span:first-child]:hidden"
+          >
+            {station}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+</div>
 
-              {stations.map((station) => (
-                <SelectItem key={station} value={station}>
-                  {station}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
       {/* Summary */}
       <DroneMonitoringHeader

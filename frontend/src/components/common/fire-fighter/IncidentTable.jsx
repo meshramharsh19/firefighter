@@ -35,11 +35,11 @@ export default function IncidentTable({ incidents = [], onViewDetails }) {
 
   const badge = (st) => (
     <Chip
-      label={STATUS[st].label}
+      label={STATUS[st]?.label || st}
       size="small"
       sx={{
-        backgroundColor: STATUS[st].color,
-        color: STATUS[st].text,
+        backgroundColor: STATUS[st]?.color || UI.faded,
+        color: STATUS[st]?.text || "#fff",
         fontWeight: 600,
       }}
     />
@@ -145,7 +145,7 @@ export default function IncidentTable({ incidents = [], onViewDetails }) {
                 </TableCell>
 
                 <TableCell sx={{ color: UI.faded, fontFamily: "monospace", fontSize: "12px" }}>
-                  {inc.latitude.toFixed(4)}, {inc.longitude.toFixed(4)}
+                  {inc.latitude?.toFixed(4)}, {inc.longitude?.toFixed(4)}
                 </TableCell>
 
                 <TableCell sx={{ color: UI.faded }}>{inc.time}</TableCell>
@@ -155,7 +155,7 @@ export default function IncidentTable({ incidents = [], onViewDetails }) {
                 <TableCell align="right">
                   <Button
                     size="small"
-                    onClick={() => onViewDetails(inc.id)}
+                    onClick={() => onViewDetails && onViewDetails(inc.id)}
                     sx={{
                       color: "#FF5757",
                       textTransform: "none",

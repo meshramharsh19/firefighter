@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SafeIcon from "@/components/common/SafeIcon";
+import { toast } from "react-hot-toast"; 
 
 // Components
 import VehicleStats from "./VehicleStats";
@@ -27,7 +28,11 @@ export default function VehicleManagement() {
       const res = await fetch(`${API}/get_vehicles.php`);
       const data = await res.json();
       setVehicles(data || []);
-    } catch(e){ console.log("Fetch Error:", e); }
+    } catch(e){ 
+      console.log("Fetch Error:", e); 
+      // Critical Error Toast: Only show if data fails to load completely
+      // toast.error("Failed to load vehicle fleet"); 
+    }
   };
 
   useEffect(()=>{ loadVehicles(); },[]);
@@ -41,10 +46,19 @@ export default function VehicleManagement() {
         body:JSON.stringify(vehicleData)
       });
       const data= await res.json();
-      alert(data.message);
-      setOpenModal(false);
-      loadVehicles();   // live refresh
-    } catch(e){ console.log(e); alert("Error adding vehicle"); }
+      
+      if(data.success){
+        toast.success(data.message || "Vehicle added successfully"); // ⭐ Success Toast
+        setOpenModal(false);
+        loadVehicles();   // live refresh
+      } else {
+        toast.error(data.message || "Failed to add vehicle"); // ⭐ Error Toast
+      }
+
+    } catch(e){ 
+      console.log(e); 
+      toast.error("Server connection error"); // ⭐ Error Toast
+    }
   };
 
 
@@ -89,41 +103,47 @@ export default function VehicleManagement() {
 
         <CardContent className="grid gap-4 md:grid-cols-3">
 
-          {/* Search */}
-          <div>
-            <label className="text-sm font-medium">Search</label>
-            <div className="relative">
-              <SafeIcon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-              <Input 
-                className="pl-10"
-                placeholder="Search by name, reg, location"
-                value={searchQuery}
-                onChange={(e)=>setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
+  {/* Search */}
+  <div>
+    <label className="text-sm font-medium mb-2 block">Search</label>
+    <div className="relative">
+      <SafeIcon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+      <Input 
+        className="pl-10 h-9 bg-[#0D0F12] border-[#2E2E2E] text-neutral-200 focus-visible:ring-1 focus-visible:ring-[#EF4343] focus-visible:ring-offset-0 focus:border-[#EF4343] outline-none transition"
+        placeholder="Search by name, reg, location"
+        value={searchQuery}
+        onChange={(e)=>setSearchQuery(e.target.value)}
+      />
+    </div>
+  </div>
 
-          {/* Status Filter */}
-          <div>
-            <label className="text-sm font-medium">Status</label>
-            <select value={selectedStatus}
-              onChange={(e)=>setSelectedStatus(e.target.value)}
-              className="w-full p-2 bg-[#141414] text-white border rounded">
-              {statuses.map(s=><option key={s}>{s}</option>)}
-            </select>
-          </div>
+  {/* Status Filter */}
+  <div>
+    <label className="text-sm font-medium mb-2 block">Status</label>
+    <select 
+      value={selectedStatus}
+      onChange={(e)=>setSelectedStatus(e.target.value)}
+      className="w-full h-9 p-2 bg-[#0D0F12] text-neutral-200 border border-[#2E2E2E] rounded-md text-sm outline-none focus:ring-1 focus:ring-[#EF4343] focus:border-[#EF4343] transition"
+    >
+      {statuses.map(s=><option key={s} className="bg-[#0D0F12]">{s}</option>)}
+    </select>
+  </div>
 
-          {/* Ward Filter */}
-          <div>
-            <label className="text-sm font-medium">Ward</label>
-            <select value={selectedWard}
-              onChange={(e)=>setSelectedWard(e.target.value)}
-              className="w-full p-2 bg-[#141414] text-white border rounded">
-              {wards.map(w=><option key={w}>{w}</option>)}
-            </select>
-          </div>
-        </CardContent>
+  {/* Ward Filter */}
+  <div>
+    <label className="text-sm font-medium mb-2 block">Ward</label>
+    <select 
+      value={selectedWard}
+      onChange={(e)=>setSelectedWard(e.target.value)}
+      className="w-full h-9 p-2 bg-[#0D0F12] text-neutral-200 border border-[#2E2E2E] rounded-md text-sm outline-none focus:ring-1 focus:ring-[#EF4343] focus:border-[#EF4343] transition"
+    >
+      {wards.map(w=><option key={w} className="bg-[#0D0F12]">{w}</option>)}
+    </select>
+  </div>
+
+</CardContent>
       </Card>
+
 
       {/* View Tabs */}
       <Tabs value={viewMode} onValueChange={setViewMode}>

@@ -1,8 +1,10 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, LayersControl } from "react-leaflet";
 import L from "leaflet";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardContent, Typography, Box, Chip, Button } from "@mui/material";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+
+const { BaseLayer } = LayersControl;
 
 // Leaflet custom marker icon (important fix)
 const markerIcon = new L.Icon({
@@ -21,11 +23,11 @@ export default function MapWithDraggableMarkerMui({
 }) {
   const [position, setPosition] = useState([initialLat, initialLng]);
 
-  useEffect(() => { setPosition([initialLat, initialLng]); }, [initialLat, initialLng]);
+  useEffect(() => {
+    setPosition([initialLat, initialLng]);
+  }, [initialLat, initialLng]);
 
   function DraggableMarker() {
-    const [draggable, setDraggable] = useState(true);
-
     const eventHandlers = {
       dragend(e) {
         const { lat, lng } = e.target.getLatLng();
@@ -37,7 +39,7 @@ export default function MapWithDraggableMarkerMui({
     return (
       <Marker
         icon={markerIcon}
-        draggable={draggable}
+        draggable
         eventHandlers={eventHandlers}
         position={position}
       >
@@ -64,20 +66,35 @@ export default function MapWithDraggableMarkerMui({
       />
 
       <CardContent>
-        {/* MAP */}
         <MapContainer
           center={position}
           zoom={15}
           scrollWheelZoom
           style={{ height:"400px", borderRadius:"10px", width:"100%" }}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {/* 🔽 LAYER SELECTOR */}
+          <LayersControl position="topright">
+
+            {/* NORMAL MAP */}
+            <BaseLayer checked name="Normal Map">
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </BaseLayer>
+
+            {/* SATELLITE MAP */}
+            <BaseLayer name="Satellite View">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles © Esri"
+              />
+            </BaseLayer>
+
+          </LayersControl>
 
           <DraggableMarker />
-
         </MapContainer>
 
-        {/* Show current lat-lng */}
         <Box mt={2} p={1} sx={{ bgcolor:"#1e1e1e", borderRadius:1 }}>
           <Typography fontSize={13} color="gray">Coordinates</Typography>
           <Typography fontFamily="monospace">

@@ -78,7 +78,7 @@ export default function ConfirmLocationPage() {
 
   // 🔥 Redirect to vehicle-drone-selection page
   const confirmAndProceed = () => {
-    alert(`📍 Location Confirmed for ${id}\nLat:${currentLat}, Lng:${currentLng}`);
+    // alert(`📍 Location Confirmed for ${id}\nLat:${currentLat}, Lng:${currentLng}`); 
     navigate(`/vehicle-drone-selection/${id}`);  // <-- Updated Route
   };
 

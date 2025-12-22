@@ -27,7 +27,7 @@ if (!$drone_code || !$new_pilot_id) {
 
 if (!empty($old_pilot_id)) {
 
-    $stmtOld = $conn->prepare("UPDATE users SET status='available' WHERE id=?");
+    $stmtOld = $conn->prepare("UPDATE users SET status='1' WHERE id=?");
 
     if (!$stmtOld) {
         echo json_encode([
@@ -52,7 +52,7 @@ $stmt = $conn->prepare("
         pilot_email = ?,
         pilot_phone = ?,
         pilot_role = ?,
-        pilot_status = 'Active'
+        pilot_status = '1'
     WHERE drone_code = ?
 ");
 

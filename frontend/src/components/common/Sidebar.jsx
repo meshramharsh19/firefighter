@@ -17,6 +17,7 @@ const Sidebar = () => {
     { name: "Drones", icon: Plane, link: "/drones" },
     { name: "SOPs", icon: FileText, link: "/sops" },
     { name: "User Roles", icon: Users, link: "/user-roles" },
+    { name: "Logs", icon: Users, link: "/logs" },
   ];
 
   return (

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import SafeIcon from "@/components/common/SafeIcon"
+import { toast } from "react-hot-toast" // ⭐ Import toast
 
 export default function FirefighterHeader({
   userName = "Firefighter",
@@ -11,6 +12,26 @@ export default function FirefighterHeader({
 }) {
   const [timeRemaining, setTimeRemaining] = useState("")
   const [mounted, setMounted] = useState(false)
+  
+  // Refs to prevent duplicate toasts
+  const warningShownRef = useRef(false)
+  const prevAlertStateRef = useRef(hasNewAlerts)
+
+  // ⭐ New Alert Toast Logic
+  useEffect(() => {
+    if (hasNewAlerts && !prevAlertStateRef.current) {
+      toast.error("New Emergency Alert Detected!", {
+        duration: 5000,
+        style: {
+          border: '1px solid #ef4444',
+          background: '#333',
+          color: '#fff',
+        },
+        icon: '🚨'
+      });
+    }
+    prevAlertStateRef.current = hasNewAlerts;
+  }, [hasNewAlerts]);
 
   useEffect(() => {
     setMounted(true)
@@ -24,6 +45,20 @@ export default function FirefighterHeader({
       if (diff <= 0) {
         setTimeRemaining("Session Expired")
         return
+      }
+
+      // ⭐ Session Warning Toast (5 minutes remaining)
+      // 300000ms = 5 minutes. Check a small window to ensure we catch it.
+      if (diff <= 300000 && diff > 298000 && !warningShownRef.current) {
+         toast("Session expiring in 5 minutes", {
+           icon: "⚠️",
+           style: {
+             border: '1px solid #f59e0b', // Amber
+             padding: '16px',
+             color: '#713200',
+           },
+         });
+         warningShownRef.current = true;
       }
 
       const hours = Math.floor(diff / (1000 * 60 * 60))
@@ -108,4 +143,3 @@ export default function FirefighterHeader({
     </header>
   )
 }
-

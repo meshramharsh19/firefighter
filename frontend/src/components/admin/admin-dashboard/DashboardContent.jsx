@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { toast } from "react-hot-toast"; 
 import DashboardMapSection from "./DashboardMapSection";
 import DashboardSummaryCard from "./DashboardSummaryCard";
 import QuickAccessLinks from "./QuickAccessLinks";
@@ -14,55 +14,66 @@ export default function DashboardContent() {
   });
 
   const [activeDrones, setActiveDrones] = useState([]);
-  const [droneLocations, setDroneLocations] = useState([]);   // ⭐ Add GPS state
+  const [droneLocations, setDroneLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapMode, setMapMode] = useState("2d");
 
-  const loadStats = useCallback(async () => {
+  // Fetch Dashboard Statistics
+  const loadStats = useCallback(async (isAutoRefresh = false) => {
     try {
       const res = await fetch(`${API}/dashboard_stats.php`);
       const data = await res.json();
       setStats(data);
     } catch (err) {
       console.error("Stats API Error:", err);
+      // Critical Error: Only show if initial load fails
+      if (!isAutoRefresh) toast.error("Failed to load dashboard stats");
     }
   }, []);
 
-  const loadActiveDrones = useCallback(async () => {
+  // Fetch Active Drone List
+  const loadActiveDrones = useCallback(async (isAutoRefresh = false) => {
     try {
       const res = await fetch(`${API}/active_drones.php`);
       const data = await res.json();
       setActiveDrones(data);
     } catch (err) {
       console.error("Active Drones API Error:", err);
+      if (!isAutoRefresh) toast.error("Failed to load active drones");
     }
   }, []);
 
-  // ⭐ Load GPS locations
-  const loadDroneLocations = useCallback(async () => {
+  // Fetch GPS Locations for Map
+  const loadDroneLocations = useCallback(async (isAutoRefresh = false) => {
     try {
       const res = await fetch(`${API}/get_drone_locations.php`);
       const data = await res.json();
-      console.log("GPS API:", data);
       setDroneLocations(data);
     } catch (err) {
       console.error("Drone Locations API Error:", err);
+      if (!isAutoRefresh) toast.error("Failed to load GPS locations");
     }
   }, []);
 
+  // Initial Load & Auto-Refresh Cycle
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true);
-      await Promise.all([loadStats(), loadActiveDrones(), loadDroneLocations()]);
+      await Promise.all([
+        loadStats(false), 
+        loadActiveDrones(false), 
+        loadDroneLocations(false)
+      ]);
       setLoading(false);
     };
 
     loadAll();
 
     const interval = setInterval(() => {
-      loadStats();
-      loadActiveDrones();
-      loadDroneLocations(); // ⭐ Auto refresh GPS
+      // Pass 'true' to suppress error toasts during background refresh
+      loadStats(true);
+      loadActiveDrones(true);
+      loadDroneLocations(true);
     }, 5000);
 
     return () => clearInterval(interval);
@@ -76,7 +87,6 @@ export default function DashboardContent() {
 
   return (
     <div className="w-full p-6">
-
       <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -86,22 +96,20 @@ export default function DashboardContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* LEFT: MAP + ACTIVE DRONES */}
         <div className="lg:col-span-2 space-y-6 border border-[#2E2E2E] rounded-xl">
           <DashboardMapSection
             mapMode={mapMode}
             setMapMode={setMapMode}
             activeDrones={activeDrones}
-            droneLocations={droneLocations}   // ⭐ Pass GPS to map
+            droneLocations={droneLocations}
           />
         </div>
 
         {/* RIGHT: QUICK ACCESS */}
-        <div className="lg:col-span-1 rounded-xl p-6 border border-[#2E2E2E]">
+        <div className="lg:col-span-1 rounded-xl p-6 border border-[#2E2E2E] h-fit">
           <QuickAccessLinks />
         </div>
-
       </div>
     </div>
   );
