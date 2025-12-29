@@ -1,49 +1,72 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function RegistrationForm({
   isDark,
   form,
   setForm,
-  roles
+  roles,
+  editUserId,
+  setEditUserId,
+  onSubmit,
 }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [stations, setStations] = useState([]);
 
   const inputClass = `
-    w-full px-4 py-3 rounded-lg outline-none transition-all
-    ${isDark
-      ? "bg-[#0f1114] text-white border border-[#ffffff40] placeholder-gray-400"
-      : "bg-white text-black border border-gray-400 placeholder-gray-600"
+    w-full px-4 py-3 pr-10 rounded-lg outline-none transition-all duration-200
+    border appearance-none
+    focus:ring-2 focus:ring-red-500/40
+    ${
+      isDark
+        ? `
+          bg-[#0f1114] text-white border-[#ffffff40]
+          hover:border-white
+          focus:border-white
+        `
+        : `
+          bg-white text-black border-gray-400
+          hover:border-black
+          focus:border-black
+        `
     }
   `;
 
-  // update form values
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // 🔥 REGISTER USER API CALL
-  const handleRegisterUser = async (e) => {
+  useEffect(() => {
+    fetch(
+      "http://localhost/fire-fighter-new/backend/controllers/get_firestations.php"
+    )
+      .then((res) => res.json())
+      .then((data) => data.success && setStations(data.stations));
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
+    const isEdit = Boolean(editUserId);
+
+    const url = isEdit
+      ? "http://localhost/fire-fighter-new/backend/controllers/update_user.php"
+      : "http://localhost/fire-fighter-new/backend/controllers/register_user.php";
+
     try {
-      const response = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/register_user.php",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
+      const res = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(isEdit ? { ...form, id: editUserId } : form),
+      });
 
-      const result = await response.json();
+      const data = await res.json();
 
-      if (result.success) {
-        setMessage("✅ User Registered Successfully!");
+      if (data.success) {
+        setMessage(isEdit ? "✅ User Updated" : "✅ User Registered");
 
-        // reset form fields
         setForm({
           fullName: "",
           address: "",
@@ -53,14 +76,31 @@ export default function RegistrationForm({
           role: "",
           station: "",
         });
-      } else {
-        setMessage("❌ Error: " + result.message);
-      }
-    } catch (error) {
-      setMessage("❌ Server Error: " + error.message);
-    }
 
-    setLoading(false);
+        setEditUserId(null);
+        onSubmit();
+      } else {
+        setMessage("❌ " + data.message);
+      }
+    } catch {
+      setMessage("❌ Server error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegisterNewUser = () => {
+    setForm({
+      fullName: "",
+      address: "",
+      email: "",
+      phone: "",
+      designation: "",
+      role: "",
+      station: "",
+    });
+    setEditUserId(null);
+    setMessage(null);
   };
 
   return (
@@ -71,20 +111,39 @@ export default function RegistrationForm({
         border: isDark ? "1px solid #1d1f23" : "1px solid #e0e0e0",
       }}
     >
-      <h2 className="text-xl font-bold mb-4">User Registration</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xl font-bold">
+          {editUserId ? "Update User" : "User Registration"}
+        </h2>
 
-      {/* SUCCESS / ERROR MESSAGE */}
+        {editUserId && (
+          <button
+            type="button"
+            onClick={handleRegisterNewUser}
+            className="
+              px-4 py-2 rounded-lg text-sm font-semibold text-white
+              bg-[#EF4343]
+              transition-all duration-200
+              hover:bg-red-600
+              active:bg-red-700 active:scale-[0.97]
+            "
+          >
+            Register New User
+          </button>
+        )}
+      </div>
+
       {message && (
         <p
-          className="mb-4 font-medium"
+          className="mb-3"
           style={{ color: message.startsWith("✅") ? "green" : "red" }}
         >
           {message}
         </p>
       )}
 
-      {/* FORM */}
-      <form onSubmit={handleRegisterUser} className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+        {/* FULL NAME - REQUIRED */}
         <input
           className={inputClass}
           name="fullName"
@@ -94,34 +153,36 @@ export default function RegistrationForm({
           required
         />
 
+        {/* ADDRESS - OPTIONAL */}
         <input
           className={inputClass}
           name="address"
           placeholder="Address"
           value={form.address}
           onChange={handleChange}
-          required
         />
 
+        {/* EMAIL - OPTIONAL */}
         <input
           className={inputClass}
           name="email"
-          placeholder="Email ID"
           type="email"
+          placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          required
         />
 
+        {/* PHONE - REQUIRED */}
         <input
           className={inputClass}
           name="phone"
-          placeholder="Phone Number"
+          placeholder="Phone"
           value={form.phone}
           onChange={handleChange}
           required
         />
 
+        {/* DESIGNATION - REQUIRED */}
         <input
           className={inputClass}
           name="designation"
@@ -131,7 +192,7 @@ export default function RegistrationForm({
           required
         />
 
-        {/* ROLE SELECT */}
+        {/* ROLE - REQUIRED */}
         <select
           className={inputClass}
           name="role"
@@ -141,11 +202,13 @@ export default function RegistrationForm({
         >
           <option value="">Select Role</option>
           {roles.map((r) => (
-            <option key={r}>{r}</option>
+            <option key={r} value={r}>
+              {r}
+            </option>
           ))}
         </select>
 
-        {/* STATION SELECT */}
+        {/* STATION - REQUIRED */}
         <select
           className={inputClass}
           name="station"
@@ -154,18 +217,32 @@ export default function RegistrationForm({
           required
         >
           <option value="">Select Fire Station</option>
-          <option value="Station 1">Station 1</option>
-          <option value="Station 2">Station 2</option>
+          {stations.map((s) => (
+            <option key={s.id} value={s.name}>
+              {s.name}
+            </option>
+          ))}
         </select>
 
-        {/* REGISTER BUTTON */}
         <button
           type="submit"
           disabled={loading}
-          className="col-span-2 py-3 rounded-lg font-semibold border text-white"
-          style={{ backgroundColor: "#EF4343" }}
+          className="
+            col-span-2 py-3 rounded-lg font-semibold text-white
+            bg-[#EF4343]
+            transition-all duration-200
+            hover:bg-red-600
+            active:bg-red-700 active:scale-[0.97]
+            disabled:opacity-60 disabled:cursor-not-allowed
+          "
         >
-          {loading ? "Registering..." : "Register User"}
+          {loading
+            ? editUserId
+              ? "Updating..."
+              : "Registering..."
+            : editUserId
+            ? "Update User"
+            : "Register User"}
         </button>
       </form>
     </div>

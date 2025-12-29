@@ -22,7 +22,6 @@ import {
   Lock,
 } from "lucide-react";
 
-
 // ---------------- OTP INPUT ----------------
 const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   const inputRefs = useRef([]);
@@ -81,7 +80,6 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   );
 };
 
-
 // ---------------- MAIN LOGIN COMPONENT ----------------
 export default function LoginForm() {
   const [state, setState] = useState({
@@ -93,7 +91,6 @@ export default function LoginForm() {
 
   const isMobileStep = state.step === "mobile";
   const isOTPStep = state.step === "otp";
-
 
   // ---------------- Mobile Submit ----------------
   const handleMobileSubmit = async (e) => {
@@ -134,12 +131,11 @@ export default function LoginForm() {
         step: "otp",
         isLoading: false,
       }));
-    } catch (e) {
+    } catch {
       toast.error("Server error");
       setState((p) => ({ ...p, isLoading: false }));
     }
   };
-
 
   // ---------------- Redirect by Role ----------------
   const redirectBasedOnRole = (role) => {
@@ -156,7 +152,6 @@ export default function LoginForm() {
         return "/AdminDashboard";
     }
   };
-
 
   // ---------------- OTP Submit ----------------
   const handleOTPSubmit = async () => {
@@ -195,6 +190,10 @@ export default function LoginForm() {
         return;
       }
 
+      // 🔥🔥🔥 IMPORTANT FIX HERE 🔥🔥🔥
+      const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
+      const sessionExpiry = Date.now() + SESSION_DURATION;
+
       sessionStorage.setItem(
         "fireOpsSession",
         JSON.stringify({
@@ -204,6 +203,7 @@ export default function LoginForm() {
           role: user.role,
           station: user.station,
           designation: user.designation,
+          sessionExpiry, // ✅ REQUIRED FOR HEADER TIMER
         })
       );
 
@@ -212,12 +212,11 @@ export default function LoginForm() {
       setTimeout(() => {
         window.location.href = redirectBasedOnRole(user.role);
       }, 600);
-    } catch (e) {
+    } catch {
       toast.error("Server error");
       setState((p) => ({ ...p, isLoading: false }));
     }
   };
-
 
   // ---------------- UI ----------------
   return (
@@ -233,7 +232,6 @@ export default function LoginForm() {
         alignItems: "center",
       }}
     >
-      {/* HEADER */}
       <Box sx={{ textAlign: "center", mb: 3 }}>
         <Flame size={60} color="#D32F2F" />
         <Typography variant="h4" fontWeight="bold">
@@ -241,7 +239,6 @@ export default function LoginForm() {
         </Typography>
       </Box>
 
-      {/* CARD */}
       <Card sx={{ width: "100%", p: 1, boxShadow: 4 }}>
         <CardHeader
           title={
@@ -252,7 +249,6 @@ export default function LoginForm() {
         />
 
         <CardContent>
-          {/* MOBILE FORM */}
           {isMobileStep && (
             <Box component="form" onSubmit={handleMobileSubmit}>
               <TextField
@@ -291,7 +287,6 @@ export default function LoginForm() {
             </Box>
           )}
 
-          {/* OTP FORM */}
           {isOTPStep && (
             <>
               <OTPInput
@@ -344,7 +339,6 @@ export default function LoginForm() {
         </CardContent>
       </Card>
 
-      {/* FOOTER */}
       <Box sx={{ mt: 2, textAlign: "center" }}>
         <Lock size={14} />
         <Typography variant="caption">Secure Authentication</Typography>
