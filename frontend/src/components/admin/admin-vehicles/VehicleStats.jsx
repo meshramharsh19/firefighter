@@ -45,8 +45,7 @@ export default function VehicleStats({ vehicles = [] }) {
         <Card
           key={item.label}
           className="
-            bg-[#121314] border border-[#1e1f22] rounded-xl 
-            transition-all duration-300 hover:border-red-500/50 hover:shadow-red-500/20 hover:shadow-lg
+            bg-card shadow-sm hover:shadow-md transition
           "
         >
           <CardContent className="pt-6 pb-5">

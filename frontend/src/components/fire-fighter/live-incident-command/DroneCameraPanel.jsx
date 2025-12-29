@@ -3,7 +3,7 @@ import SafeIcon from "@/components/common/SafeIcon";
 import { Button, Chip } from "@mui/material";
 
 export default function DroneCameraPanel({ onMaximize, isMaximized = false, onExit }) {
-  const liveUrl = "http://35.200.219.131:8888/drone/"; 
+  const liveUrl = "http://13.127.220.89:8083/watch.html"; 
 
   return (
     <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>

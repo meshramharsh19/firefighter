@@ -1,92 +1,77 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone</title>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
-        rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"></script>
-    <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drone</title>
+
+  <!-- Cesium -->
+  <link
+    href="https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"></script>
+
+  <!-- Bootstrap (optional, but keeping same env) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    #map-container {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
 </head>
 
 <body>
-<!-- Your HTML can simply be: -->
+  <!-- Map -->
+  <div id="map-container"></div>
 
-<div class="search-container">
-    <input type="search" id="onebox_inp" placeholder="one box search" />
-</div>
-    <div id="map-container"></div>
-    <div class="button-box shadow">
-        <button id="startBtn" class="btn btn-success w-100 mb-2">Start</button>
-        <div id="distanceLabel" class="mt-2 text-center text-black" style="display: none;">
-            Distance: 0 meters
-        </div>
-        <button id="clearBtn" class="btn btn-secondary w-100" style="display: none;">Clear</button>
-        <button id="btnFireStation" class="btn btn-secondary w-100">Add FireStation</button>
-        <button id="btnHeight" class="btn btn-secondary w-100">get Flying Height</button>
-        <button id="btnRoute" class="btn btn-secondary w-100">Draw Route</button>
-    </div>
+  <!-- 🔒 Hidden button (UI removed, logic retained) -->
+  <button id="btnGetRouteApi" style="display:none;"></button>
 
-    <script type="text/javascript" src="assets/js/globel.js"></script>
-    <script type="text/javascript" src="assets/js/map_new_16Oct_UpdatedSearch.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Custom JS -->
+  <script src="assets/js/globel.js"></script>
+  <script src="assets/js/map_new_16Oct_UpdatedSearch.js"></script>
 
-<script>
+  <script>
+    console.log("🚀 Map loaded (AUTO ROUTE MODE)");
 
+    // 1️⃣ Init map (same as working version)
     initMap();
-    document.getElementById("btnFireStation").addEventListener("click",function(){
-        addFireStationPoint(18.45450, 73.85625, 100);
-    });
 
+    // 2️⃣ SAME WORKING LOGIC AS BUTTON VERSION
+    document
+      .getElementById("btnGetRouteApi")
+      .addEventListener("click", function () {
+        console.log("🧭 Auto calling getRoute()");
 
-    
+        getRoute(
+          "18.4591925674",
+          "73.8562810721",
+          "18.4545",
+          "73.85625",
+          ["0453aa40-80a0-11f0-902d-59ff54eea995"]
+        );
+      });
 
-document.getElementById("btnHeight").addEventListener("click",function(){
-     getFlyingHeight(fireStationLongitude, fireStationLatitude, selectedLongitude, selectedLatitude,function(height){
-        alert(""+height);
-     })
-    });
-
-    document.getElementById("btnRoute").addEventListener("click",function(){
-        generateRoute(flyingHeight);     
-    });
-
-
-    document.addEventListener("DOMContentLoaded", function() {
-    const onebox_txt = document.getElementById("onebox_inp");
-
-    onebox_txt.addEventListener("input", function (event) {
-      //console.log(onebox_txt.value);
-      var searchtext = onebox_txt.value;
-      if(searchtext.length > 2)
-        handleInput(searchtext);
-    });
-
-    onebox_txt.addEventListener("keydown", function (event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                const inputValue = event.target.value;
-                const result = validateLatLong(inputValue);
-                if (result) {
-                    zoomToLatLong(result.lon,result.lat);
-                } else {
-                    alert("Enter Proper Latitude and Longitude");
-                }
-            }
-        });
-
-});
-
-
-</script>
-
-
+    // 3️⃣ AUTO-TRIGGER AFTER MAP IS READY
+    // (delay is IMPORTANT for Cesium)
+    setTimeout(() => {
+      document.getElementById("btnGetRouteApi").click();
+    }, 1200);
+  </script>
 </body>
-
 </html>

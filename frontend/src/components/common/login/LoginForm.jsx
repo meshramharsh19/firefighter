@@ -173,6 +173,7 @@ export default function LoginForm() {
         "http://localhost/fire-fighter-new/backend/controllers/get_user.php",
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone: state.mobileNumber }),
         }

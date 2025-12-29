@@ -20,6 +20,7 @@ import DroneDetailsPage from "./pages/admin/DroneDetails";
 import SOPManagement from "./pages/admin/AdminSop";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserRoles from "./pages/admin/UserRole"
+import AdminLog from "./pages/admin/AdminLog";
 
 
 // Fire Fighter Pages
@@ -56,6 +57,7 @@ function App() {
             <Route path="/live-monitoring" element={<AdminDroneMonitoring />} />
             <Route path="/vehicles" element={<VehicleManagementPage />} />
             <Route path="/drones" element={<DroneDetailsPage />} />
+            <Route path="/logs" element={<AdminLog />} />
             <Route path="/sops" element={<SOPManagement />} />
             <Route path="/user-roles" element={<UserRoles />} />
           </Route>

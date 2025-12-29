@@ -32,45 +32,9 @@ export default function VTSLivePanel({
     fetchIncident();
   }, []);
 
-  /* ---------- IFRAME READY ---------- */
-  const handleIframeLoad = () => {
-    setIframeReady(true);
-  };
 
-  /* ---------- SEND DATA TO IFRAME ---------- */
-  useEffect(() => {
-    if (!iframeReady || !iframeRef.current?.contentWindow) return;
 
-    // 🔥 Send Fire / Incident point
-    if (incident?.coordinates) {
-      iframeRef.current.contentWindow.postMessage(
-        {
-          type: "FIRE_HAZARD_POINT",
-          payload: {
-            lat: incident.coordinates.lat,
-            lng: incident.coordinates.lng,
-            height: 100,
-          },
-        },
-        "*"
-      );
-    }
-
-    // 🔥 AUTO CALL ROUTE (same logic, iframe ke andar)
-    iframeRef.current.contentWindow.postMessage(
-      {
-        type: "DRAW_ROUTE",
-        payload: {
-          incidentLat: "18.4591925674",
-          incidentLng: "73.8562810721",
-          stationLat: "18.4545",
-          stationLng: "73.85625",
-          deviceIds: ["0453aa40-80a0-11f0-902d-59ff54eea995"],
-        },
-      },
-      "*"
-    );
-  }, [iframeReady, incident]);
+  
 
   /* ---------- UI ---------- */
   return (
@@ -110,8 +74,7 @@ export default function VTSLivePanel({
       <div className="flex-1 border border-dashed border-[#2E2E2E] rounded-lg overflow-hidden">
         <iframe
           ref={iframeRef}
-          onLoad={handleIframeLoad}
-          src="/drone-map.html"
+          src="/index.html"
           className="w-full h-full border-none"
         />
       </div>

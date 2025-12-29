@@ -5,8 +5,11 @@ import SafeIcon from "@/components/common/SafeIcon";
 import { useParams } from "react-router-dom";
 import { Chip } from "@mui/material";
 
-const DRONE_API =
-  "http://localhost/fire-fighter-new/backend/controllers/get_drone_locations.php";
+// 🔁 FRONTEND MAPPING (SECOND OPTION)
+const DRONE_CODE_TO_DB_ID = {
+  "DRN-002": 101,
+  "DRN-001": 102,
+};
 
 const INCIDENT_API =
   "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php";
@@ -22,32 +25,50 @@ export default function DroneLivePanel({
   const [droneLocations, setDroneLocations] = useState([]);
   const [incident, setIncident] = useState(null);
 
-  const { droneId } = useParams();
+  // URL param = droneCode (DRN-001)
+  const { droneId: droneCode } = useParams();
 
-  // 🔹 Fetch Drone Locations
+  // map to DB id (101)
+  const dbDroneId = DRONE_CODE_TO_DB_ID[droneCode];
+
+  // 🔹 Fetch Drone (CORRECT)
   useEffect(() => {
-    async function getDrones() {
-      const res = await fetch(DRONE_API);
-      const data = await res.json();
-
-      const selected = data.filter(
-        (d) => String(d.drone_code) === String(droneId)
-      );
-
-      setDroneLocations(selected);
+    if (!dbDroneId) {
+      console.warn("❌ No mapping for droneCode:", droneCode);
+      setDroneLocations([]);
+      return;
     }
 
-    getDrones();
-    const i = setInterval(getDrones, 5000);
+    const DRONE_API = `http://13.127.119.7/fire-fighter/get_drone_location.php?droneId=${dbDroneId}`;
+
+    async function getDrone() {
+      try {
+        const res = await fetch(DRONE_API);
+        const data = await res.json();
+
+        if (!data || !data.latitude || !data.longitude) {
+          console.warn("❌ Invalid drone data:", data);
+          setDroneLocations([]);
+          return;
+        }
+
+        // ⚠️ iframe expects ARRAY
+        setDroneLocations([data]);
+      } catch (err) {
+        console.error("❌ Drone fetch error:", err);
+      }
+    }
+
+    getDrone();
+    const i = setInterval(getDrone, 5000);
     return () => clearInterval(i);
-  }, [droneId]);
+  }, [droneCode, dbDroneId]);
 
   // 🔹 Fetch Incident
   useEffect(() => {
     async function getIncident() {
       const res = await fetch(INCIDENT_API);
       const data = await res.json();
-
       const found = data.find((i) => i.id === incidentId);
       setIncident(found || null);
     }
@@ -83,58 +104,20 @@ export default function DroneLivePanel({
 
   return (
     <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
+      <div className="flex justify-between mb-2">
+        <h3 className="font-semibold text-lg text-white">
+          Drone Live 3D View
+        </h3>
 
-      {/* HEADER (MATCHES VTS LIVE PANEL) */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <SafeIcon name="Drone" className="h-5 w-5 text-[#dc2626]" />
-          <h3 className={`font-semibold ${isMaximized ? "text-xl" : "text-lg"}`}>
-            Drone Live 3D View
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Chip
-            label={
-              <span className="px-2 py-0.5 text-xs bg-red-600 text-white rounded animate-pulse">
-                LIVE
-              </span>
-            }
-            color="error"
-            size="small"
-            className="animate-pulse text-xs"
-          />
-
-          {/* ⛶ Maximize */}
-          {!isMaximized && (
-            <button
-              onClick={onMaximize}
-              className="p-1 hover:bg-muted rounded"
-            >
-              <SafeIcon name="Maximize2" className="h-4 w-4" />
-            </button>
-          )}
-
-          {/* ✕ Exit */}
-          {isMaximized && (
-            <button
-              onClick={onExit}
-              className="p-1 hover:bg-muted rounded"
-            >
-              <SafeIcon name="X" className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <Chip
+          label="LIVE"
+          size="small"
+          color="error"
+          className="animate-pulse"
+        />
       </div>
 
-      {/* IFRAME */}
-      <div
-        className="flex-1 rounded-lg overflow-hidden border-2 border-dashed border-[#2E2E2E]"
-        style={{
-          height: isMaximized ? "100%" : "300px",
-          width: "100%",
-        }}
-      >
+      <div className="flex-1 border border-dashed border-[#2E2E2E] rounded-lg overflow-hidden">
         <iframe
           ref={iframeRef}
           onLoad={handleIframeLoad}
