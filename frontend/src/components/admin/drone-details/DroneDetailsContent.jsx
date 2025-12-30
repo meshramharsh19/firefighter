@@ -94,6 +94,7 @@ export default function DroneDetailsContent() {
 
     fetch(`${API}/updateDroneDetails.php`, {
       method: "POST",
+      credentials: "include",
       body: formData,
     })
       .then((res) => res.json())
@@ -181,6 +182,7 @@ export default function DroneDetailsContent() {
 
     fetch(`${API}/assignPilotToDrone.php`, {
       method: "POST",
+      credentials: "include",
       body: formData,
     })
       .then((res) => res.json())
@@ -208,6 +210,7 @@ export default function DroneDetailsContent() {
 
     fetch(`${API}/removePilotFromDrone.php`, {
       method: "POST",
+      credentials: "include",
       body: formData,
     })
       .then((res) => res.json())
@@ -258,7 +261,7 @@ export default function DroneDetailsContent() {
   };
 
   const droneIcon = new L.Icon({
-    iconUrl: "assets/images/drone2.png", // ✅ correct public path
+    iconUrl: "assets/images/drone.png", // ✅ correct public path
     iconSize: [36, 36],                  // size adjust kar sakte ho
     iconAnchor: [18, 18],                // center anchor
     popupAnchor: [0, -18],
@@ -290,6 +293,7 @@ export default function DroneDetailsContent() {
 
     fetch(`${API}/addDrone.php`, {
       method: "POST",
+      credentials: "include",
       body: formData,
     })
       .then(res => res.json())
@@ -331,6 +335,16 @@ export default function DroneDetailsContent() {
     );
   };
 
+  const isEditDroneFormChanged = () => {
+    if (!originalDrone) return false;
+
+    return (
+      Number(editDrone.flight_hours) !== Number(originalDrone.flight_hours) ||
+      editDrone.health_status !== originalDrone.health_status ||
+      editDrone.firmware_version.trim() !== originalDrone.firmware_version.trim() ||
+      editDrone.status !== originalDrone.status
+    );
+  };
 
   const pilot = MOCK_USERS.find(
     (u) => u.id === selectedDrones.pilotAssigned.id,
@@ -1224,3 +1238,11 @@ function SelectField({ label, value, options, onChange }) {
     </div>
   );
 }
+
+
+
+
+
+
+
+

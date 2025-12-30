@@ -18,7 +18,7 @@ $station = $_GET["station"];
 
 $sql = "SELECT id, fullName, email, phone, designation, status 
         FROM users 
-        WHERE role='pilot' AND station='$station'";
+        WHERE role='Pilot' AND station='$station'";
 
 $result = mysqli_query($conn, $sql);
 $pilots = [];

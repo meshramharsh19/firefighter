@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 const STATION_API =
-  "http://localhost/fire-fighter-new/backend/controllers/getStations.php";
+  "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/getStations.php";
 
 export default function EditVehicleModal({
   open,

@@ -8,13 +8,19 @@ import {
   TextField,
   MenuItem,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
 const STATION_API =
-  "http://localhost/fire-fighter-new/backend/controllers/vehicle/getStations.php";
+  "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/getStations.php";
+
+/* ---------- VALIDATORS ---------- */
+const isAlphaSpace = (v) => /^[A-Za-z\s]*$/.test(v);
+const isAlphaNumeric = (v) => /^[A-Za-z0-9\-]*$/.test(v);
 
 export default function AddVehicleModal({ open, onClose, onSubmit }) {
   const [stations, setStations] = useState([]);
-  const [saving, setSaving] = useState(false); // 🔒 prevent double submit
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,42 +32,86 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
     status: "available",
   });
 
+  /* ---------- RESET FORM ---------- */
+  const resetForm = () => {
+    setError("");
+    setFormData({
+      name: "",
+      type: "",
+      registrationNumber: "",
+      deviceId: "",
+      location: "",
+      station: "",
+      status: "available",
+    });
+  };
+
   /* ---------- Fetch Stations ---------- */
   useEffect(() => {
     if (!open) return;
 
+    resetForm();
+
     fetch(STATION_API)
       .then((res) => res.json())
       .then((data) => setStations(data || []))
-      .catch((err) => console.error("❌ Station fetch error:", err));
+      .catch(() => {
+        setError("Failed to load stations");
+      });
   }, [open]);
 
+  /* ---------- LIVE VALIDATION ---------- */
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if ((name === "name" || name === "type") && !isAlphaSpace(value)) {
+      setError("Vehicle Name & Type must contain only letters");
+      return;
+    }
+
+    if (
+      (name === "registrationNumber" || name === "deviceId") &&
+      !isAlphaNumeric(value)
+    ) {
+      setError("Registration & Device ID must be alphanumeric");
+      return;
+    }
+
+    setError("");
+    setFormData({ ...formData, [name]: value });
   };
 
+  /* ---------- SAVE ---------- */
   const handleSave = async () => {
-    if (saving) return; // 🔥 BLOCK DOUBLE CLICK
-    setSaving(true);
+    if (saving) return;
 
+    const { name, type, registrationNumber, deviceId, station } = formData;
+
+    if (!name || !type || !registrationNumber || !deviceId || !station) {
+      setError("Please fill all required fields");
+      return;
+    }
+
+    setSaving(true);
     try {
-      await onSubmit(formData);
+      const res = await onSubmit(formData);
+
+      if (!res?.success) {
+        setError(res?.message || "Failed to add vehicle");
+        return;
+      }
+
+      toast.success(res.message || "Vehicle added successfully");
+      resetForm();
+      onClose();
+    } catch {
+      setError("Server error");
     } finally {
       setSaving(false);
-      setFormData({
-        name: "",
-        type: "",
-        registrationNumber: "",
-        deviceId: "",
-        location: "",
-        station: "",
-        status: "available",
-      });
-      onClose();
     }
   };
 
-  /* 🔴 BLACK + RED INPUT STYLE (UNCHANGED) */
+  /* ---------- INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -82,7 +132,10 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        resetForm();
+        onClose();
+      }}
       fullWidth
       maxWidth="sm"
       PaperProps={{
@@ -94,27 +147,34 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
         },
       }}
     >
-      <DialogTitle
-        sx={{
-          color: "#fff",
-          borderBottom: "1px solid #25262a",
-          pb: 2,
-          fontWeight: 600,
-        }}
-      >
+      <DialogTitle sx={{ color: "#fff", fontWeight: 600 }}>
         Add New Vehicle
       </DialogTitle>
 
-      <DialogContent sx={{ py: 3 }}>
+      <DialogContent sx={{ py: 2 }}>
+        {/* 🔴 FORM TOP ERROR */}
+        {error && (
+          <div className="mb-3 text-lg text-red-500 font-medium">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-          <TextField label="Vehicle Name" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Vehicle Type" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Registration No." name="registrationNumber" value={formData.registrationNumber} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="VTS Device ID" name="deviceId" value={formData.deviceId} onChange={handleChange} sx={inputStyle} fullWidth />
+          <TextField label="Vehicle Name *" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
+          <TextField label="Vehicle Type *" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
+          <TextField label="Registration No. *" name="registrationNumber" value={formData.registrationNumber} onChange={handleChange} sx={inputStyle} fullWidth />
+          <TextField label="VTS Device ID *" name="deviceId" value={formData.deviceId} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
 
-          {/* STATION */}
-          <TextField select label="Station" name="station" value={formData.station} onChange={handleChange} sx={inputStyle} fullWidth>
+          <TextField
+            select
+            label="Station *"
+            name="station"
+            value={formData.station}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          >
             {stations.map((st, i) => (
               <MenuItem key={i} value={st}>
                 {st}
@@ -122,7 +182,6 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
             ))}
           </TextField>
 
-          {/* STATUS */}
           <TextField
             select
             label="Status"
@@ -141,14 +200,20 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
         </div>
       </DialogContent>
 
-      <DialogActions sx={{ borderTop: "1px solid #25262a", p: 2.5 }}>
-        <Button onClick={onClose} sx={{ color: "#9ea2a7" }}>
+      <DialogActions sx={{ p: 2 }}>
+        <Button
+          onClick={() => {
+            resetForm();
+            onClose();
+          }}
+          sx={{ color: "#9ea2a7" }}
+        >
           Cancel
         </Button>
+
         <Button
           onClick={handleSave}
-          type="button"              // 🔥 VERY IMPORTANT
-          disabled={saving}
+          disabled={saving || !!error}
           variant="contained"
           sx={{ background: "#ef4444" }}
         >

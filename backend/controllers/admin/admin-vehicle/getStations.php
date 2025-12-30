@@ -2,7 +2,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-require "../../config/db.php";
+require "../../../config/db.php";
 
 $sql = "SELECT DISTINCT station FROM drones
         WHERE station IS NOT NULL AND station != ''

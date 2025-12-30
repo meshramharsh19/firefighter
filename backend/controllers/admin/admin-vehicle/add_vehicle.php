@@ -1,23 +1,22 @@
 <?php
 session_start();
 
-/* ================= CORS HEADERS ================= */
-header("Access-Control-Allow-Origin: http://localhost:5173"); // React origin
+/* ---------- CORS ---------- */
+header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
-/* 🔁 OPTIONS PREFLIGHT */
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-require "../../config/db.php";
-require "../../helpers/logActivity.php";
+require "../../../config/db.php";
+require "../../../helpers/logActivity.php";
 
-/* ================= READ INPUT ================= */
+/* ---------- INPUT ---------- */
 $data = json_decode(file_get_contents("php://input"), true);
 
 $name     = trim($data["name"] ?? "");
@@ -28,24 +27,56 @@ $location = trim($data["location"] ?? "");
 $station  = trim($data["station"] ?? "");
 $status   = $data["status"] ?? "available";
 
-/* ================= VALIDATION ================= */
+/* ---------- BASIC VALIDATION ---------- */
 if (!$name || !$type || !$reg || !$deviceId || !$station) {
-    echo json_encode([
-        "success" => false,
-        "message" => "Required fields missing"
-    ]);
+    echo json_encode(["success"=>false,"message"=>"Required fields missing"]);
     exit;
 }
 
-/* ================= INSERT VEHICLE ================= */
-$sql = "
-    INSERT INTO vehicles
-    (name, type, registration, device_id, location, station, status)
-    VALUES
-    (?, ?, ?, ?, ?, ?, ?)
-";
+if (!preg_match("/^[A-Za-z\s]+$/", $name)) {
+    echo json_encode(["success"=>false,"message"=>"Invalid vehicle name"]);
+    exit;
+}
 
-$stmt = $conn->prepare($sql);
+if (!preg_match("/^[A-Za-z\s]+$/", $type)) {
+    echo json_encode(["success"=>false,"message"=>"Invalid vehicle type"]);
+    exit;
+}
+
+if (!preg_match("/^[A-Za-z0-9\-]+$/", $reg)) {
+    echo json_encode(["success"=>false,"message"=>"Invalid registration number"]);
+    exit;
+}
+
+if (!preg_match("/^[A-Za-z0-9\-]+$/", $deviceId)) {
+    echo json_encode(["success"=>false,"message"=>"Invalid device ID"]);
+    exit;
+}
+
+/* ---------- DUPLICATE CHECK ---------- */
+$check = $conn->prepare(
+    "SELECT id FROM vehicles WHERE registration = ? OR device_id = ? LIMIT 1"
+);
+$check->bind_param("ss", $reg, $deviceId);
+$check->execute();
+$check->store_result();
+
+if ($check->num_rows > 0) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Vehicle with same Registration or Device ID already exists"
+    ]);
+    exit;
+}
+$check->close();
+
+/* ---------- INSERT ---------- */
+$stmt = $conn->prepare(
+    "INSERT INTO vehicles
+     (name, type, registration, device_id, location, station, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?)"
+);
+
 $stmt->bind_param(
     "sssssss",
     $name,
@@ -61,9 +92,8 @@ if ($stmt->execute()) {
 
     $vehicleId = $stmt->insert_id;
 
-    /* ================= AUDIT LOG (NO FAIL GUARANTEE) ================= */
     $logUser = $_SESSION['user'] ?? [
-        "id"   => null,
+        "id" => null,
         "name" => "SYSTEM",
         "role" => "SYSTEM"
     ];
@@ -83,7 +113,6 @@ if ($stmt->execute()) {
         "success" => true,
         "message" => "Vehicle Added Successfully"
     ]);
-
 } else {
     echo json_encode([
         "success" => false,

@@ -1,4 +1,4 @@
-const API = "http://localhost/fire-fighter-new/backend/controllers/vehicle";
+const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";

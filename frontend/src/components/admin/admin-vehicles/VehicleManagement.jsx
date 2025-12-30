@@ -12,7 +12,7 @@ import VehicleMap from "./VehicleMap";
 import AddVehicleModal from "./AddVehicleModal";
 import VehicleDetailsModal from "./VehicleDetailsModal";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers/vehicle";
+const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle";
 
 export default function VehicleManagement() {
   const [vehicles, setVehicles] = useState([]);
@@ -63,13 +63,23 @@ export default function VehicleManagement() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(vehicleData),
       });
+
       const data = await res.json();
-      alert(data.message);
-      setOpenModal(false);
-      loadVehicles(); // refresh list
+
+      // ❌ NO alert here
+      // ❌ NO toast here
+      // ✅ Just return response
+      if (data?.success) {
+        loadVehicles(); // refresh list only on success
+      }
+
+      return data;
     } catch (e) {
-      console.log(e);
-      alert("Error adding vehicle");
+      console.error(e);
+      return {
+        success: false,
+        message: "Server error while adding vehicle",
+      };
     }
   };
 
