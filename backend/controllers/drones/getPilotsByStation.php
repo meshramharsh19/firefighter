@@ -27,7 +27,7 @@ $sql = "
     END AS pilot_status
     FROM users u
     LEFT JOIN drones d ON d.pilot_id = u.id
-    WHERE u.role = 'pilot'
+    WHERE u.role = 'Pilot'
     AND u.station = ?
 ";
 

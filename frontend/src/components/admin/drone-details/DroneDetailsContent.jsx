@@ -278,8 +278,15 @@ export default function DroneDetailsContent() {
   });
 
   const addDrone = () => {
+    if (!isAddDroneFormValid()) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
     const formData = new FormData();
-    Object.entries(newDrone).forEach(([k, v]) => formData.append(k, v));
+    Object.entries(newDrone).forEach(([k, v]) =>
+      formData.append(k, v)
+    );
 
     fetch(`${API}/addDrone.php`, {
       method: "POST",
@@ -292,16 +299,43 @@ export default function DroneDetailsContent() {
           setShowAddDialog(false);
           fetchDronesBystation(newDrone.station);
         } else {
-          toast.error(data.error || "Failed to add drone");
+          toast.error(data.error);
         }
-      })
-      .catch(() => toast.error("Server error"));
+      });
   };
+
+
+  const isAddDroneFormValid = () => {
+    const {
+      drone_code,
+      drone_name,
+      ward,
+      status,
+      battery,
+      flight_hours,
+      health_status,
+      firmware_version,
+      station,
+    } = newDrone;
+
+    return (
+      drone_code.trim().length > 0 &&
+      drone_name.trim().length > 0 &&
+      ward.trim().length > 0 &&
+      status.trim().length > 0 &&
+      health_status.trim().length > 0 &&
+      firmware_version.trim().length > 0 &&
+      station.trim().length > 0 &&
+      battery !== "" && battery >= 0 && battery <= 100 &&
+      flight_hours !== ""
+    );
+  };
+
 
   const pilot = MOCK_USERS.find(
     (u) => u.id === selectedDrones.pilotAssigned.id,
   );
- 
+
 
   return (
     <div className="space-y-6 p-6">
@@ -364,6 +398,7 @@ export default function DroneDetailsContent() {
 
       {/* Header */}
       <div className="flex items-start justify-between">
+        {/* LEFT SIDE */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <Button
@@ -375,110 +410,144 @@ export default function DroneDetailsContent() {
             >
               <SafeIcon name="ArrowLeft" size={20} />
             </Button>
-            <h1 className="text-3xl font-bold">{selectedDrone?.drone_name}</h1>
+
+            <h1 className="text-3xl font-bold">
+              {selectedDrone?.drone_name}
+            </h1>
+
             <StatusBadge
               status={getStatusVariant(selectedDrone?.status)}
               label={selectedDrone?.status}
             />
           </div>
+
           <p className="text-muted-foreground ml-[50px]">
             Serial: {selectedDrone?.drone_code}
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => setShowAddDialog(true)}
-        >
-          <SafeIcon name="Plus" size={16} />
-          Add Drone
-        </Button>
+        {/* RIGHT SIDE BUTTONS */}
+        <div className="flex gap-3">
+          {/* ADD DRONE */}
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              setNewDrone({
+                drone_code: "",
+                drone_name: "",
+                ward: "",
+                status: "standby",
+                battery: "",
+                flight_hours: "",
+                health_status: "Optimal",
+                firmware_version: "",
+                is_ready: 1,
+                station: "",
+              });
+              setShowAddDialog(true);
+            }}
+          >
+            <SafeIcon name="Plus" size={16} />
+            Add Drone
+          </Button>
 
-        {/*Add Drone Dialog Box */}         
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent className="max-w-lg bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
-            <DialogHeader>
-              <DialogTitle>Add New Drone</DialogTitle>
-            </DialogHeader>
+          {/* EDIT DRONE */}
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              if (!selectedDrone) {
+                toast.error("Select drone first");
+                return;
+              }
 
-            <div className="grid grid-cols-2 gap-4">
+              setEditDrone({
+                flight_hours: selectedDrone.flight_hours ?? "",
+                health_status: selectedDrone.health_status ?? "",
+                firmware_version: selectedDrone.firmware_version ?? "",
+                status: selectedDrone.status ?? "",
+              });
 
-              <InputField label="Drone Code" value={newDrone.drone_code}
-                onChange={(v) => setNewDrone({ ...newDrone, drone_code: v })} />
-
-              <InputField label="Drone Name" value={newDrone.drone_name}
-                onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })} />
-
-              <InputField label="Ward" value={newDrone.ward}
-                onChange={(v) => setNewDrone({ ...newDrone, ward: v })} />
-
-              <InputField label="Battery (%)" type="number" value={newDrone.battery}
-                onChange={(v) => setNewDrone({ ...newDrone, battery: v })} />
-
-              <InputField label="Flight Hours" type="number" step="0.1"
-                value={newDrone.flight_hours}
-                onChange={(v) => setNewDrone({ ...newDrone, flight_hours: v })} />
-
-              <InputField label="Firmware Version" value={newDrone.firmware_version}
-                onChange={(v) => setNewDrone({ ...newDrone, firmware_version: v })} />
-
-              {/* STATUS */}
-              <SelectField label="Status" value={newDrone.status}
-                options={["patrolling", "active_mission", "standby", "offline"]}
-                onChange={(v) => setNewDrone({ ...newDrone, status: v })} />
-
-              {/* HEALTH */}
-              <SelectField label="Health Status" value={newDrone.health_status}
-                options={["Optimal", "Degraded", "Requires Service"]}
-                onChange={(v) => setNewDrone({ ...newDrone, health_status: v })} />
-
-              {/* READY */}
-              <SelectField label="Is Ready" value={newDrone.is_ready}
-                options={[1, 0]}
-                onChange={(v) => setNewDrone({ ...newDrone, is_ready: v })} />
-
-              {/* STATION */}
-              <SelectField label="Station" value={newDrone.station}
-                options={stations}
-                onChange={(v) => setNewDrone({ ...newDrone, station: v })} />
-            </div>
-
-            <Button
-              className="w-full bg-[#dc2626] hover:bg-[#b81f1f]"
-              onClick={addDrone}
-            >
-              Save Drone
-            </Button>
-          </DialogContent>
-        </Dialog>
-
-
-
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => {
-            if (!selectedDrone) {
-              toast.error("Select drone first");
-              return;
-            }
-
-            setEditDrone({
-              flight_hours: selectedDrone.flight_hours ?? "",
-              health_status: selectedDrone.health_status ?? "",
-              firmware_version: selectedDrone.firmware_version ?? "",
-              status: selectedDrone.status ?? "",
-            });
-
-            setShowEditDialog(true);
-          }}
-        >
-          <SafeIcon name="Edit" size={16} />
-          Edit Drone
-        </Button>
+              setShowEditDialog(true);
+            }}
+          >
+            <SafeIcon name="Edit" size={16} />
+            Edit Drone
+          </Button>
+        </div>
       </div>
 
+
+      {/*Add Drone Dialog Box */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-lg bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
+          <DialogHeader>
+            <DialogTitle>Add New Drone</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-4">
+
+            <InputField label="Drone Code" value={newDrone.drone_code}
+              onChange={(v) => setNewDrone({ ...newDrone, drone_code: v })} />
+
+            <InputField label="Drone Name" value={newDrone.drone_name}
+              onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })} />
+
+            <InputField label="Ward" value={newDrone.ward}
+              onChange={(v) => setNewDrone({ ...newDrone, ward: v })} />
+
+            <InputField label="Battery (%)" type="number" value={newDrone.battery}
+              onChange={(v) => {
+                let value = Number(v);
+
+                if (value > 100) {
+                  toast.error("Battery cannot exceed 100%");
+                  value = 100;
+                }
+
+                setNewDrone({ ...newDrone, battery: value });
+              }} />
+
+            <InputField label="Flight Hours" type="number" step="0.1"
+              value={newDrone.flight_hours}
+              onChange={(v) => setNewDrone({ ...newDrone, flight_hours: v })} />
+
+            <InputField label="Firmware Version" value={newDrone.firmware_version}
+              onChange={(v) => setNewDrone({ ...newDrone, firmware_version: v })} />
+
+            {/* STATUS */}
+            <SelectField label="Status" value={newDrone.status}
+              options={["patrolling", "active_mission", "standby", "offline"]}
+              onChange={(v) => setNewDrone({ ...newDrone, status: v })} />
+
+            {/* HEALTH */}
+            <SelectField label="Health Status" value={newDrone.health_status}
+              options={["Optimal", "Degraded", "Requires Service"]}
+              onChange={(v) => setNewDrone({ ...newDrone, health_status: v })} />
+
+            {/* READY */}
+            <SelectField label="Is Ready" value={newDrone.is_ready}
+              options={[1, 0]}
+              onChange={(v) => setNewDrone({ ...newDrone, is_ready: v })} />
+
+            {/* STATION */}
+            <SelectField label="Station" value={newDrone.station}
+              options={stations}
+              onChange={(v) => setNewDrone({ ...newDrone, station: v })} />
+          </div>
+
+          <Button
+            disabled={!isAddDroneFormValid()}
+            className="w-full bg-[#dc2626] hover:bg-[#b81f1f]
+            disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={addDrone}
+          >
+            Save Drone
+          </Button>
+
+        </DialogContent>
+      </Dialog>
       {/*Edit Drone Details Dialog Box */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-md bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
@@ -1100,7 +1169,7 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
 
             {/* RIGHT SIDE – PILOT STATUS BADGE */}
             <span
-              className={`px-2 py-1 text-xs rounded-md font-medium ${getPilotStatusBadge(p.pilot_status)}`}              
+              className={`px-2 py-1 text-xs rounded-md font-medium ${getPilotStatusBadge(p.pilot_status)}`}
             >
               {p.pilot_status}
             </span>
@@ -1123,7 +1192,9 @@ function InputField({ label, value, onChange, type = "text", step }) {
       <label className="text-sm text-muted-foreground">{label}</label>
       <input
         type={type}
-        step={step}
+        min="0"
+        max="100"
+        step="1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E]
@@ -1143,11 +1214,13 @@ function SelectField({ label, value, options, onChange }) {
         className="w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E]
         px-3 hover:border-[#dc2626]"
       >
+        <option value="">Select {label}</option>
         {options.map((o, i) => (
-          <option key={i} value={o}>{o}</option>
+          <option key={i} value={o}>
+            {o}
+          </option>
         ))}
       </select>
     </div>
   );
 }
-
