@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -18,11 +18,21 @@ export default function EditVehicleModal({
   vehicle,
   onUpdate,
 }) {
-  const [formData, setFormData] = useState(vehicle);
+  const [formData, setFormData] = useState(null);
   const [stations, setStations] = useState([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const [error, setError] = useState(""); // 🔴 NEW
 
+  const originalRef = useRef(null);
+
+  /* ---------- SET DATA ON OPEN ---------- */
   useEffect(() => {
+    if (!vehicle) return;
+
     setFormData(vehicle);
+    originalRef.current = JSON.stringify(vehicle);
+    setIsDirty(false);
+    setError(""); // reset error
   }, [vehicle]);
 
   /* ---------- Fetch Stations ---------- */
@@ -37,16 +47,31 @@ export default function EditVehicleModal({
 
   if (!formData) return null;
 
+  /* ---------- CHANGE HANDLER ---------- */
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const updated = { ...formData, [e.target.name]: e.target.value };
+    setFormData(updated);
+    setError(""); // clear old error on change
+    setIsDirty(JSON.stringify(updated) !== originalRef.current);
   };
 
+  /* ---------- SAVE ---------- */
   const saveChanges = async () => {
-    if (onUpdate) await onUpdate(formData);
+    if (!isDirty) return;
+
+    const res = await onUpdate(formData);
+
+    // 🔴 DUPLICATE / BACKEND ERROR
+    if (!res?.success) {
+      setError(res?.message || "Update failed");
+      return; // ❌ modal close mat karo
+    }
+
+    // ✅ SUCCESS
     onClose();
   };
 
-  /* 🔴 BLACK + RED THEME INPUT STYLE (UNCHANGED) */
+  /* ---------- INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -57,6 +82,10 @@ export default function EditVehicleModal({
       "&.Mui-focused fieldset": {
         borderColor: "#ef4444",
         boxShadow: "0 0 6px rgba(239,68,68,.6)",
+      },
+      "&.Mui-disabled": {
+        background: "#101114",
+        color: "#777",
       },
     },
     "& label": { color: "#9ea2a7" },
@@ -91,59 +120,48 @@ export default function EditVehicleModal({
         <span style={{ color: "#ef4444" }}>{formData.name}</span>
       </DialogTitle>
 
-      {/* ---------- CONTENT ---------- */}
-      <DialogContent sx={{ py: 3 }}>
+      <DialogContent sx={{ py: 2 }}>
+        {/* 🔴 ERROR BOX (TITLE KE NICHE) */}
+        {error && (
+          <div
+            style={{
+              marginBottom: "14px",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.6)",
+              color: "#ef4444",
+              fontSize: "15px",
+              fontWeight: 600,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
           <TextField label="Vehicle Name" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Type" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Registration No" name="registration" value={formData.registration} onChange={handleChange} sx={inputStyle} fullWidth />
+
+          <TextField
+            label="Registration No"
+            name="registration"
+            value={formData.registration}
+            sx={inputStyle}
+            fullWidth
+            disabled
+          />
+
           <TextField label="Device ID" name="device_id" value={formData.device_id} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
 
-          {/* ---------- STATION (REPLACED WARD) ---------- */}
-          <TextField
-            select
-            label="Station"
-            name="station"
-            value={formData.station || ""}
-            onChange={handleChange}
-            sx={inputStyle}
-            fullWidth
-          >
+          <TextField select label="Station" name="station" value={formData.station || ""} onChange={handleChange} sx={inputStyle} fullWidth>
             {stations.map((st, i) => (
-              <MenuItem key={i} value={st}>
-                {st}
-              </MenuItem>
+              <MenuItem key={i} value={st}>{st}</MenuItem>
             ))}
           </TextField>
 
-          {/* ---------- STATUS ---------- */}
-          <TextField
-            select
-            label="Status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            sx={inputStyle}
-            fullWidth
-            className="sm:col-span-2"
-            SelectProps={{
-              MenuProps: {
-                PaperProps: {
-                  sx: {
-                    background: "#151619",
-                    color: "#fff",
-                    "& .MuiMenuItem-root:hover": {
-                      backgroundColor: "#ef444420",
-                    },
-                    "& .Mui-selected": {
-                      backgroundColor: "#ef444430 !important",
-                    },
-                  },
-                },
-              },
-            }}
-          >
+          <TextField select label="Status" name="status" value={formData.status} onChange={handleChange} sx={inputStyle} fullWidth className="sm:col-span-2">
             <MenuItem value="available">Available</MenuItem>
             <MenuItem value="busy">Busy</MenuItem>
             <MenuItem value="en-route">En Route</MenuItem>
@@ -152,7 +170,6 @@ export default function EditVehicleModal({
         </div>
       </DialogContent>
 
-      {/* ---------- ACTIONS ---------- */}
       <DialogActions sx={{ borderTop: "1px solid #25262a", p: 2 }}>
         <Button onClick={onClose} sx={{ color: "#a1a1a1" }}>
           Cancel
@@ -161,13 +178,13 @@ export default function EditVehicleModal({
         <Button
           variant="contained"
           onClick={saveChanges}
-          type="button"
+          disabled={!isDirty}
           sx={{
-            background: "#ef4444",
+            background: isDirty ? "#ef4444" : "#444",
             px: 4,
+            cursor: isDirty ? "pointer" : "not-allowed",
             "&:hover": {
-              background: "#dc2626",
-              boxShadow: "0 0 12px rgba(255,50,50,.5)",
+              background: isDirty ? "#dc2626" : "#444",
             },
           }}
         >

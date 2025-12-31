@@ -45,32 +45,37 @@ export default function VehicleList({
 
   // 🔥 UPDATE VEHICLE → DB + UI + REFRESH PARENT
   const handleEditSave = async (updated) => {
-    try {
-      const res = await fetch(`${API}/updateVehicle.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      });
+  try {
+    const res = await fetch(`${API}/updateVehicle.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (data.success) {
-        // UI update
-        setVehicles((prev) =>
-          prev.map((v) => (v.id === updated.id ? updated : v))
-        );
+    if (data?.success) {
+      // ✅ Update list only on success
+      setVehicles((prev) =>
+        prev.map((v) => (v.id === updated.id ? updated : v))
+      );
 
-        // notify parent
-        onUpdated && onUpdated();
-        setEditVehicle(null);
-      } else {
-        alert("Update Failed");
-      }
-    } catch (e) {
-      console.log(e);
-      alert("Server error");
+      onUpdated && onUpdated();
+      setEditVehicle(null);
     }
-  };
+
+    // 🔥 IMPORTANT: ALWAYS RETURN RESPONSE
+    return data;
+
+  } catch (e) {
+    console.error(e);
+    return {
+      success: false,
+      message: "Server error while updating vehicle",
+    };
+  }
+};
+
 
   if (!vehicles.length) {
     return (
