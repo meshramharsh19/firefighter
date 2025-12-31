@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,115 +7,208 @@ import {
   Chip,
   Box,
   Grid,
-} from '@mui/material';
+} from "@mui/material";
 
 // Icons
-import BusinessIcon from '@mui/icons-material/Business';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import FlightIcon from '@mui/icons-material/Flight';
+import BusinessIcon from "@mui/icons-material/Business";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import FlightIcon from "@mui/icons-material/Flight";
 
-// Mock Stations
-const mockStations = [
-  { id: 's1', name: 'Central Hub Delta', lat: 34.05, lng: -118.25, distance: 1.25, vehicles: 14, drones: 5 },
-  { id: 's2', name: 'Industrial Zone 7', lat: 34.03, lng: -118.28, distance: 3.40, vehicles: 6, drones: 18 },
-  { id: 's3', name: 'Riverside Depot', lat: 34.10, lng: -118.30, distance: 5.01, vehicles: 22, drones: 2 },
-];
+/* ================================
+   Distance Calculator (Haversine)
+================================ */
+function calculateDistanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
 
-function SuggestedStationsPanelMui({ stations }) {
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+export default function SuggestedStationsPanelMui() {
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      console.log("🚀 loadData started");
+
+      try {
+        /* ===============================
+           1️⃣ FETCH INCIDENT VIA PHP
+        =============================== */
+        const incidentRes = await fetch(
+          "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php"
+        );
+
+        console.log("📥 Incident response:", incidentRes);
+
+        const incidents = await incidentRes.json();
+        console.log("📄 Incident JSON:", incidents);
+
+        if (!Array.isArray(incidents) || incidents.length === 0) {
+          console.error("❌ No incident data");
+          setLoading(false);
+          return;
+        }
+
+        const incidentId = incidents[0].id;
+        const incidentLat = incidents[0].coordinates.lat;
+        const incidentLng = incidents[0].coordinates.lng;
+
+        console.log("✅ INCIDENT ID:", incidentId);
+        console.log("✅ INCIDENT LAT:", incidentLat);
+        console.log("✅ INCIDENT LNG:", incidentLng);
+
+        /* ===============================
+           2️⃣ FETCH FIRE STATIONS
+        =============================== */
+        const stationRes = await fetch(
+          "http://localhost/fire-fighter-new/backend/controllers/admin/station/get_stations.php"
+        );
+
+        console.log("📥 Station response:", stationRes);
+
+        const stationData = await stationRes.json();
+        console.log("📄 Station JSON:", stationData);
+
+        if (!stationData.success || !Array.isArray(stationData.data)) {
+          console.error("❌ Invalid station data");
+          setLoading(false);
+          return;
+        }
+
+        /* ===============================
+           3️⃣ CALCULATE DISTANCE
+        =============================== */
+        const stationsWithDistance = stationData.data.map((s) => {
+          const distance = calculateDistanceKm(
+            incidentLat,
+            incidentLng,
+            s.lat,
+            s.lng
+          );
+
+          console.log(
+            `➡️ ${s.station_name} | distance = ${distance.toFixed(2)} km`
+          );
+
+          return {
+            id: s.id,
+            name: s.station_name,
+            distance,
+            vehicles: Math.floor(Math.random() * 20) + 1,
+            drones: Math.floor(Math.random() * 10) + 1,
+          };
+        });
+
+        stationsWithDistance.sort((a, b) => a.distance - b.distance);
+
+        console.log(
+          "🏁 Final nearest stations:",
+          stationsWithDistance.slice(0, 3)
+        );
+
+        setStations(stationsWithDistance.slice(0, 3));
+        setLoading(false);
+      } catch (err) {
+        console.error("🔥 Unexpected error:", err);
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
   return (
-    <Card sx={{
-      borderRadius: 2,
-      boxShadow: 3,
-      width: '100%',      // 🔥 full width
-      bgcolor: 'background.paper'
-    }}>
-
+    <Card sx={{ borderRadius: 2, boxShadow: 3, width: "100%" }}>
       <CardHeader
-        sx={{ pb: 1, pt: 2 }}
         title={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <BusinessIcon color="primary" />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Top 3 Stations
+            <Typography variant="h6" fontWeight={600}>
+              Nearby Fire Stations
             </Typography>
           </Box>
         }
       />
 
-      <CardContent sx={{ pt: 1, pb: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-
-          {stations.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
-              No stations found
-            </Typography>
-          ) : (
-            stations.map((station, index) => (
+      <CardContent>
+        {loading ? (
+          <Typography align="center">Loading stations...</Typography>
+        ) : stations.length === 0 ? (
+          <Typography align="center">No stations found</Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {stations.map((station, index) => (
               <Box
                 key={station.id}
                 sx={{
                   p: 1.5,
                   borderRadius: 2,
-                  bgcolor: 'action.hover',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  transition: 'border-color 0.3s',
-                  '&:hover': { borderColor: 'primary.main' }
+                  border: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "action.hover",
                 }}
               >
-
                 {/* Name + Rank + Distance */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip
-                      label={`#${index + 1}`}
-                      size="small"
-                      color="primary"
-                      sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}
-                    />
-                    <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <Chip label={`#${index + 1}`} size="small" color="primary" />
+                    <Typography
+                      fontSize="0.9rem"
+                      fontWeight={500}
+                      component="div"
+                    >
                       {station.name}
                     </Typography>
                   </Box>
+
                   <Chip
-                    label={`${station.distance.toFixed(1)} km`}
+                    label={`${station.distance.toFixed(2)} km`}
                     size="small"
                     variant="outlined"
-                    sx={{ fontSize: '0.75rem' }}
                   />
                 </Box>
 
                 {/* Vehicles & Drones */}
-                <Grid container spacing={2} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+                <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <LocalShippingIcon sx={{ fontSize: '1rem' }} />
-                      <Typography variant="caption">{station.vehicles} vehicles</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <LocalShippingIcon fontSize="small" />
+                      <Typography variant="caption" component="div">
+                        {station.vehicles} vehicles
+                      </Typography>
                     </Box>
                   </Grid>
+
                   <Grid item xs={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <FlightIcon sx={{ fontSize: '1rem' }} />
-                      <Typography variant="caption">{station.drones} drones</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <FlightIcon fontSize="small" />
+                      <Typography variant="caption" component="div">
+                        {station.drones} drones
+                      </Typography>
                     </Box>
                   </Grid>
                 </Grid>
-
               </Box>
-            ))
-          )}
-
-        </Box>
+            ))}
+          </Box>
+        )}
       </CardContent>
     </Card>
-  );
-}
-
-// ⚡ App Wrapper Without White Space
-export default function App() {
-  return (
-    <>
-      <SuggestedStationsPanelMui stations={mockStations} />
-    </>
   );
 }

@@ -6,6 +6,7 @@ import {
   Plane,
   FileText,
   Users,
+  Building
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -15,6 +16,7 @@ const Sidebar = () => {
     { name: "Live Monitoring", icon: Radio, link: "/live-monitoring" },
     { name: "Vehicles", icon: Truck, link: "/vehicles" },
     { name: "Drones", icon: Plane, link: "/drones" },
+    { name: "Stations", icon: Building, link: "/stations" },
     { name: "SOPs", icon: FileText, link: "/sops" },
     { name: "User Roles", icon: Users, link: "/user-roles" },
     { name: "Logs", icon: Users, link: "/logs" },
