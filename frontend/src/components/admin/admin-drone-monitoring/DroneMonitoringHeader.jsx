@@ -3,8 +3,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import SafeIcon from '@/components/common/SafeIcon'
 
 // 🔥 Global card hover style (same as main page)
-const cardHover =
-  "border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300"
 
 export default function DroneMonitoringHeader({
   totalDrones,
@@ -42,7 +40,7 @@ export default function DroneMonitoringHeader({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className={cardHover}>
+        <Card key={stat.label} className="border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>

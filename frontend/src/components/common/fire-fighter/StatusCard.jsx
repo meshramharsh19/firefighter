@@ -12,7 +12,7 @@ export default function StatusCard({
   const getVariantStyles = () => {
     switch (variant) {
       case "danger": // for incidents (Red)
-        return "border-red-500/40 bg-red-500/10 shadow-[0_0_15px_-2px_rgba(255,0,0,0.25)]";
+        return "border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300";
       case "warning": // yellow/orange
         return "border-yellow-400/40 bg-yellow-500/10 shadow-[0_0_15px_-2px_rgba(255,200,0,0.25)]";
       case "success": // green

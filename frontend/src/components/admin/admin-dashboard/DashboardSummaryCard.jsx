@@ -17,7 +17,7 @@ export default function DashboardSummaryCard({ card }) {
   };
 
   return (
-    <Card className="bg-card shadow-sm hover:shadow-md transition">
+    <Card className="border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground">
           {card.title}

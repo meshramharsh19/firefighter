@@ -53,7 +53,7 @@ export default function VehicleAvailabilityPanel() {
       
       <CardHeader
         title={<div className="flex items-center gap-2 font-semibold">
-          <SafeIcon name="Radio" className="text-blue-400" /> Station Assets – {station}
+          <SafeIcon name="Radio" className="text-red-400" /> Station Assets – {station}
         </div>}
         sx={{borderBottom:"1px solid #26282b"}}
       />
@@ -62,11 +62,11 @@ export default function VehicleAvailabilityPanel() {
 
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-3 text-center rounded border border-[#28292C]">
+          <div className="p-3 text-center rounded border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
             <p className="text-[11px] text-gray-400">Available</p>
             <p className="text-2xl font-bold text-green-400">{available}</p>
           </div>
-          <div className="p-3 text-center rounded border border-[#28292C]">
+          <div className="p-3 text-center rounded border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
             <p className="text-[11px] text-gray-400">Busy</p>
             <p className="text-2xl font-bold text-yellow-400">{busy}</p>
           </div>
@@ -76,12 +76,12 @@ export default function VehicleAvailabilityPanel() {
 
         {/* Vehicles */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <SafeIcon name="Truck" className="text-blue-400"/> Vehicles ({vehicles.length})
+          <SafeIcon name="Truck" className="text-red-400"/> Vehicles ({vehicles.length})
         </h3>
 
         <div className="space-y-2">
           {vehicles.map(v=>(
-            <div key={v.id} className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
+            <div key={v.id} className="p-3 rounded-lg bg-[#151619] border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
 
               <div className="flex justify-between">
                 <div>
@@ -102,12 +102,12 @@ export default function VehicleAvailabilityPanel() {
 
         {/* Drones */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <SafeIcon name="Plane" className="text-blue-400"/> Drones ({drones.length})
+          <SafeIcon name="Plane" className="text-red-400"/> Drones ({drones.length})
         </h3>
 
         <div className="space-y-2">
           {drones.map(d=>(
-            <div key={d.drone_code} className="p-3 rounded-lg bg-[#151619] border border-[#27292c] hover:border-blue-400/50 transition">
+            <div key={d.drone_code} className="p-3 rounded-lg bg-[#151619] border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-gray-200">{d.drone_name}</p>
