@@ -40,6 +40,7 @@ export default function DroneDetailsContent() {
   const [drones, setDrones] = useState([]);
   const [stations, setstations] = useState([]);
   const [selectedstation, setSelectedstation] = useState("");
+  const [selectedDroneCode, setSelectedDroneCode] = useState("");
   const [selectedDrone, setselectedDrone] = useState(null);
   const [gpsLocation, setGpsLocation] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -62,7 +63,15 @@ export default function DroneDetailsContent() {
   useEffect(() => {
     fetch(`${API}/getstations.php`)
       .then((res) => res.json())
-      .then((data) => setstations(data));
+      .then((data) => {
+        setstations(data);
+
+        // ✅ auto select first station
+        if (data.length) {
+          setSelectedstation(data[0]);
+          fetchDronesBystation(data[0]);
+        }
+      });
   }, []);
 
   const fetchDronesBystation = (station) => {
@@ -70,7 +79,12 @@ export default function DroneDetailsContent() {
       .then((res) => res.json())
       .then((data) => {
         setDrones(data);
-        if (data.length) setselectedDrone(data[0]);
+
+        // ✅ auto select first drone
+        if (data.length) {
+          setselectedDrone(data[0]);
+          fetchDroneDetails(data[0].drone_code);
+        }
       });
   };
 
@@ -355,60 +369,59 @@ export default function DroneDetailsContent() {
     <div className="space-y-6 p-6">
       {/* Dropdown Filters */}
       <div className="flex gap-6 items-end">
-        {/* station Selector */}
-        <div className="flex flex-col">
-          <label className="text-md font-medium text-muted-foreground mb-2">
-            Select station:
-          </label>
-          <select
-            className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
-             border border-[#2E2E2E] hover:border-[#dc2626]
-             focus:outline-none focus:ring-1 focus:ring-[#dc2626]
-             transition disabled:opacity-40 disabled:cursor-not-allowed"
-            value={selectedstation}
-            onChange={(e) => {
-              setSelectedstation(e.target.value);
-              fetchDronesBystation(e.target.value);
-            }}
-          >
-            <option value="" disabled>
-              Select station
-            </option>
-            {stations.map((w, i) => (
-              <option key={i} value={w}>
-                {w}
-              </option>
-            ))}
-          </select>
-        </div>
+  {/* Station Selector */}
+  <div className="flex flex-col">
+    <label className="text-md font-medium text-muted-foreground mb-2">
+      Select station:
+    </label>
+    <select
+      className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
+        border border-[#2E2E2E] hover:border-[#dc2626]
+        focus:outline-none focus:ring-1 focus:ring-[#dc2626]
+        transition"
+      value={selectedstation}
+      onChange={(e) => {
+        const station = e.target.value;
+        setSelectedstation(station);
+        setSelectedDroneCode(""); // reset drone
+        fetchDronesBystation(station);
+      }}
+    >
+      {stations.map((w, i) => (
+        <option key={i} value={w}>
+          {w}
+        </option>
+      ))}
+    </select>
+  </div>
 
-        {/* Drone Selector */}
-        <div className="flex flex-col">
-          <label className="text-md font-medium text-muted-foreground mb-2">
-            Select Drone:{" "}
-          </label>
-          <select
-            className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12] border border-[#2E2E2E] hover:border-[#dc2626] focus:outline-none focus:ring-1 focus:ring-[#dc2626] transition disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={!selectedstation}
-            onChange={(e) => {
-              fetchDroneDetails(e.target.value);
-            }}
-          >
-            <option
-              value=""
-              disabled
-              className="text-neutral-500 hover:border-[#dc2626]"
-            >
-              Select Drone
-            </option>
-            {drones.map((d, i) => (
-              <option key={i} value={d.drone_code}>
-                {d.drone_name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+  {/* Drone Selector */}
+  <div className="flex flex-col">
+    <label className="text-md font-medium text-muted-foreground mb-2">
+      Select Drone:
+    </label>
+    <select
+      className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
+        border border-[#2E2E2E] hover:border-[#dc2626]
+        focus:outline-none focus:ring-1 focus:ring-[#dc2626]
+        transition"
+      disabled={!selectedstation}
+      value={selectedDrone ?.drone_code || ""}
+      onChange={(e) => {
+        const droneCode = e.target.value;
+        setSelectedDroneCode(droneCode);
+        fetchDroneDetails(droneCode);
+      }}
+    >
+      {drones.map((d, i) => (
+        <option key={i} value={d.drone_code}>
+          {d.drone_name}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
 
       {/* Header */}
       <div className="flex items-start justify-between">
