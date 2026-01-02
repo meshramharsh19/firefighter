@@ -8,7 +8,6 @@ import SafeIcon from "@/components/common/SafeIcon";
 // Helper to load scripts dynamically
 function loadScript(src) {
   return new Promise((resolve, reject) => {
-    // already loaded?
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve();
       return;
@@ -41,6 +40,9 @@ export default function DashboardMapSection({
   const retryRef = useRef(0);
   const [showAll, setShowAll] = useState(false);
   const cesiumInitRef = useRef(false);
+
+  // 🔑 FIX: auto zoom sirf first time
+  const hasAutoZoomedRef = useRef(false);
 
   // ---------------- 2D MAP INIT ----------------
   const init2DMap = () => {
@@ -131,7 +133,6 @@ export default function DashboardMapSection({
   }, [mapMode]);
 
   // ---------------- SHOW ALL DRONES IN 3D ----------------
-  // ---------------- SHOW ALL DRONES IN 3D ----------------
   useEffect(() => {
     if (mapMode !== "3d") return;
 
@@ -189,9 +190,6 @@ export default function DashboardMapSection({
               uri: "../assets/model/drone.glb",
               scale: 0.5,
               minimumPixelSize: 64,
-              // color: Cesium.Color.fromCssColorString("#FFFFFF"),
-              // colorBlendMode: Cesium.ColorBlendMode.MIX,
-              // colorBlendAmount: 0.8,
             },
           });
         } else {
@@ -199,23 +197,21 @@ export default function DashboardMapSection({
         }
       }
 
-      // -------------------------------------------
-      // 📌 Camera Auto-Zoom (All drones visible)
-      // -------------------------------------------
-      setTimeout(() => {
-        try {
-          viewer.zoomTo(
-            viewer.entities,
-            new Cesium.HeadingPitchRange(
-              0,
-              -0.8,
-              1000 
-            )
-          );
-        } catch (e) {
-          console.log("Zoom error:", e);
-        }
-      }, 1200);
+      // ✅ AUTO ZOOM — ONLY FIRST TIME
+      if (!hasAutoZoomedRef.current) {
+        hasAutoZoomedRef.current = true;
+
+        setTimeout(() => {
+          try {
+            viewer.zoomTo(
+              viewer.entities,
+              new Cesium.HeadingPitchRange(0, -0.8, 1000)
+            );
+          } catch (e) {
+            console.log("Zoom error:", e);
+          }
+        }, 1200);
+      }
     }
 
     placeAllDrones();
@@ -224,6 +220,13 @@ export default function DashboardMapSection({
       cancelled = true;
     };
   }, [mapMode, droneLocations]);
+
+  // 🔁 STEP 3: reset ONLY when switching to 3D
+  useEffect(() => {
+    if (mapMode === "3d") {
+      hasAutoZoomedRef.current = false;
+    }
+  }, [mapMode]);
 
   const dronesArray = Array.isArray(activeDrones) ? activeDrones : [];
 
@@ -277,7 +280,7 @@ export default function DashboardMapSection({
             style={{
               display: mapMode === "2d" ? "block" : "none",
               height: "350px",
-              borderRadius:"10px"
+              borderRadius: "10px",
             }}
           ></div>
 
@@ -288,90 +291,6 @@ export default function DashboardMapSection({
               height: "350px",
             }}
           ></div>
-        </CardContent>
-      </Card>
-
-      {/* ACTIVE DRONES */}
-      <Card className="border-none">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Active Drones</CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          {dronesArray.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No active drones currently.
-            </p>
-          ) : (
-            <>
-              <div
-                className={`transition-all duration-300 ${
-                  showAll
-                    ? "max-h-[350px] overflow-y-auto"
-                    : "max-h-[180px] overflow-y-hidden"
-                }`}
-              >
-                <div className="flex flex-col gap-3">
-                  {(showAll ? dronesArray : dronesArray.slice(0, 3)).map(
-                    (d) => (
-                      <Card
-                        key={d.drone_code}
-                        className="bg-muted/30 hover: transition border-[#2E2E2E] hover:border-[#dc2626]"
-                      >
-                        <CardContent className="px-4 py-2">
-                          <div className="flex justify-between">
-                            <div>
-                              <p className="text-sm font-semibold flex items-center gap-1">
-                                <SafeIcon name="Plane" size={15} />
-                                {d.drone_name}
-                              </p>
-                              <p className="text-xs opacity-70">
-                                {d.drone_code}
-                              </p>
-                              <p className="text-xs opacity-70">{d.location}</p>
-                            </div>
-
-                            <div className="flex flex-col items-end">
-                              <StatusBadge
-                                status={getStatusType(d.status)}
-                                label={d.status.replace("_", " ")}
-                              />
-
-                              <p className="text-[10px] opacity-70 mt-1">
-                                {d.battery}% Battery
-                              </p>
-
-                              {/* <div className="w-20 h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
-                                <div
-                                  className={`h-full ${
-                                    d.battery > 70
-                                      ? "bg-emerald-600"
-                                      : d.battery > 40
-                                      ? "bg-amber-600"
-                                      : "bg-red-600"
-                                  }`}
-                                  style={{ width: `${d.battery}%` }}
-                                ></div>
-                              </div> */}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  )}
-                </div>
-              </div>
-
-              <Card
-                onClick={() => setShowAll(!showAll)}
-                className="mt-3 cursor-pointer border-[#2E2E2E] hover:border-[#dc2626] hover:bg-[#dc2626]"
-              >
-                <CardContent className="py-2 text-center text-sm text-primary">
-                  {showAll ? "Hide Drones ▲" : "View All Drones ▼"}
-                </CardContent>
-              </Card>
-            </>
-          )}
         </CardContent>
       </Card>
     </>

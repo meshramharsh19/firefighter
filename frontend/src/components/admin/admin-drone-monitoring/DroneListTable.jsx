@@ -55,20 +55,21 @@ export default function DroneListTable({ drones, onViewDetails }) {
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead>Drone Name</TableHead>
-            <TableHead>Serial Number</TableHead>
-            <TableHead>Ward Allocation</TableHead>
+            <TableHead>Drone code</TableHead>
+            <TableHead>Fire Station</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Battery</TableHead>
             <TableHead>Flight Hours</TableHead>
             <TableHead>Health</TableHead>
             <TableHead>Pilot</TableHead>
             <TableHead>Firmware</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            {/* <TableHead className="text-right">Actions</TableHead> */}
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {drones.map((drone) => (
+            
             <TableRow key={drone.drone_code} className="border-border hover:bg-muted/50">
               
               {/* Drone Name */}
@@ -81,12 +82,12 @@ export default function DroneListTable({ drones, onViewDetails }) {
 
               {/* Serial Number */}
               <TableCell className="text-sm text-muted-foreground">
-                {drone.serialNumber || "—"}
+                {drone.drone_code || "—"}
               </TableCell>
 
               {/* Ward */}
               <TableCell className="text-sm">
-                {drone.location || "—"}
+                {drone.station || "—"}
               </TableCell>
 
               {/* Status */}
@@ -120,8 +121,8 @@ export default function DroneListTable({ drones, onViewDetails }) {
 
               {/* Flight Hours */}
               <TableCell className="text-sm">
-                {drone.flightHours
-                  ? `${Number(drone.flightHours).toFixed(1)}h`
+                {drone.flight_hours
+                  ? `${Number(drone.flight_hours).toFixed(1)}h`
                   : "0.0h"}
               </TableCell>
 
@@ -129,25 +130,25 @@ export default function DroneListTable({ drones, onViewDetails }) {
               <TableCell>
                 <span
                   className={`inline-block px-2 py-1 rounded text-xs font-medium ${getHealthStatusVariant(
-                    drone.healthStatus || "Unknown"
+                    drone.health_status || "Unknown"
                   )}`}
                 >
-                  {drone.healthStatus || "Unknown"}
+                  {drone.health_status || "Unknown"}
                 </span>
               </TableCell>
 
               {/* Pilot */}
               <TableCell className="text-sm">
-                {drone.pilotAssigned?.name || "—"}
+                {drone.pilot_name || "—"}
               </TableCell>
 
               {/* Firmware */}
               <TableCell className="text-sm text-muted-foreground">
-                {drone.firmwareVersion || "—"}
+                {drone.firmware_version || "—"}
               </TableCell>
 
               {/* Actions */}
-              <TableCell className="text-right">
+              {/* <TableCell className="text-right">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -157,7 +158,7 @@ export default function DroneListTable({ drones, onViewDetails }) {
                   <SafeIcon name="Eye" size={16} className="mr-1" />
                   View
                 </Button>
-              </TableCell>
+              </TableCell> */}
 
             </TableRow>
           ))}
