@@ -111,15 +111,9 @@ export default function VehicleAvailabilityPanel() {
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-gray-200">{d.drone_name}</p>
-                  <p className="text-[11px] text-gray-400">{d.station} • {d.status}</p>
+                  <p className="text-[11px] text-gray-400">{d.drone_code} | {d.station}</p>
                 </div>
-                <Chip label={`${d.battery}%`} 
-                  className={`text-[10px] px-2 ${
-                    d.battery>50 ? "text-green-400" :
-                    d.battery>25 ? "text-yellow-300" :
-                    "text-red-400"
-                  }`} 
-                />
+                <Chip label={d.status} className={`text-[10px] px-2 border ${statusColor(d.status)}`}/>
               </div>
             </div>
           ))}
