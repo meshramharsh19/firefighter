@@ -13,8 +13,9 @@ export default function LogsPage() {
   const [filters, setFilters] = useState({
     search: "",
     module: "all",
+    date: "",
     page: 1,
-    limit: 20,
+    limit: 10,
   });
 
   const [totalPages, setTotalPages] = useState(1);
@@ -26,6 +27,7 @@ export default function LogsPage() {
       const params = new URLSearchParams({
         search: filters.search,
         module: filters.module === "all" ? "" : filters.module,
+        date: filters.date, // ✅ DATE ADDED
         page: filters.page,
         limit: filters.limit,
       });
@@ -50,18 +52,18 @@ export default function LogsPage() {
     }
   };
 
-  /* 🔁 AUTO FETCH:
-     - page change
-     - module change
-     - search change
-  */
+  /* 🔁 AUTO FETCH (FIXED) */
   useEffect(() => {
     fetchLogs();
-  }, [filters.page, filters.module, filters.search]);
+  }, [
+    filters.page,
+    filters.module,
+    filters.search,
+    filters.date, // ✅ DATE DEPENDENCY
+  ]);
 
   return (
     <div className="p-6 space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold">System Logs</h1>
         <p className="text-muted-foreground">
@@ -69,16 +71,10 @@ export default function LogsPage() {
         </p>
       </div>
 
-      {/* FILTERS (auto apply) */}
-      <LogsFilters
-        filters={filters}
-        setFilters={setFilters}
-      />
+      <LogsFilters filters={filters} setFilters={setFilters} />
 
-      {/* TABLE */}
       <LogsTable logs={logs} loading={loading} />
 
-      {/* PAGINATION */}
       <LogsPagination
         page={filters.page}
         totalPages={totalPages}
