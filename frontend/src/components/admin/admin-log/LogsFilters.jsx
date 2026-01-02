@@ -8,22 +8,22 @@ export default function LogsFilters({ filters, setFilters }) {
         <CardTitle>Filters</CardTitle>
       </CardHeader>
 
-      <CardContent className="grid md:grid-cols-3 gap-4">
-        {/* SEARCH (auto apply) */}
+      <CardContent className="grid md:grid-cols-4 gap-4">
+        {/* SEARCH */}
         <Input
-          className=" pl-10 bg-transparent border border-[#2E2E2E] rounded bg-[#141414] hover:border-red-700 focus-within:border-gray-300 text-white focus:outline-none focus:ring-0"
           placeholder="Search logs..."
           value={filters.search}
           onChange={(e) =>
             setFilters((p) => ({
               ...p,
               search: e.target.value,
-              page: 1, // reset pagination
+              page: 1,
             }))
           }
+          className="bg-[#141414] text-white border border-[#2E2E2E]"
         />
 
-        {/* MODULE FILTER (black background) */}
+        {/* MODULE */}
         <select
           value={filters.module}
           onChange={(e) =>
@@ -33,30 +33,42 @@ export default function LogsFilters({ filters, setFilters }) {
               page: 1,
             }))
           }
-          className="
-            w-full p-2 rounded
-            bg-[#141414] text-white
-            border border-[#2E2E2E]
-            focus:outline-none
-            focus:border-gray-400
-          "
+          className="bg-[#141414] text-white border border-[#2E2E2E] p-2 rounded"
         >
-          <option value="all" className="bg-black text-white">
-            All Modules
-          </option>
-          <option value="VEHICLE" className="bg-black text-white">
-            Vehicle
-          </option>
-          <option value="USER" className="bg-black text-white">
-            User
-          </option>
-          <option value="DRONE" className="bg-black text-white">
-            Drone
-          </option>
-          <option value="INCIDENT" className="bg-black text-white">
-            Incident
-          </option>
+          <option value="all">All Modules</option>
+          <option value="VEHICLE">Vehicle</option>
+          <option value="USER">User</option>
+          <option value="DRONE">Drone</option>
+          <option value="INCIDENT">Incident</option>
         </select>
+
+        {/* DATE */}
+        <Input
+          type="date"
+          value={filters.date}
+          onChange={(e) =>
+            setFilters((p) => ({
+              ...p,
+              date: e.target.value,
+              page: 1,
+            }))
+          }
+          className="bg-[#141414] text-white border border-[#2E2E2E]"
+        />
+
+        {/* CLEAR DATE */}
+        <button
+          onClick={() =>
+            setFilters((p) => ({
+              ...p,
+              date: "",
+              page: 1,
+            }))
+          }
+          className="border border-[#2E2E2E] rounded text-gray-300 hover:text-white"
+        >
+          Clear Date
+        </button>
       </CardContent>
     </Card>
   );

@@ -58,7 +58,7 @@ export default function DroneListTable({ drones, onViewDetails }) {
             <TableHead>Drone code</TableHead>
             <TableHead>Fire Station</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Battery</TableHead>
+            {/* <TableHead>Battery</TableHead> */}
             <TableHead>Flight Hours</TableHead>
             <TableHead>Health</TableHead>
             <TableHead>Pilot</TableHead>
@@ -99,7 +99,7 @@ export default function DroneListTable({ drones, onViewDetails }) {
               </TableCell>
 
               {/* Battery */}
-              <TableCell>
+              {/* <TableCell>
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
                     <div
@@ -117,7 +117,7 @@ export default function DroneListTable({ drones, onViewDetails }) {
                     {drone.battery || 0}%
                   </span>
                 </div>
-              </TableCell>
+              </TableCell> */}
 
               {/* Flight Hours */}
               <TableCell className="text-sm">
