@@ -6,16 +6,36 @@ header("Content-Type: application/json");
 
 require "../config/db.php";
 
+/*
+|--------------------------------------------------------------------------
+| Fetch all drones with latest GPS + full fleet details
+|--------------------------------------------------------------------------
+*/
+
 $sql = "
     SELECT 
+        d.id,
         d.drone_code,
         d.drone_name,
         d.station,
+        d.ward,
         d.status,
         d.battery,
+        d.flight_hours,
+        d.health_status,
+        d.firmware_version,
+        d.is_ready,
+
+        d.pilot_id,
+        d.pilot_name,
+        d.pilot_email,
+        d.pilot_phone,
+        d.pilot_role,
+        d.pilot_status,
+
         g.latitude,
         g.longitude,
-        g.timestamp
+        g.timestamp AS last_gps_time
     FROM drones d
     LEFT JOIN (
         SELECT 
@@ -32,14 +52,17 @@ $sql = "
             GROUP BY drone_code
         )
     ) g ON d.drone_code = g.drone_code
+    ORDER BY d.drone_code ASC
 ";
 
 $result = $conn->query($sql);
+
 $data = [];
 
-while ($row = $result->fetch_assoc()) {
-    $data[] = $row;
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
 }
 
-echo json_encode($data);
-?>
+echo json_encode($data, JSON_PRETTY_PRINT);

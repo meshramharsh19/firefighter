@@ -3,26 +3,28 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Content-Type: application/json");
+
 require "../config/db.php";
 
-// total drones
-$totalSql = "SELECT COUNT(*) as total FROM drones";
-$totalRes = $conn->query($totalSql);
-$totalRow = $totalRes->fetch_assoc();
+/* ---------------- TOTAL DRONES ---------------- */
+$totalSql = "SELECT COUNT(*) AS total FROM drones";
+$totalRes = mysqli_query($conn, $totalSql);
+$totalRow = mysqli_fetch_assoc($totalRes);
 
-// not active (offline)
-$inactiveSql = "SELECT COUNT(*) as cnt FROM drones WHERE status = 'offline'";
-$inactiveRes = $conn->query($inactiveSql);
-$inactiveRow = $inactiveRes->fetch_assoc();
+/* ---------------- NOT ACTIVE (OFFLINE) ---------------- */
+$inactiveSql = "SELECT COUNT(*) AS cnt FROM drones WHERE status = 'offline'";
+$inactiveRes = mysqli_query($conn, $inactiveSql);
+$inactiveRow = mysqli_fetch_assoc($inactiveRes);
 
-// ready to fly
-$readySql = "SELECT COUNT(*) as cnt FROM drones WHERE is_ready = 1";
-$readyRes = $conn->query($readySql);
-$readyRow = $readyRes->fetch_assoc();
+/* ---------------- READY TO FLY (NOT OFFLINE) ---------------- */
+$readySql = "SELECT COUNT(*) AS cnt FROM drones WHERE status != 'offline'";
+$readyRes = mysqli_query($conn, $readySql);
+$readyRow = mysqli_fetch_assoc($readyRes);
 
+/* ---------------- RESPONSE ---------------- */
 echo json_encode([
-    "total_drones"    => (int)$totalRow['total'],
-    "inactive_drones" => (int)$inactiveRow['cnt'],
-    "ready_drones"    => (int)$readyRow['cnt']
+    "total_drones"      => (int) $totalRow['total'],
+    "inactive_drones"   => (int) $inactiveRow['cnt'],
+    "ready_drones"      => (int) $readyRow['cnt']
 ]);
 ?>
