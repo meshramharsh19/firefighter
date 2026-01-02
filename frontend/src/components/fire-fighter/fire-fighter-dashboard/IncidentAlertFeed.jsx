@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import SafeIcon from "@/components/common/SafeIcon";
 
-export default function IncidentAlertFeed({ apiBase }) {
+export default function IncidentAlertFeed({ apiBase, station }) {
   const [incidents, setIncidents] = useState([]);
   const [playedAlerts, setPlayedAlerts] = useState(new Set());
 
@@ -30,7 +30,7 @@ export default function IncidentAlertFeed({ apiBase }) {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${apiBase}/incidents/get_incidents.php`);
+        const res = await fetch(`${apiBase}/incidents/get_incidents.php?station=${encodeURIComponent(station)}`);
         const data = await res.json();
         setIncidents(data);
       } catch (e) {

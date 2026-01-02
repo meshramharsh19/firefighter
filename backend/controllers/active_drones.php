@@ -6,20 +6,34 @@ header("Content-Type: application/json");
 
 require "../config/db.php";
 
-$sql = "SELECT 
-            drone_code,
-            drone_name,
-            ward AS location,
-            status,
-            battery
-        FROM drones
-        ";
+/* 🔥 GET station from query */
+$station = $_GET['station'] ?? null;
 
-$result = $conn->query($sql);
+if (!$station) {
+    echo json_encode([]); // ❌ no station = no data
+    exit;
+}
+
+/* 🔒 Station-wise query (case-insensitive) */
+$sql = "
+    SELECT 
+        drone_code,
+        drone_name,
+        ward AS location,
+        station,
+        status,
+        battery
+    FROM drones
+    WHERE LOWER(station) = LOWER(?)
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $station);
+$stmt->execute();
+
+$result = $stmt->get_result();
 
 $data = [];
-$response = [];
-
 while ($row = $result->fetch_assoc()) {
     $data[] = $row;
 }

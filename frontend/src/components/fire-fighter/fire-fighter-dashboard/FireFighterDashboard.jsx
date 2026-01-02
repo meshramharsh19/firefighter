@@ -75,7 +75,7 @@ export default function FireFighterDashboard() {
           </div>
 
 
-          <IncidentAlertFeed apiBase={API} />
+          <IncidentAlertFeed apiBase={API} station={station} />
 
           {/* Incident Table */}
           <div className="bg-[#131416] rounded-xl p-4 shadow border border-[#1e1f22]">

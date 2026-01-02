@@ -22,7 +22,7 @@ export default function VehicleAvailabilityPanel() {
     if (!station) return;
 
     async function load() {
-      const v = await fetch(`${API}/get_vehicles.php?station=${encodeURIComponent(station)}`)
+      const v = await fetch(`${API}/admin/admin-vehicle/get_vehicles.php?station=${encodeURIComponent(station)}`)
                         .then(r=>r.json());
 
       const d = await fetch(`${API}/active_drones.php?station=${encodeURIComponent(station)}`)
@@ -86,13 +86,13 @@ export default function VehicleAvailabilityPanel() {
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-white">{v.name}</p>
-                  <p className="text-[11px] text-gray-400">{v.type} • {v.ward}</p>
+                  <p className="text-[11px] text-gray-400">{v.type}</p>
                 </div>
 
                 <Chip label={v.status} className={`text-[10px] px-2 border ${statusColor(v.status)}`}/>
               </div>
 
-              <p className="text-[10px] mt-1 text-gray-500">{v.registration} | {v.location}</p>
+              <p className="text-[10px] mt-1 text-gray-500">{v.registration} | {v.station}</p>
 
             </div>
           ))}
@@ -111,7 +111,7 @@ export default function VehicleAvailabilityPanel() {
               <div className="flex justify-between">
                 <div>
                   <p className="font-medium text-gray-200">{d.drone_name}</p>
-                  <p className="text-[11px] text-gray-400">{d.location} • {d.status}</p>
+                  <p className="text-[11px] text-gray-400">{d.station} • {d.status}</p>
                 </div>
                 <Chip label={`${d.battery}%`} 
                   className={`text-[10px] px-2 ${
