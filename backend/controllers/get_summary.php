@@ -29,13 +29,13 @@ $month_count = mysqli_fetch_assoc(mysqli_query($conn, $sql_month))['total'] ?? 0
 
 // -------- Active Incidents --------
 $sql_active = "SELECT COUNT(*) AS total FROM incidents 
-               WHERE status='InProgress'
+               WHERE status='Active'
                AND stationName = '$station'";
 $inprogress_count = mysqli_fetch_assoc(mysqli_query($conn, $sql_active))['total'] ?? 0;
 
 // -------- Critical Alerts --------
 $sql_critical = "SELECT COUNT(*) AS total FROM incidents 
-                 WHERE isNewAlert=1
+                 WHERE status='New'
                  AND stationName = '$station'";
 $critical_count = mysqli_fetch_assoc(mysqli_query($conn, $sql_critical))['total'] ?? 0;
 
