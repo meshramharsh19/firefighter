@@ -130,7 +130,7 @@ export default function VehicleDroneSelectionPage() {
       try {
         // Vehicles
         const vehRes = await fetch(
-          "http://localhost/fire-fighter-new/backend/controllers/vehicle/get_vehicles.php"
+          "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/get_vehicles.php"
         );
         const vehJson = await vehRes.json();
 
