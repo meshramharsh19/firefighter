@@ -31,6 +31,7 @@ import VehicleDroneSelection from "./pages/fire-fighter/VehicleDroneSelection";
 import FireFighterPage from "./pages/fire-fighter/FireFighterPage";
 import MapTogglePage from "./pages/fire-fighter/MapToggle";
 import LiveIncidentCommand from "./components/fire-fighter/live-incident-command/LiveIncidentCommandScreen";
+import ConfirmFowardIncidence from "./components/fire-fighter/confirm-forward/ConfirmForward";
 
 // DRIVER
 import Vehicle from "./pages/vehicle-driver/vehicle";
@@ -81,6 +82,7 @@ function App() {
             <Route path="/vehicle-drone-selection/:id" element={<VehicleDroneSelection />} />
             <Route path="/fire-fighter-dashboard" element={<FireFighterPage/>} />
             <Route path="/live-incident-command/:id/:droneId" element={<LiveIncidentCommand/>} />
+            <Route path="/confirm-forward-incidence/:incidentId/:stationName" element={<ConfirmFowardIncidence />} />
             <Route path="/map-toggle" element={<MapTogglePage/>} />
           </Route>
 

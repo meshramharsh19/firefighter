@@ -7,10 +7,10 @@
         "coordinates": {
             "lat": 18.454473,
             "lng": 73.851352,
-            "stationName": "Katraj fire station"
+            "stationName": "Kothrud Fire Station"
         },
         "timeReported": "2025-11-20T10:35:00Z",
-        "status": "new",
+        "status": "forwarded",
         "isNewAlert": true
     }
 ]
