@@ -287,7 +287,7 @@ export default function DroneDetailsContent() {
     ward: "",
     status: "standby",
     battery: "",
-    flight_hours: "",
+    flight_hours: 0,
     health_status: "Optimal",
     firmware_version: "",
     is_ready: 1,
@@ -324,30 +324,28 @@ export default function DroneDetailsContent() {
 
 
   const isAddDroneFormValid = () => {
-    const {
-      drone_code,
-      drone_name,
-      ward,
-      status,
-      battery,
-      flight_hours,
-      health_status,
-      firmware_version,
-      station,
-    } = newDrone;
+  const {
+    drone_code,
+    drone_name,
+    status,
+    flight_hours,
+    health_status,
+    firmware_version,
+    station,
+  } = newDrone;
 
-    return (
-      drone_code.trim().length > 0 &&
-      drone_name.trim().length > 0 &&
-      ward.trim().length > 0 &&
-      status.trim().length > 0 &&
-      health_status.trim().length > 0 &&
-      firmware_version.trim().length > 0 &&
-      station.trim().length > 0 &&
-      battery !== "" && battery >= 0 && battery <= 100 &&
-      flight_hours !== ""
-    );
-  };
+  return (
+    drone_code.trim().length > 0 &&
+    drone_name.trim().length > 0 &&
+    status.trim().length > 0 &&
+    health_status.trim().length > 0 &&
+    firmware_version.trim().length > 0 &&
+    station.trim().length > 0 &&
+    typeof flight_hours === "number" &&
+    flight_hours >= 0
+  );
+};
+
 
   const isEditDroneFormChanged = () => {
     if (!originalDrone) return false;
@@ -462,14 +460,12 @@ export default function DroneDetailsContent() {
             onClick={() => {
               setNewDrone({
                 drone_code: "",
-                drone_name: "",
-                ward: "",
+                drone_name: "",                
                 status: "standby",
-                battery: "",
                 flight_hours: "",
                 health_status: "Optimal",
                 firmware_version: "",
-                is_ready: 1,
+                is_ready: "Yes",
                 station: "",
               });
               setShowAddDialog(true);
@@ -521,7 +517,7 @@ export default function DroneDetailsContent() {
             <InputField label="Drone Name" value={newDrone.drone_name}
               onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })} />
 
-            <InputField label="Ward" value={newDrone.ward}
+            {/* <InputField label="Ward" value={newDrone.ward}
               onChange={(v) => setNewDrone({ ...newDrone, ward: v })} />
 
             <InputField label="Battery (%)" type="number" value={newDrone.battery}
@@ -534,11 +530,31 @@ export default function DroneDetailsContent() {
                 }
 
                 setNewDrone({ ...newDrone, battery: value });
-              }} />
+              }} /> */}
 
-            <InputField label="Flight Hours" type="number" step="0.1"
+            <InputField
+              label="Flight Hours"
+              type="number"
+              step="0.1"
+              min="0"
               value={newDrone.flight_hours}
-              onChange={(v) => setNewDrone({ ...newDrone, flight_hours: v })} />
+              onChange={(v) => {
+                let value = Number(v);
+
+                if (isNaN(value)) value = 0;
+
+                if (value < 0) {
+                  toast.error("Flight hours cannot be negative");
+                  value = 0;
+                }
+
+                setNewDrone({
+                  ...newDrone,
+                  flight_hours: value
+                });
+              }}
+            />
+
 
             <InputField label="Firmware Version" value={newDrone.firmware_version}
               onChange={(v) => setNewDrone({ ...newDrone, firmware_version: v })} />
@@ -554,9 +570,17 @@ export default function DroneDetailsContent() {
               onChange={(v) => setNewDrone({ ...newDrone, health_status: v })} />
 
             {/* READY */}
-            <SelectField label="Is Ready" value={newDrone.is_ready}
-              options={[1, 0]}
-              onChange={(v) => setNewDrone({ ...newDrone, is_ready: v })} />
+            <SelectField
+              label="Is Ready"
+              value={newDrone.is_ready === "1" ? "Yes" : "No"}
+              options={["Yes", "No"]}
+              onChange={(v) =>
+                setNewDrone({
+                  ...newDrone,
+                  is_ready: v === "Yes" ? "1" : "0"
+                })
+              }
+            />
 
             {/* STATION */}
             <SelectField label="Station" value={newDrone.station}
@@ -680,7 +704,8 @@ export default function DroneDetailsContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {selectedDrone?.flight_hours
+              {selectedDrone?.flight_hours !== null &&
+              selectedDrone?.flight_hours !== undefined
                 ? Number(selectedDrone.flight_hours).toFixed(1) + "h"
                 : "-"}
             </div>

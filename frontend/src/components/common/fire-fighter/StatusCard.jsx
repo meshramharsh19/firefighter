@@ -8,17 +8,18 @@ export default function StatusCard({
   icon,
   variant = "default",
   trend,
+  onClick,          // ✅ ADD
 }) {
   const getVariantStyles = () => {
     switch (variant) {
-      case "danger": // for incidents (Red)
+      case "danger":
         return "border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300";
-      case "warning": // yellow/orange
+      case "warning":
         return "border-yellow-400/40 bg-yellow-500/10 shadow-[0_0_15px_-2px_rgba(255,200,0,0.25)]";
-      case "success": // green
+      case "success":
         return "border-green-500/40 bg-green-500/10 shadow-[0_0_15px_-2px_rgba(0,255,0,0.25)]";
       default:
-        return "border-[#2A2B2E] bg-[#17181A]"; // default card dark
+        return "border-[#2A2B2E] bg-[#17181A]";
     }
   };
 
@@ -42,12 +43,21 @@ export default function StatusCard({
 
   return (
     <Card
+      onClick={onClick}                 // ✅ ATTACH CLICK
+      role="button"                     // ✅ accessibility
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && onClick) {
+          onClick();
+        }
+      }}
       className={`
+        cursor-pointer                  // ✅ pointer
         ${getVariantStyles()} text-gray-200 
         rounded-xl border transition-all duration-200 
         hover:scale-[1.03] hover:border-gray-500/40
       `}
-      style={{ backgroundColor: "transparent" }} // ensures MUI doesn't override bg
+      style={{ backgroundColor: "transparent" }}
     >
       <CardContent className="p-5">
         <div className="flex items-center justify-between">

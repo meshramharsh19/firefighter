@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+/* ================= HEADERS ================= */
 header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -13,15 +14,37 @@ require "../../helpers/logActivity.php";
 /* ================= READ INPUT ================= */
 $data = $_POST;
 
+/* ================= BASIC VALIDATION ================= */
 if (
     empty($data['drone_code']) ||
     empty($data['drone_name']) ||
     empty($data['status']) ||
-    empty($data['station'])
+    empty($data['station']) ||
+    !isset($data['flight_hours']) ||
+    empty($data['health_status']) ||
+    empty($data['firmware_version']) ||
+    !isset($data['is_ready'])
 ) {
-    echo json_encode(["success" => false, "message" => "Missing required fields"]);
+    echo json_encode([
+        "success" => false,
+        "message" => "Missing required fields"
+    ]);
     exit;
 }
+
+/* ================= VALIDATE FLIGHT HOURS ================= */
+$flight_hours = floatval($data['flight_hours']);
+
+if ($flight_hours < 0) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Flight hours cannot be negative"
+    ]);
+    exit;
+}
+
+/* ================= NORMALIZE IS_READY ================= */
+$is_ready = ($data['is_ready'] == "1" || $data['is_ready'] == 1) ? 1 : 0;
 
 /* ================= CURRENT USER (FOR LOG) ================= */
 $logUser = $_SESSION["user"] ?? [
@@ -33,27 +56,37 @@ $logUser = $_SESSION["user"] ?? [
 try {
     $conn->begin_transaction();
 
-    /* --------------------------------------------
-       STEP 1: INSERT DRONE
-    ---------------------------------------------*/
+    /* ================= INSERT DRONE ================= */
     $sql = "
         INSERT INTO drones 
-        (drone_code, drone_name, ward, status, battery, flight_hours, health_status, firmware_version, is_ready, station)
-        VALUES (?,?,?,?,?,?,?,?,?,?)
+        (
+            drone_code,
+            drone_name,
+            status,
+            flight_hours,
+            health_status,
+            firmware_version,
+            is_ready,
+            station
+        )
+        VALUES (?,?,?,?,?,?,?,?)
     ";
 
     $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        throw new Exception("Prepare failed");
+    }
+
     $stmt->bind_param(
-        "ssssddssis",
+        "sssdssss",
         $data['drone_code'],
         $data['drone_name'],
-        $data['ward'],
         $data['status'],
-        $data['battery'],
-        $data['flight_hours'],
+        $flight_hours,
         $data['health_status'],
         $data['firmware_version'],
-        $data['is_ready'],
+        $is_ready,
         $data['station']
     );
 
@@ -63,9 +96,7 @@ try {
 
     $stmt->close();
 
-    /* --------------------------------------------
-       STEP 2: AUDIT LOG
-    ---------------------------------------------*/
+    /* ================= AUDIT LOG ================= */
     logActivity(
         $conn,
         $logUser,
@@ -77,7 +108,10 @@ try {
 
     $conn->commit();
 
-    echo json_encode(["success" => true]);
+    echo json_encode([
+        "success" => true,
+        "message" => "Drone added successfully"
+    ]);
 
 } catch (Exception $e) {
 

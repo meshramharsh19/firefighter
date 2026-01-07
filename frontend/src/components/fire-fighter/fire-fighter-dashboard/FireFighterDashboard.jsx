@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SummaryStatsGrid from "@/components/fire-fighter/fire-fighter-dashboard/SummaryStatsGrid.jsx";
 import IncidentStreamTable from "@/components/fire-fighter/fire-fighter-dashboard/IncidentStreamTable.jsx";
 import VehicleAvailabilityPanel from "@/components/fire-fighter/fire-fighter-dashboard/VehicleAvailabilityPanel.jsx";
@@ -8,10 +8,12 @@ import useUserInfo from "@/components/common/auth/useUserInfo";
 const API = "http://localhost/fire-fighter-new/backend/controllers";
 
 export default function FireFighterDashboard() {
-  const { station, role, name } = useUserInfo();   
+  const { station, role, name } = useUserInfo();
 
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [incidentFilter, setIncidentFilter] = useState("all");
+  const tableRef = useRef(null); // ✅ ADD
 
   // 🔥 Fetch Incidents for logged-in user's station only
   useEffect(() => {
@@ -20,7 +22,9 @@ export default function FireFighterDashboard() {
       return;
     }
 
-    const url = `${API}/incidents.php?station=${encodeURIComponent(station)}`;
+    const url = `${API}/incidents/incidents.php?station=${encodeURIComponent(
+      station
+    )}`;
 
     fetch(url)
       .then((res) => res.json())
@@ -31,14 +35,11 @@ export default function FireFighterDashboard() {
               id: inc.id,
               name: inc.name,
               location: inc.location,
-              latitude: inc.latitude,       // ⬅ FIXED
-              longitude: inc.longitude,     // ⬅ FIXED
+              latitude: inc.latitude,
+              longitude: inc.longitude,
               status: inc.status?.toLowerCase(),
-              time: new Date(inc.time).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              }),
+              timeReported: inc.time, // ✅ KEEP RAW DATE
+              isNewAlert: inc.isNewAlert,
             }))
           );
         }
@@ -50,8 +51,7 @@ export default function FireFighterDashboard() {
       });
   }, [station]);
 
-  if (loading)
-    return <p className="text-white p-4">Loading incidents...</p>;
+  if (loading) return <p className="text-white p-4">Loading incidents...</p>;
 
   if (!station) {
     return (
@@ -65,28 +65,44 @@ export default function FireFighterDashboard() {
 
   return (
     <div className="min-h-screen bg-[#0d0d0f] text-gray-200">
-
       <main className="min-h-[calc(100vh-64px)]">
         <div className="container mx-auto px-6 py-6 space-y-8">
-
           {/* Summary */}
           <div className="bg-[#131416] rounded-xl p-4 shadow-md border border-[#1e1f22]">
-            <SummaryStatsGrid />
-          </div>
+            <SummaryStatsGrid
+              activeFilter={incidentFilter}
+              onFilterChange={(filter) => {
+                setIncidentFilter(filter);
 
+                // 👇 smooth scroll to table
+                setTimeout(() => {
+                  tableRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }, 100);
+              }}
+            />
+          </div>
 
           <IncidentAlertFeed apiBase={API} station={station} />
 
           {/* Incident Table */}
-          <div className="bg-[#131416] rounded-xl p-4 shadow border border-[#1e1f22]">
-            <IncidentStreamTable incidents={incidents} />
+          <div
+            ref={tableRef} // ✅ ADD
+            className="bg-[#131416] rounded-xl p-4 shadow border border-[#1e1f22]"
+          >
+            <IncidentStreamTable
+              incidents={incidents}
+              filter={incidentFilter}
+              onFilterChange={setIncidentFilter}
+            />
           </div>
 
           {/* Vehicle Panel */}
           <div className="bg-[#131416] rounded-xl p-5 shadow border border-[#1e1f22]">
             <VehicleAvailabilityPanel />
           </div>
-
         </div>
       </main>
     </div>

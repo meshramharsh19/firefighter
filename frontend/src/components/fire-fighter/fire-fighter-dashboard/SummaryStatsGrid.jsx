@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import StatusCard from "@/components/common/fire-fighter/StatusCard";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
-export default function SummaryStatsGrid() {
+export default function SummaryStatsGrid({ onFilterChange }) {
   const { station } = useUserInfo(); // Logged-in user's station
 
   const [stats, setStats] = useState(null);
@@ -42,6 +42,7 @@ export default function SummaryStatsGrid() {
       value: stats.today_count,
       icon: "CalendarCheck",
       variant: "danger",
+      filterKey: "today",
     },
     {
       id: 2,
@@ -49,6 +50,7 @@ export default function SummaryStatsGrid() {
       value: stats.month_count,
       icon: "Calendar",
       variant: "danger",
+      filterKey: "month",
     },
     {
       id: 3,
@@ -56,6 +58,7 @@ export default function SummaryStatsGrid() {
       value: stats.inprogress_count,
       icon: "Activity",
       variant: "danger",
+      filterKey: "active",
     },
     {
       id: 4,
@@ -63,6 +66,7 @@ export default function SummaryStatsGrid() {
       value: stats.critical_count,
       icon: "AlertTriangle",
       variant: "danger",
+      filterKey: "critical",
     },
   ];
 
@@ -75,6 +79,7 @@ export default function SummaryStatsGrid() {
           value={stat.value}
           icon={stat.icon}
           variant={stat.variant}
+          onClick={() => onFilterChange(stat.filterKey)}
           className="
             bg-[#131416]
             border border-white/10
