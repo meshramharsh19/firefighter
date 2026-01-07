@@ -34,8 +34,7 @@ const darkIncidentTheme = createTheme({
   },
 });
 
-const API =
-  "http://localhost/fire-fighter-new/backend/controllers";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function ConfirmLocationPage() {
   const { id } = useParams();
@@ -52,7 +51,7 @@ export default function ConfirmLocationPage() {
   const [selectedStationName, setSelectedStationName] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/incidents/get_incidents.php`)
+    fetch(`${API_BASE}/incidents/get_incidents.php`)
       .then((res) => res.json())
       .then((data) => {
         const inc = data.find((i) => i.id === id);

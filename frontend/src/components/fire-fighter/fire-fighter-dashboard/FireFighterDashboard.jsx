@@ -5,7 +5,7 @@ import VehicleAvailabilityPanel from "@/components/fire-fighter/fire-fighter-das
 import IncidentAlertFeed from "@/components/fire-fighter/fire-fighter-dashboard/IncidentAlertFeed";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function FireFighterDashboard() {
   const { station, role, name } = useUserInfo();
@@ -22,7 +22,7 @@ export default function FireFighterDashboard() {
       return;
     }
 
-    const url = `${API}/incidents/incidents.php?station=${encodeURIComponent(
+    const url = `${API_BASE}/incidents/incidents.php?station=${encodeURIComponent(
       station
     )}`;
 
@@ -85,7 +85,7 @@ export default function FireFighterDashboard() {
             />
           </div>
 
-          <IncidentAlertFeed apiBase={API} station={station} />
+          <IncidentAlertFeed IncidentAPI_BASE={API_BASE} station={station} />
 
           {/* Incident Table */}
           <div

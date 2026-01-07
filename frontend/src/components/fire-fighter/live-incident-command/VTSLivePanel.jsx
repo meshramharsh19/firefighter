@@ -4,8 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import SafeIcon from "@/components/common/SafeIcon";
 import { Chip } from "@mui/material";
 
+const BASE_API = import.meta.env.VITE_API_BASE_URL;
+
 const INCIDENT_API =
-  "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php";
+  `${BASE_API}/incidents/get_incidents.php`;
 
 export default function VTSLivePanel({
   onMaximize,

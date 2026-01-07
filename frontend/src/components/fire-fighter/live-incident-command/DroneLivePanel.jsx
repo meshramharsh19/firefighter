@@ -5,6 +5,7 @@ import SafeIcon from "@/components/common/SafeIcon";
 import { useParams } from "react-router-dom";
 import { Chip } from "@mui/material";
 
+const BASE_API = import.meta.env.VITE_API_BASE_URL;
 // 🔁 FRONTEND MAPPING (SECOND OPTION)
 const DRONE_CODE_TO_DB_ID = {
   "DRN-002": 101,
@@ -12,7 +13,7 @@ const DRONE_CODE_TO_DB_ID = {
 };
 
 const INCIDENT_API =
-  "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php";
+  `${BASE_API}/incidents/get_incidents.php`;
 
 export default function DroneLivePanel({
   incidentId,

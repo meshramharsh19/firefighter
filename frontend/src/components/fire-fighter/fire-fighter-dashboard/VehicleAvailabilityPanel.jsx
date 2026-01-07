@@ -7,7 +7,7 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import SafeIcon from "@/components/common/SafeIcon";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function VehicleAvailabilityPanel() {
 
@@ -22,10 +22,10 @@ export default function VehicleAvailabilityPanel() {
     if (!station) return;
 
     async function load() {
-      const v = await fetch(`${API}/admin/admin-vehicle/get_vehicles.php?station=${encodeURIComponent(station)}`)
+      const v = await fetch(`${API_BASE}/admin/admin-vehicle/get_vehicles.php?station=${encodeURIComponent(station)}`)
                         .then(r=>r.json());
 
-      const d = await fetch(`${API}/active_drones.php?station=${encodeURIComponent(station)}`)
+      const d = await fetch(`${API_BASE}/active_drones.php?station=${encodeURIComponent(station)}`)
                         .then(r=>r.json());
 
       setVehicles(v);

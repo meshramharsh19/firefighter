@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import SafeIcon from "@/components/common/SafeIcon";
 
-export default function IncidentAlertFeed({ apiBase, station }) {
+export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   const [incidents, setIncidents] = useState([]);
   const [playedAlerts, setPlayedAlerts] = useState(new Set());
 
@@ -30,7 +30,7 @@ export default function IncidentAlertFeed({ apiBase, station }) {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${apiBase}/incidents/get_incidents.php?station=${encodeURIComponent(station)}`);
+        const res = await fetch(`${IncidentAPI_BASE}/incidents/get_incidents.php?station=${encodeURIComponent(station)}`);
         const data = await res.json();
         setIncidents(data);
       } catch (e) {
@@ -41,7 +41,7 @@ export default function IncidentAlertFeed({ apiBase, station }) {
     fetchIncidents();
     const interval = setInterval(fetchIncidents, 5000);
     return () => clearInterval(interval);
-  }, [apiBase]);
+  }, [IncidentAPI_BASE]);
 
   /** 🔔 Alert Sound for NEW incident (only once) */
   useEffect(() => {

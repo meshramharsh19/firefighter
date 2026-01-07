@@ -14,6 +14,8 @@ import BusinessIcon from "@mui/icons-material/Business";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import FlightIcon from "@mui/icons-material/Flight";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function calculateDistanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -37,12 +39,12 @@ export default function SuggestedStationsPanel({
   useEffect(() => {
     async function loadData() {
       const incidentRes = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/incidents/get_incidents.php"
+        `${API_BASE}/incidents/get_incidents.php`
       );
       const incidents = await incidentRes.json();
 
       const stationRes = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/admin/station/get_stations.php"
+        `${API_BASE}/admin/station/get_stations.php`
       );
       const stationData = await stationRes.json();
 

@@ -31,6 +31,8 @@ import SelectionSummary from "./SelectionSummary";
 // Theme
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const darkIncidentTheme = createTheme({
   palette: {
     mode: "dark",
@@ -130,13 +132,13 @@ export default function VehicleDroneSelectionPage() {
       try {
         // Vehicles
         const vehRes = await fetch(
-          "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/get_vehicles.php"
+          `${API_BASE}/admin/admin-vehicle/get_vehicles.php`
         );
         const vehJson = await vehRes.json();
 
         // Drones (station-filtered from backend)
         const droneRes = await fetch(
-          "http://localhost/fire-fighter-new/backend/controllers/get_drones.php",
+          `${API_BASE}/get_drones.php`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -147,7 +149,7 @@ export default function VehicleDroneSelectionPage() {
 
         // Stations (only for suggestion card)
         const stationRes = await fetch(
-          "http://localhost/fire-fighter-new/backend/controllers/get_firestations.php"
+          `${API_BASE}/get_firestations.php`
         );
         const stationJson = await stationRes.json();
 

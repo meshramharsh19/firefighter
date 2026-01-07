@@ -7,6 +7,8 @@ export default function SummaryStatsGrid({ onFilterChange }) {
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     if (!station) {
@@ -14,7 +16,7 @@ export default function SummaryStatsGrid({ onFilterChange }) {
       return;
     }
 
-    const url = `http://localhost/fire-fighter-new/backend/controllers/get_summary.php?station=${encodeURIComponent(
+    const url = `${API_BASE}/get_summary.php?station=${encodeURIComponent(
       station
     )}`;
 

@@ -25,7 +25,7 @@ import StationContext from "./components/admin/admin-station/StationContext";
 
 
 // Fire Fighter Pages
-import FireOpsDashboard from "./pages/fire-fighter/DroneActivation";
+// import FireOpsDashboard from "./pages/fire-fighter/DroneActivation";
 import ConfirmLocation from "./pages/fire-fighter/ConfirmLocation";
 import VehicleDroneSelection from "./pages/fire-fighter/VehicleDroneSelection";
 import FireFighterPage from "./pages/fire-fighter/FireFighterPage";
@@ -77,7 +77,7 @@ function App() {
               </RoleProtectedRoute>
             </ProtectedRoute>
           }>
-            <Route path="/fire-dashboard" element={<FireOpsDashboard />} />
+            {/* <Route path="/fire-dashboard" element={<FireOpsDashboard />} /> */}
             <Route path="/confirm-location/:id" element={<ConfirmLocation />} />
             <Route path="/vehicle-drone-selection/:id" element={<VehicleDroneSelection />} />
             <Route path="/fire-fighter-dashboard" element={<FireFighterPage/>} />
