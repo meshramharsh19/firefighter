@@ -23,7 +23,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-monitoring";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-drone-monitoring`;
 
 export default function DroneMonitoringContent() {
   const [viewMode, setViewMode] = useState("map");

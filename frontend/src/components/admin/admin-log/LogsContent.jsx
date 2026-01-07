@@ -3,8 +3,9 @@ import LogsFilters from "./LogsFilters";
 import LogsTable from "./LogsTable";
 import LogsPagination from "./LogsPagination";
 
-const LOGS_API =
-  "http://localhost/fire-fighter-new/backend/controllers/logs/get_logs.php";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-logs/get_logs.php`;
+
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
@@ -32,7 +33,7 @@ export default function LogsPage() {
         limit: filters.limit,
       });
 
-      const res = await fetch(`${LOGS_API}?${params.toString()}`, {
+      const res = await fetch(`${API}?${params.toString()}`, {
         credentials: "include",
       });
 
