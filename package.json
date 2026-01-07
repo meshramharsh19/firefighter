@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "install": "^0.13.0",
-    "leaflet": "^1.9.4",
-    "npm": "^11.7.0",
-    "react-hot-toast": "^2.6.0",
-    "react-leaflet": "^5.0.0"
-  }
-}

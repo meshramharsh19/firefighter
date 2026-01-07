@@ -23,7 +23,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers";
+const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-monitoring";
 
 export default function DroneMonitoringContent() {
   const [viewMode, setViewMode] = useState("map");

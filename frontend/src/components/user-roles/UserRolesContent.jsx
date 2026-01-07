@@ -37,7 +37,7 @@ export default function UserRoleManagementPage() {
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/get_all_users.php"
+        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/get_all_users.php"
       );
       const data = await res.json();
 
@@ -62,7 +62,7 @@ export default function UserRoleManagementPage() {
   const handleEdit = async (userId) => {
     try {
       const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/get_user_by_id.php",
+        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/get_user_by_id.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -108,7 +108,7 @@ export default function UserRoleManagementPage() {
 
     try {
       const response = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/update_user_status.php",
+        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/update_user_status.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

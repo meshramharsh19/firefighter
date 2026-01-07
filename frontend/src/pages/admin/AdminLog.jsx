@@ -1,5 +1,5 @@
 import React from 'react'
-import AdminLogs from '../../components/admin/admin-log/LogsPage'
+import AdminLogs from '../../components/admin/admin-log/LogsContent'
 
 const AdminLog = () => {
   return (

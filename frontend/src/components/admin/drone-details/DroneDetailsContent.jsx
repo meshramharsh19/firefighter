@@ -58,7 +58,7 @@ export default function DroneDetailsContent() {
 
   const defaultPune = { lat: 18.5204, lng: 73.8567 };
 
-  const API = "http://localhost/fire-fighter-new/backend/controllers/drones";
+  const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-details";
 
   useEffect(() => {
     fetch(`${API}/getstations.php`)
@@ -317,7 +317,7 @@ export default function DroneDetailsContent() {
           setShowAddDialog(false);
           fetchDronesBystation(newDrone.station);
         } else {
-          toast.error(data.error);
+          toast.error(data.error || "Drone code already exists");
         }
       });
   };
@@ -1175,7 +1175,7 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
   useEffect(() => {
     if (station) {
       fetch(
-        `http://localhost/fire-fighter-new/backend/controllers/drones/getPilotsByStation.php?station=${station}`,
+        `http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-details/getPilotsByStation.php?station=${station}`,
       )
         .then((res) => res.json())
         .then((data) => setPilots(data));

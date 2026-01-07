@@ -4,7 +4,7 @@ import DashboardMapSection from "./DashboardMapSection";
 import DashboardSummaryCard from "./DashboardSummaryCard";
 import QuickAccessLinks from "./QuickAccessLinks";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers";
+const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-dashboard";
 
 export default function DashboardContent() {
   const [stats, setStats] = useState({
