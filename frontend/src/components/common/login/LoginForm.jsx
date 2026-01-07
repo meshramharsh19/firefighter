@@ -22,6 +22,9 @@ import {
   Lock,
 } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/common/login`;
+
 // ---------------- OTP INPUT ----------------
 const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   const inputRefs = useRef([]);
@@ -107,14 +110,11 @@ export default function LoginForm() {
     setState((p) => ({ ...p, isLoading: true }));
 
     try {
-      const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/check_mobile.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: mobile }),
-        }
-      );
+      const res = await fetch(`${API}/check_mobile.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: mobile }),
+      });
 
       const result = await res.json();
 
@@ -164,15 +164,12 @@ export default function LoginForm() {
     setState((p) => ({ ...p, isLoading: true }));
 
     try {
-      const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/get_user.php",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: state.mobileNumber }),
-        }
-      );
+      const res = await fetch(`${API}/get_user.php`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: state.mobileNumber }),
+      });
 
       const result = await res.json();
 
@@ -190,7 +187,6 @@ export default function LoginForm() {
         return;
       }
 
-      // 🔥🔥🔥 IMPORTANT FIX HERE 🔥🔥🔥
       const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
       const sessionExpiry = Date.now() + SESSION_DURATION;
 
@@ -203,7 +199,7 @@ export default function LoginForm() {
           role: user.role,
           station: user.station,
           designation: user.designation,
-          sessionExpiry, // ✅ REQUIRED FOR HEADER TIMER
+          sessionExpiry,
         })
       );
 
@@ -313,13 +309,7 @@ export default function LoginForm() {
                 {state.isLoading ? "Verifying..." : "Verify OTP"}
               </Button>
 
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
                 <Button
                   startIcon={<ArrowLeft size={16} />}
                   onClick={() => setState((p) => ({ ...p, step: "mobile" }))}
