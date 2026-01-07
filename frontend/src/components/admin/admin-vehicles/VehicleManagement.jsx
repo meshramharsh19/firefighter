@@ -12,7 +12,8 @@ import VehicleMap from "./VehicleMap";
 import AddVehicleModal from "./AddVehicleModal";
 import VehicleDetailsModal from "./VehicleDetailsModal";
 
-const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-vehicle`;
 
 export default function VehicleManagement() {
   const [vehicles, setVehicles] = useState([]);

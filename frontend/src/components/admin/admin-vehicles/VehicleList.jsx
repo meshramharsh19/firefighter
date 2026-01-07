@@ -1,5 +1,3 @@
-const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/";
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import SafeIcon from "@/components/common/SafeIcon";
 import StatusBadge from "@/components/common/StatusBadge";
 import EditVehicleModal from "./EditVehicleModal";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-vehicle`;
 
 export default function VehicleList({
   vehicles: initialVehicles,

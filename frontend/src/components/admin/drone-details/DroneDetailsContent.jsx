@@ -34,6 +34,9 @@ import { toast } from "react-hot-toast";
 
 const showError = (msg) => toast.error(msg);
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-drone-details`;
+
 export default function DroneDetailsContent() {
   const [selectedDrones] = useState(MOCK_DRONES[0]);
 
@@ -56,9 +59,9 @@ export default function DroneDetailsContent() {
     status: "",
   });
 
+
   const defaultPune = { lat: 18.5204, lng: 73.8567 };
 
-  const API = "http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-details";
 
   useEffect(() => {
     fetch(`${API}/getstations.php`)
@@ -1175,7 +1178,7 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
   useEffect(() => {
     if (station) {
       fetch(
-        `http://localhost/fire-fighter-new/backend/controllers/admin/admin-drone-details/getPilotsByStation.php?station=${station}`,
+        `${API}/getPilotsByStation.php?station=${station}`,
       )
         .then((res) => res.json())
         .then((data) => setPilots(data));

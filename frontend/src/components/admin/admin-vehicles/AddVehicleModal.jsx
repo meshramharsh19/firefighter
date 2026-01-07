@@ -10,8 +10,10 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
-const STATION_API =
-  "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/getStations.php";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/admin-vehicle/getStations.php`;
+
 
 /* ---------- VALIDATORS ---------- */
 const isAlphaSpace = (v) => /^[A-Za-z\s]*$/.test(v);
@@ -52,7 +54,7 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
 
     resetForm();
 
-    fetch(STATION_API)
+    fetch(API)
       .then((res) => res.json())
       .then((data) => setStations(data || []))
       .catch(() => {
