@@ -64,7 +64,7 @@ export default function DroneDetailsContent() {
 
 
   useEffect(() => {
-    fetch(`${API}/getstations.php`)
+    fetch(`${API}/getStations.php`)
       .then((res) => res.json())
       .then((data) => {
         setstations(data);
