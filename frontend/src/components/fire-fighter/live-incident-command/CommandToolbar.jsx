@@ -87,6 +87,16 @@ export default function CommandToolbar({
             <SafeIcon name="Focus" className="mr-2 h-4 w-4" />
             Focus
           </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              window.location.href = "http://13.127.220.89:8081/";
+            }}
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+          >
+            Control Panel
+          </Button>
         </div>
 
         {/* RIGHT: ACTIONS */}

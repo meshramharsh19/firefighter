@@ -39,7 +39,7 @@ export default function SuggestedStationsPanel({
   useEffect(() => {
     async function loadData() {
       const incidentRes = await fetch(
-        `${API_BASE}/incidents/get_incidents.php`
+        `${API_BASE}/fire-fighter/fire-fighter-dashboard/get_incidents.php`
       );
       const incidents = await incidentRes.json();
 

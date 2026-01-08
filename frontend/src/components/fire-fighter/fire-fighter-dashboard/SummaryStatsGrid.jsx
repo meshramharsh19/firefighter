@@ -9,6 +9,7 @@ export default function SummaryStatsGrid({ onFilterChange }) {
   const [loading, setLoading] = useState(true);
   
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const API = `${API_BASE}/fire-fighter/fire-fighter-dashboard`
 
   useEffect(() => {
     if (!station) {
@@ -16,7 +17,7 @@ export default function SummaryStatsGrid({ onFilterChange }) {
       return;
     }
 
-    const url = `${API_BASE}/get_summary.php?station=${encodeURIComponent(
+    const url = `${API}/get_summary.php?station=${encodeURIComponent(
       station
     )}`;
 

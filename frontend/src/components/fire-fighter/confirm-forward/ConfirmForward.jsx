@@ -14,16 +14,15 @@ import CheckIcon from "@mui/icons-material/Check";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/fire-fighter/confirm-forward`
 
-// const API_BASE =
-//   "http://localhost/fire-fighter-new/backend/controllers";
 
 export default function ConfirmForwardIncidence() {
   const { incidentId, stationName } = useParams();
   const navigate = useNavigate();
 
   const handleFinalConfirm = async () => {
-    await fetch(`${API_BASE_BASE}/incidents/forward_incident.php`, {
+    await fetch(`${API}/forward_incident.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

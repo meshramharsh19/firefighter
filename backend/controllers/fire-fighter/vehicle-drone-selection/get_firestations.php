@@ -7,7 +7,7 @@ header("Access-Control-Allow-Headers: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Content-Type: application/json; charset=utf-8");
 
-require "../config/db.php";
+require "../../../config/db.php";
 
 // We will take distinct station names from vehicles and drones (safe if you don't have a dedicated stations table)
 $stations = [];

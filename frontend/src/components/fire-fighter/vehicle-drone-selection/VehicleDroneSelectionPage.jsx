@@ -32,6 +32,7 @@ import SelectionSummary from "./SelectionSummary";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/fire-fighter/vehicle-drone-selection`;
 
 const darkIncidentTheme = createTheme({
   palette: {
@@ -138,7 +139,7 @@ export default function VehicleDroneSelectionPage() {
 
         // Drones (station-filtered from backend)
         const droneRes = await fetch(
-          `${API_BASE}/get_drones.php`,
+          `${API}/get_drones.php`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -149,7 +150,7 @@ export default function VehicleDroneSelectionPage() {
 
         // Stations (only for suggestion card)
         const stationRes = await fetch(
-          `${API_BASE}/get_firestations.php`
+          `${API}/get_firestations.php`
         );
         const stationJson = await stationRes.json();
 

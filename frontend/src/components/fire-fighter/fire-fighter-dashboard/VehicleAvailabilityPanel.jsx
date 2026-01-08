@@ -25,7 +25,7 @@ export default function VehicleAvailabilityPanel() {
       const v = await fetch(`${API_BASE}/admin/admin-vehicle/get_vehicles.php?station=${encodeURIComponent(station)}`)
                         .then(r=>r.json());
 
-      const d = await fetch(`${API_BASE}/active_drones.php?station=${encodeURIComponent(station)}`)
+      const d = await fetch(`${API_BASE}/admin/admin-dashboard/active_drones.php?station=${encodeURIComponent(station)}`)
                         .then(r=>r.json());
 
       setVehicles(v);

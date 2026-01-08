@@ -5,7 +5,11 @@ import VehicleAvailabilityPanel from "@/components/fire-fighter/fire-fighter-das
 import IncidentAlertFeed from "@/components/fire-fighter/fire-fighter-dashboard/IncidentAlertFeed";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
+// 🔥 BASE API (ONLY HERE)
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 🔥 MODULE API
+const API = `${API_BASE}/fire-fighter/fire-fighter-dashboard`;
 
 export default function FireFighterDashboard() {
   const { station, role, name } = useUserInfo();
@@ -13,16 +17,16 @@ export default function FireFighterDashboard() {
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [incidentFilter, setIncidentFilter] = useState("all");
-  const tableRef = useRef(null); // ✅ ADD
+  const tableRef = useRef(null);
 
-  // 🔥 Fetch Incidents for logged-in user's station only
+  // 🔥 Fetch Incidents
   useEffect(() => {
     if (!station) {
       setLoading(false);
       return;
     }
 
-    const url = `${API_BASE}/incidents/incidents.php?station=${encodeURIComponent(
+    const url = `${API}/incidents.php?station=${encodeURIComponent(
       station
     )}`;
 
@@ -38,7 +42,7 @@ export default function FireFighterDashboard() {
               latitude: inc.latitude,
               longitude: inc.longitude,
               status: inc.status?.toLowerCase(),
-              timeReported: inc.time, // ✅ KEEP RAW DATE
+              timeReported: inc.time,
               isNewAlert: inc.isNewAlert,
             }))
           );
@@ -70,11 +74,11 @@ export default function FireFighterDashboard() {
           {/* Summary */}
           <div className="bg-[#131416] rounded-xl p-4 shadow-md border border-[#1e1f22]">
             <SummaryStatsGrid
+              apiBase={API}
+              station={station}
               activeFilter={incidentFilter}
               onFilterChange={(filter) => {
                 setIncidentFilter(filter);
-
-                // 👇 smooth scroll to table
                 setTimeout(() => {
                   tableRef.current?.scrollIntoView({
                     behavior: "smooth",
@@ -85,11 +89,15 @@ export default function FireFighterDashboard() {
             />
           </div>
 
-          <IncidentAlertFeed IncidentAPI_BASE={API_BASE} station={station} />
+          {/* Alerts */}
+          <IncidentAlertFeed
+            IncidentAPI_BASE={API}
+            station={station}
+          />
 
           {/* Incident Table */}
           <div
-            ref={tableRef} // ✅ ADD
+            ref={tableRef}
             className="bg-[#131416] rounded-xl p-4 shadow border border-[#1e1f22]"
           >
             <IncidentStreamTable
@@ -101,7 +109,10 @@ export default function FireFighterDashboard() {
 
           {/* Vehicle Panel */}
           <div className="bg-[#131416] rounded-xl p-5 shadow border border-[#1e1f22]">
-            <VehicleAvailabilityPanel />
+            <VehicleAvailabilityPanel
+              apiBase={API}
+              station={station}
+            />
           </div>
         </div>
       </main>

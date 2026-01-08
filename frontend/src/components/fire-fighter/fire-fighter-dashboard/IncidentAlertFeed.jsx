@@ -30,7 +30,7 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${IncidentAPI_BASE}/incidents/get_incidents.php?station=${encodeURIComponent(station)}`);
+        const res = await fetch(`${IncidentAPI_BASE}/get_incidents.php?station=${encodeURIComponent(station)}`);
         const data = await res.json();
         setIncidents(data);
       } catch (e) {

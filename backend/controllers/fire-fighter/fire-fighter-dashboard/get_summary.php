@@ -4,7 +4,7 @@ header("Access-Control-Allow-Headers: *");
 header("Access-Control-Allow-Methods: GET, POST");
 header("Content-Type: application/json");
 
-require "../config/db.php";
+require "../../../config/db.php";
 
 // ⛔ Fail-safe if station name not sent
 $station = isset($_GET['station']) ? mysqli_real_escape_string($conn, $_GET['station']) : null;
