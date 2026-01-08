@@ -22,7 +22,11 @@ export default function ConfirmForwardIncidence() {
   const navigate = useNavigate();
 
   const handleFinalConfirm = async () => {
+<<<<<<< HEAD
     await fetch(`${API}/forward_incident.php`, {
+=======
+    await fetch(`${API_BASE}/incidents/forward_incident.php`, {
+>>>>>>> e86e9b12c46367c94196e14498731d75dee730e1
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
