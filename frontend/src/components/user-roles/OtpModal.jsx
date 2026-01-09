@@ -7,7 +7,8 @@ export default function OtpModal({ isDark, otpModal, setOtpModal, updateStatus }
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState("");
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const API = `${API_BASE}/admin/admin-user-roles`;
   const closeModal = () => {
     setOtp("");
     setReason("");
@@ -29,7 +30,7 @@ export default function OtpModal({ isDark, otpModal, setOtpModal, updateStatus }
 
     try {
       const response = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/update_user_status.php",
+        `${API_BASE}/update_user_status.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

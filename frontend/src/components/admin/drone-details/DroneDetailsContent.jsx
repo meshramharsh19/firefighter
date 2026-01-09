@@ -37,6 +37,7 @@ const showError = (msg) => toast.error(msg);
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/admin/admin-drone-details`;
 
+
 export default function DroneDetailsContent() {
   const [selectedDrones] = useState(MOCK_DRONES[0]);
 
@@ -59,10 +60,9 @@ export default function DroneDetailsContent() {
     status: "",
   });
 
-
   const defaultPune = { lat: 18.5204, lng: 73.8567 };
 
-
+  
   useEffect(() => {
     fetch(`${API}/getStations.php`)
       .then((res) => res.json())
@@ -78,7 +78,7 @@ export default function DroneDetailsContent() {
   }, []);
 
   const fetchDronesBystation = (station) => {
-    fetch(`${API}/getDronesBystation.php?station=${station}`)
+    fetch(`${API}/getDronesByStation.php?station=${station}`)
       .then((res) => res.json())
       .then((data) => {
         setDrones(data);
@@ -287,15 +287,14 @@ export default function DroneDetailsContent() {
   const [newDrone, setNewDrone] = useState({
     drone_code: "",
     drone_name: "",
-    ward: "",
     status: "standby",
-    battery: "",
     flight_hours: 0,
     health_status: "Optimal",
     firmware_version: "",
-    is_ready: 1,
+    is_ready: 1, // 1 = Yes, 0 = No
     station: "",
   });
+
 
   const addDrone = () => {
     if (!isAddDroneFormValid()) {
@@ -320,34 +319,38 @@ export default function DroneDetailsContent() {
           setShowAddDialog(false);
           fetchDronesBystation(newDrone.station);
         } else {
-          toast.error(data.error || "Drone code already exists");
+          toast.error(data.message);
         }
       });
+
   };
 
 
   const isAddDroneFormValid = () => {
-  const {
-    drone_code,
-    drone_name,
-    status,
-    flight_hours,
-    health_status,
-    firmware_version,
-    station,
-  } = newDrone;
+    const {
+      drone_code,
+      drone_name,
+      status,
+      flight_hours,
+      health_status,
+      firmware_version,
+      station,
+      is_ready
+    } = newDrone;
 
-  return (
-    drone_code.trim().length > 0 &&
-    drone_name.trim().length > 0 &&
-    status.trim().length > 0 &&
-    health_status.trim().length > 0 &&
-    firmware_version.trim().length > 0 &&
-    station.trim().length > 0 &&
-    typeof flight_hours === "number" &&
-    flight_hours >= 0
-  );
-};
+    return (
+      drone_code.trim() !== "" &&
+      drone_name.trim() !== "" &&
+      status.trim() !== "" &&
+      health_status.trim() !== "" &&
+      firmware_version.trim() !== "" &&
+      station.trim() !== "" &&
+      typeof flight_hours === "number" &&
+      flight_hours >= 0 &&
+      (is_ready === 0 || is_ready === 1)
+    );
+  };
+
 
 
   const isEditDroneFormChanged = () => {
@@ -465,7 +468,7 @@ export default function DroneDetailsContent() {
                 drone_code: "",
                 drone_name: "",                
                 status: "standby",
-                flight_hours: "",
+                flight_hours: 0,
                 health_status: "Optimal",
                 firmware_version: "",
                 is_ready: "Yes",
@@ -520,21 +523,6 @@ export default function DroneDetailsContent() {
             <InputField label="Drone Name" value={newDrone.drone_name}
               onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })} />
 
-            {/* <InputField label="Ward" value={newDrone.ward}
-              onChange={(v) => setNewDrone({ ...newDrone, ward: v })} />
-
-            <InputField label="Battery (%)" type="number" value={newDrone.battery}
-              onChange={(v) => {
-                let value = Number(v);
-
-                if (value > 100) {
-                  toast.error("Battery cannot exceed 100%");
-                  value = 100;
-                }
-
-                setNewDrone({ ...newDrone, battery: value });
-              }} /> */}
-
             <InputField
               label="Flight Hours"
               type="number"
@@ -558,7 +546,6 @@ export default function DroneDetailsContent() {
               }}
             />
 
-
             <InputField label="Firmware Version" value={newDrone.firmware_version}
               onChange={(v) => setNewDrone({ ...newDrone, firmware_version: v })} />
 
@@ -575,16 +562,16 @@ export default function DroneDetailsContent() {
             {/* READY */}
             <SelectField
               label="Is Ready"
-              value={newDrone.is_ready === "1" ? "Yes" : "No"}
+              value={newDrone.is_ready === 1 ? "Yes" : "No"}
               options={["Yes", "No"]}
               onChange={(v) =>
                 setNewDrone({
                   ...newDrone,
-                  is_ready: v === "Yes" ? "1" : "0"
+                  is_ready: v === "Yes" ? 1 : 0
                 })
               }
             />
-
+            
             {/* STATION */}
             <SelectField label="Station" value={newDrone.station}
               options={stations}
@@ -1177,9 +1164,7 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
 
   useEffect(() => {
     if (station) {
-      fetch(
-        `${API}/getPilotsByStation.php?station=${station}`,
-      )
+      fetch(`${API}/getPilotsByStation.php?station=${station}`)
         .then((res) => res.json())
         .then((data) => setPilots(data));
     }

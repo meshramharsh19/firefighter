@@ -13,6 +13,9 @@ export default function RegistrationForm({
   const [message, setMessage] = useState(null);
   const [stations, setStations] = useState([]);
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const API = `${API_BASE}/admin/admin-user-roles`;
+
   const inputClass = `
     w-full px-4 py-3 pr-10 rounded-lg outline-none transition-all duration-200
     border appearance-none
@@ -37,7 +40,7 @@ export default function RegistrationForm({
 
   useEffect(() => {
     fetch(
-      "http://localhost/fire-fighter-new/backend/controllers/get_firestations.php"
+      `${API_BASE}/fire-fighter/vehicle-drone-selection/get_firestations.php`
     )
       .then((res) => res.json())
       .then((data) => data.success && setStations(data.stations));
@@ -51,8 +54,8 @@ export default function RegistrationForm({
     const isEdit = Boolean(editUserId);
 
     const url = isEdit
-      ? "http://localhost/fire-fighter-new/backend/controllers/update_user.php"
-      : "http://localhost/fire-fighter-new/backend/controllers/register_user.php";
+      ? `${API}/update_user.php`
+      : `${API}/register_user.php`;
 
     try {
       const res = await fetch(url, {

@@ -8,6 +8,9 @@ import toast from "react-hot-toast";
 
 export default function UserRoleManagementPage() {
   const { isDark } = useTheme();
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const API = `${API_BASE}/admin/admin-user-roles`;
+
 
   const roles = ["Pilot", "Fire Station Command Control", "Vehicle Driver"];
 
@@ -34,10 +37,11 @@ export default function UserRoleManagementPage() {
 
   const [otpModal, setOtpModal] = useState({ open: false, user: null });
 
+
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/get_all_users.php"
+        `${API}/get_all_users.php`
       );
       const data = await res.json();
 
@@ -62,7 +66,7 @@ export default function UserRoleManagementPage() {
   const handleEdit = async (userId) => {
     try {
       const res = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/get_user_by_id.php",
+        `${API}/get_user_by_id.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -108,7 +112,7 @@ export default function UserRoleManagementPage() {
 
     try {
       const response = await fetch(
-        "http://localhost/fire-fighter-new/backend/controllers/admin/admin-user-roles/update_user_status.php",
+        `${API}/update_user_status.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

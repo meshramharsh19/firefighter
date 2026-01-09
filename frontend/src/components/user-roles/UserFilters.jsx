@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 
 export default function UserFilters({ isDark, roles, filters, setFilters }) {
   const [stations, setStations] = useState([]); // 🔥 ADDED
-
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
   // 🔥 FETCH STATIONS (ONLY ADDITION)
   useEffect(() => {
     const fetchStations = async () => {
       try {
         const res = await fetch(
-          "http://localhost/fire-fighter-new/backend/controllers/get_firestations.php"
+          `${API_BASE}/fire-fighter/vehicle-drone-selection/get_firestations.php`
         );
         const data = await res.json();
 

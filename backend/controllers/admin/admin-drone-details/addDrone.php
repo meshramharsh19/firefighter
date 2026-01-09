@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 /* ================= HEADERS ================= */
 header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Access-Control-Allow-Credentials: true");
@@ -34,7 +39,6 @@ if (
 
 /* ================= VALIDATE FLIGHT HOURS ================= */
 $flight_hours = floatval($data['flight_hours']);
-
 if ($flight_hours < 0) {
     echo json_encode([
         "success" => false,
@@ -44,7 +48,7 @@ if ($flight_hours < 0) {
 }
 
 /* ================= NORMALIZE IS_READY ================= */
-$is_ready = ($data['is_ready'] == "1" || $data['is_ready'] == 1) ? 1 : 0;
+$is_ready = ($data['is_ready'] == 1 || $data['is_ready'] === "1") ? 1 : 0;
 
 /* ================= CURRENT USER (FOR LOG) ================= */
 $logUser = $_SESSION["user"] ?? [
@@ -55,6 +59,22 @@ $logUser = $_SESSION["user"] ?? [
 
 try {
     $conn->begin_transaction();
+
+    /* ================= DUPLICATE DRONE CODE CHECK ================= */
+    $checkSql = "SELECT id FROM drones WHERE drone_code = ? LIMIT 1";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bind_param("s", $data['drone_code']);
+    $checkStmt->execute();
+    $checkStmt->store_result();
+
+    if ($checkStmt->num_rows > 0) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Drone code already exists"
+        ]);
+        exit;
+    }
+    $checkStmt->close();
 
     /* ================= INSERT DRONE ================= */
     $sql = "
@@ -73,7 +93,6 @@ try {
     ";
 
     $stmt = $conn->prepare($sql);
-
     if (!$stmt) {
         throw new Exception("Prepare failed");
     }
