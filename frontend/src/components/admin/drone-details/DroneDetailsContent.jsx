@@ -37,7 +37,6 @@ const showError = (msg) => toast.error(msg);
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/admin/admin-drone-details`;
 
-
 export default function DroneDetailsContent() {
   const [selectedDrones] = useState(MOCK_DRONES[0]);
 
@@ -62,7 +61,6 @@ export default function DroneDetailsContent() {
 
   const defaultPune = { lat: 18.5204, lng: 73.8567 };
 
-  
   useEffect(() => {
     fetch(`${API}/getStations.php`)
       .then((res) => res.json())
@@ -153,7 +151,6 @@ export default function DroneDetailsContent() {
     }
   };
 
-
   const getStatusVariant = (status) => {
     switch (status) {
       case "patrolling":
@@ -209,7 +206,7 @@ export default function DroneDetailsContent() {
           fetchDroneDetails(selectedDrone.drone_code);
         } else {
           toast.error(
-            data.error || "Pilot is already assigned to another drone.",
+            data.error || "Pilot is already assigned to another drone."
           );
         }
       })
@@ -254,18 +251,16 @@ export default function DroneDetailsContent() {
 
     // 🧹 Cleanup when drone changes / component unmounts
     return () => clearInterval(interval);
-
   }, [selectedDrone?.drone_code]);
-
 
   const fetchDroneGps = (droneCode) => {
     fetch(`${API}/get_drone_locations.php?drone_code=${droneCode}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success && data.lat && data.lng) {
           setGpsLocation({
             lat: data.lat,
-            lng: data.lng
+            lng: data.lng,
           });
         } else {
           setGpsLocation(null);
@@ -279,8 +274,8 @@ export default function DroneDetailsContent() {
 
   const droneIcon = new L.Icon({
     iconUrl: "assets/images/drone.png", // ✅ correct public path
-    iconSize: [36, 36],                  // size adjust kar sakte ho
-    iconAnchor: [18, 18],                // center anchor
+    iconSize: [36, 36], // size adjust kar sakte ho
+    iconAnchor: [18, 18], // center anchor
     popupAnchor: [0, -18],
   });
 
@@ -295,7 +290,6 @@ export default function DroneDetailsContent() {
     station: "",
   });
 
-
   const addDrone = () => {
     if (!isAddDroneFormValid()) {
       toast.error("Please fill all fields");
@@ -303,17 +297,27 @@ export default function DroneDetailsContent() {
     }
 
     const formData = new FormData();
-    Object.entries(newDrone).forEach(([k, v]) =>
-      formData.append(k, v)
-    );
+    Object.entries(newDrone).forEach(([k, v]) => formData.append(k, v));
 
     fetch(`${API}/addDrone.php`, {
       method: "POST",
       credentials: "include",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        drone_code: "DR001",
+        drone_name: "Test Drone",
+        status: "ACTIVE",
+        flight_hours: 12,
+        health_status: "GOOD",
+        firmware_version: "1.0",
+        is_ready: 1,
+        station: "ST01",
+      }),
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success) {
           toast.success("Drone added successfully");
           setShowAddDialog(false);
@@ -322,9 +326,7 @@ export default function DroneDetailsContent() {
           toast.error(data.message);
         }
       });
-
   };
-
 
   const isAddDroneFormValid = () => {
     const {
@@ -335,7 +337,7 @@ export default function DroneDetailsContent() {
       health_status,
       firmware_version,
       station,
-      is_ready
+      is_ready,
     } = newDrone;
 
     return (
@@ -351,81 +353,78 @@ export default function DroneDetailsContent() {
     );
   };
 
-
-
   const isEditDroneFormChanged = () => {
     if (!originalDrone) return false;
 
     return (
       Number(editDrone.flight_hours) !== Number(originalDrone.flight_hours) ||
       editDrone.health_status !== originalDrone.health_status ||
-      editDrone.firmware_version.trim() !== originalDrone.firmware_version.trim() ||
+      editDrone.firmware_version.trim() !==
+        originalDrone.firmware_version.trim() ||
       editDrone.status !== originalDrone.status
     );
   };
 
   const pilot = MOCK_USERS.find(
-    (u) => u.id === selectedDrones.pilotAssigned.id,
+    (u) => u.id === selectedDrones.pilotAssigned.id
   );
-
 
   return (
     <div className="space-y-6 p-6">
       {/* Dropdown Filters */}
       <div className="flex gap-6 items-end">
-  {/* Station Selector */}
-  <div className="flex flex-col">
-    <label className="text-md font-medium text-muted-foreground mb-2">
-      Select station:
-    </label>
-    <select
-      className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
+        {/* Station Selector */}
+        <div className="flex flex-col">
+          <label className="text-md font-medium text-muted-foreground mb-2">
+            Select station:
+          </label>
+          <select
+            className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
         border border-[#2E2E2E] hover:border-[#dc2626]
         focus:outline-none focus:ring-1 focus:ring-[#dc2626]
         transition"
-      value={selectedstation}
-      onChange={(e) => {
-        const station = e.target.value;
-        setSelectedstation(station);
-        setSelectedDroneCode(""); // reset drone
-        fetchDronesBystation(station);
-      }}
-    >
-      {stations.map((w, i) => (
-        <option key={i} value={w}>
-          {w}
-        </option>
-      ))}
-    </select>
-  </div>
+            value={selectedstation}
+            onChange={(e) => {
+              const station = e.target.value;
+              setSelectedstation(station);
+              setSelectedDroneCode(""); // reset drone
+              fetchDronesBystation(station);
+            }}
+          >
+            {stations.map((w, i) => (
+              <option key={i} value={w}>
+                {w}
+              </option>
+            ))}
+          </select>
+        </div>
 
-  {/* Drone Selector */}
-  <div className="flex flex-col">
-    <label className="text-md font-medium text-muted-foreground mb-2">
-      Select Drone:
-    </label>
-    <select
-      className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
+        {/* Drone Selector */}
+        <div className="flex flex-col">
+          <label className="text-md font-medium text-muted-foreground mb-2">
+            Select Drone:
+          </label>
+          <select
+            className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12]
         border border-[#2E2E2E] hover:border-[#dc2626]
         focus:outline-none focus:ring-1 focus:ring-[#dc2626]
         transition"
-      disabled={!selectedstation}
-      value={selectedDrone ?.drone_code || ""}
-      onChange={(e) => {
-        const droneCode = e.target.value;
-        setSelectedDroneCode(droneCode);
-        fetchDroneDetails(droneCode);
-      }}
-    >
-      {drones.map((d, i) => (
-        <option key={i} value={d.drone_code}>
-          {d.drone_name}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
-
+            disabled={!selectedstation}
+            value={selectedDrone?.drone_code || ""}
+            onChange={(e) => {
+              const droneCode = e.target.value;
+              setSelectedDroneCode(droneCode);
+              fetchDroneDetails(droneCode);
+            }}
+          >
+            {drones.map((d, i) => (
+              <option key={i} value={d.drone_code}>
+                {d.drone_name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -442,9 +441,7 @@ export default function DroneDetailsContent() {
               <SafeIcon name="ArrowLeft" size={20} />
             </Button>
 
-            <h1 className="text-3xl font-bold">
-              {selectedDrone?.drone_name}
-            </h1>
+            <h1 className="text-3xl font-bold">{selectedDrone?.drone_name}</h1>
 
             <StatusBadge
               status={getStatusVariant(selectedDrone?.status)}
@@ -466,7 +463,7 @@ export default function DroneDetailsContent() {
             onClick={() => {
               setNewDrone({
                 drone_code: "",
-                drone_name: "",                
+                drone_name: "",
                 status: "standby",
                 flight_hours: 0,
                 health_status: "Optimal",
@@ -507,7 +504,6 @@ export default function DroneDetailsContent() {
         </div>
       </div>
 
-
       {/*Add Drone Dialog Box */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-lg bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
@@ -516,12 +512,17 @@ export default function DroneDetailsContent() {
           </DialogHeader>
 
           <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Drone Code"
+              value={newDrone.drone_code}
+              onChange={(v) => setNewDrone({ ...newDrone, drone_code: v })}
+            />
 
-            <InputField label="Drone Code" value={newDrone.drone_code}
-              onChange={(v) => setNewDrone({ ...newDrone, drone_code: v })} />
-
-            <InputField label="Drone Name" value={newDrone.drone_name}
-              onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })} />
+            <InputField
+              label="Drone Name"
+              value={newDrone.drone_name}
+              onChange={(v) => setNewDrone({ ...newDrone, drone_name: v })}
+            />
 
             <InputField
               label="Flight Hours"
@@ -541,23 +542,34 @@ export default function DroneDetailsContent() {
 
                 setNewDrone({
                   ...newDrone,
-                  flight_hours: value
+                  flight_hours: value,
                 });
               }}
             />
 
-            <InputField label="Firmware Version" value={newDrone.firmware_version}
-              onChange={(v) => setNewDrone({ ...newDrone, firmware_version: v })} />
+            <InputField
+              label="Firmware Version"
+              value={newDrone.firmware_version}
+              onChange={(v) =>
+                setNewDrone({ ...newDrone, firmware_version: v })
+              }
+            />
 
             {/* STATUS */}
-            <SelectField label="Status" value={newDrone.status}
+            <SelectField
+              label="Status"
+              value={newDrone.status}
               options={["patrolling", "active_mission", "standby", "offline"]}
-              onChange={(v) => setNewDrone({ ...newDrone, status: v })} />
+              onChange={(v) => setNewDrone({ ...newDrone, status: v })}
+            />
 
             {/* HEALTH */}
-            <SelectField label="Health Status" value={newDrone.health_status}
+            <SelectField
+              label="Health Status"
+              value={newDrone.health_status}
               options={["Optimal", "Degraded", "Requires Service"]}
-              onChange={(v) => setNewDrone({ ...newDrone, health_status: v })} />
+              onChange={(v) => setNewDrone({ ...newDrone, health_status: v })}
+            />
 
             {/* READY */}
             <SelectField
@@ -567,15 +579,18 @@ export default function DroneDetailsContent() {
               onChange={(v) =>
                 setNewDrone({
                   ...newDrone,
-                  is_ready: v === "Yes" ? 1 : 0
+                  is_ready: v === "Yes" ? 1 : 0,
                 })
               }
             />
-            
+
             {/* STATION */}
-            <SelectField label="Station" value={newDrone.station}
+            <SelectField
+              label="Station"
+              value={newDrone.station}
               options={stations}
-              onChange={(v) => setNewDrone({ ...newDrone, station: v })} />
+              onChange={(v) => setNewDrone({ ...newDrone, station: v })}
+            />
           </div>
 
           <Button
@@ -586,7 +601,6 @@ export default function DroneDetailsContent() {
           >
             Save Drone
           </Button>
-
         </DialogContent>
       </Dialog>
       {/*Edit Drone Details Dialog Box */}
@@ -714,7 +728,9 @@ export default function DroneDetailsContent() {
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${getHealthStatusColor(selectedDrone?.health_status)}`}
+              className={`text-2xl font-bold ${getHealthStatusColor(
+                selectedDrone?.health_status
+              )}`}
             >
               {selectedDrone?.health_status === "Optimal" ? "✓" : "⚠"}
             </div>
@@ -938,13 +954,12 @@ export default function DroneDetailsContent() {
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
-
                 {/* 2D Live Map */}
                 <div className="aspect-video overflow-hidden rounded-lg border border-neutral-700">
                   <MapContainer
                     center={[
                       gpsLocation?.lat || defaultPune.lat,
-                      gpsLocation?.lng || defaultPune.lng
+                      gpsLocation?.lng || defaultPune.lng,
                     ]}
                     zoom={13}
                     scrollWheelZoom
@@ -963,8 +978,10 @@ export default function DroneDetailsContent() {
                         icon={droneIcon}
                       >
                         <Popup>
-                          <b>{selectedDrone?.drone_name}</b><br />
-                          Lat: {gpsLocation.lat.toFixed(5)}<br />
+                          <b>{selectedDrone?.drone_name}</b>
+                          <br />
+                          Lat: {gpsLocation.lat.toFixed(5)}
+                          <br />
                           Lng: {gpsLocation.lng.toFixed(5)}
                         </Popup>
                       </Marker>
@@ -983,11 +1000,9 @@ export default function DroneDetailsContent() {
                     value={gpsLocation ? gpsLocation.lng.toFixed(6) : "–"}
                   />
                 </div>
-
               </div>
             </CardContent>
           </Card>
-
         </TabsContent>
 
         {/* History Tab */}
@@ -1021,8 +1036,6 @@ export default function DroneDetailsContent() {
     </div>
   );
 }
-
-
 
 function FlyToLocation({ gpsLocation }) {
   const map = useMap();
@@ -1070,11 +1083,7 @@ function LogItem({ log }) {
 }
 
 const normalizeStatus = (status) =>
-  status
-    ?.toLowerCase()
-    .replace(/[_-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  status?.toLowerCase().replace(/[_-]/g, " ").replace(/\s+/g, " ").trim();
 
 function MaintenanceSection({
   selectedDrones,
@@ -1093,13 +1102,17 @@ function MaintenanceSection({
         </CardHeader>
         <CardContent className="space-y-4">
           <div
-            className={`rounded-lg p-4 ${getHealthStatusBg(normalizeStatus(selectedDrone?.health_status))}`}
+            className={`rounded-lg p-4 ${getHealthStatusBg(
+              normalizeStatus(selectedDrone?.health_status)
+            )}`}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Health Status</p>
                 <p
-                  className={`text-sm ${getHealthStatusColor(normalizeStatus(selectedDrone?.health_status))}`}
+                  className={`text-sm ${getHealthStatusColor(
+                    normalizeStatus(selectedDrone?.health_status)
+                  )}`}
                 >
                   {selectedDrone?.health_status}
                 </p>
@@ -1190,13 +1203,15 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
             onClick={() => handlePilotClick(p)}
             className={`
               flex justify-between items-center p-3 border rounded-lg transition
-              ${p.pilot_status === "assigned"
-                ? "opacity-50 cursor-not-allowed"
-                : "cursor-pointer hover:bg-[#241510] hover:border-[#dc2626]"
+              ${
+                p.pilot_status === "assigned"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer hover:bg-[#241510] hover:border-[#dc2626]"
               }
-              ${selectedPilot?.id === p.id
-                ? "border-[#dc2626] bg-[#241510]"
-                : "border-[#2E2E2E]"
+              ${
+                selectedPilot?.id === p.id
+                  ? "border-[#dc2626] bg-[#241510]"
+                  : "border-[#2E2E2E]"
               }
             `}
           >
@@ -1209,7 +1224,9 @@ function PilotList({ station, selectedPilot, setSelectedPilot }) {
 
             {/* RIGHT SIDE – PILOT STATUS BADGE */}
             <span
-              className={`px-2 py-1 text-xs rounded-md font-medium ${getPilotStatusBadge(p.pilot_status)}`}
+              className={`px-2 py-1 text-xs rounded-md font-medium ${getPilotStatusBadge(
+                p.pilot_status
+              )}`}
             >
               {p.pilot_status}
             </span>
@@ -1264,4 +1281,3 @@ function SelectField({ label, value, options, onChange }) {
     </div>
   );
 }
-

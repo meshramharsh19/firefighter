@@ -10,17 +10,16 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
-const API = `${API_BASE}/admin/admin-vehicle/getStations.php`;
-
-
 /* ---------- VALIDATORS ---------- */
 const isAlphaSpace = (v) => /^[A-Za-z\s]*$/.test(v);
 const isAlphaNumeric = (v) => /^[A-Za-z0-9\-]*$/.test(v);
 
-export default function AddVehicleModal({ open, onClose, onSubmit }) {
-  const [stations, setStations] = useState([]);
+export default function AddVehicleModal({
+  open,
+  onClose,
+  onSubmit,
+  stations = [],
+}) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,18 +47,8 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
     });
   };
 
-  /* ---------- Fetch Stations ---------- */
   useEffect(() => {
-    if (!open) return;
-
-    resetForm();
-
-    fetch(API)
-      .then((res) => res.json())
-      .then((data) => setStations(data || []))
-      .catch(() => {
-        setError("Failed to load stations");
-      });
+    if (open) resetForm();
   }, [open]);
 
   /* ---------- LIVE VALIDATION ---------- */
@@ -113,7 +102,7 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
     }
   };
 
-  /* ---------- INPUT STYLE ---------- */
+  /* ---------- INPUT STYLE (UNCHANGED) ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -154,7 +143,6 @@ export default function AddVehicleModal({ open, onClose, onSubmit }) {
       </DialogTitle>
 
       <DialogContent sx={{ py: 2 }}>
-        {/* 🔴 FORM TOP ERROR */}
         {error && (
           <div className="mb-3 text-lg text-red-500 font-medium">
             {error}

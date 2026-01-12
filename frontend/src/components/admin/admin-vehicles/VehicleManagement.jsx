@@ -40,7 +40,7 @@ export default function VehicleManagement() {
     }
   };
 
-  // ================= FETCH STATIONS =================
+  // ================= FETCH STATIONS (MOVED HERE) =================
   const loadStations = async () => {
     try {
       const res = await fetch(`${API}/getStations.php`);
@@ -67,11 +67,8 @@ export default function VehicleManagement() {
 
       const data = await res.json();
 
-      // ❌ NO alert here
-      // ❌ NO toast here
-      // ✅ Just return response
       if (data?.success) {
-        loadVehicles(); // refresh list only on success
+        loadVehicles();
       }
 
       return data;
@@ -99,7 +96,6 @@ export default function VehicleManagement() {
       v.registration?.toLowerCase().includes(s);
 
     const matchStatus = selectedStatus === "all" || v.status === selectedStatus;
-
     const matchStation =
       selectedStation === "all" || v.station === selectedStation;
 
@@ -141,29 +137,13 @@ export default function VehicleManagement() {
           {/* Search */}
           <div>
             <label className="text-sm font-medium">Search</label>
-            <div
-              className="
-      relative
-      border border-[#2E2E2E] rounded
-      bg-[#141414]
-      hover:border-red-700
-      focus-within:border-gray-300
-    "
-            >
+            <div className="relative border border-[#2E2E2E] rounded bg-[#141414] hover:border-red-700 focus-within:border-gray-300">
               <SafeIcon
                 name="Search"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
-
               <Input
-                className="
-        pl-10
-        bg-transparent
-        border-none
-        text-white
-        focus:outline-none
-        focus:ring-0
-      "
+                className="pl-10 bg-transparent border-none text-white focus:outline-none focus:ring-0"
                 placeholder="Search by name, reg, location"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -177,8 +157,7 @@ export default function VehicleManagement() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300
-    hover:border-red-700"
+              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300 hover:border-red-700"
             >
               {statuses.map((s) => (
                 <option key={s} value={s}>
@@ -194,12 +173,11 @@ export default function VehicleManagement() {
             <select
               value={selectedStation}
               onChange={(e) => setSelectedStation(e.target.value)}
-              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300
-    hover:border-red-700"
+              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300 hover:border-red-700"
             >
               <option value="all">All</option>
-              {stations.map((st) => (
-                <option key={st} value={st}>
+              {stations.map((st, i) => (
+                <option key={i} value={st}>
                   {st}
                 </option>
               ))}
@@ -208,15 +186,12 @@ export default function VehicleManagement() {
         </CardContent>
       </Card>
 
-      {/* View Tabs */}
+      {/* Tabs */}
       <Tabs value={viewMode} onValueChange={setViewMode}>
         <TabsList className="grid grid-cols-1 w-full md:w-auto">
           <TabsTrigger value="list">
             <SafeIcon name="List" size={16} /> List View
           </TabsTrigger>
-          {/* <TabsTrigger value="map">
-            <SafeIcon name="Map" size={16} /> Map View
-          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="list" className="mt-4">
@@ -232,11 +207,12 @@ export default function VehicleManagement() {
         </TabsContent>
       </Tabs>
 
-      {/* Modal */}
+      {/* Modals */}
       <AddVehicleModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         onSubmit={handleAddVehicle}
+        stations={stations}
       />
 
       <VehicleDetailsModal

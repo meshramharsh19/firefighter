@@ -9,19 +9,16 @@ import {
   Button,
 } from "@mui/material";
 
-const STATION_API =
-  "http://localhost/fire-fighter-new/backend/controllers/admin/admin-vehicle/getStations.php";
-
 export default function EditVehicleModal({
   open,
   onClose,
   vehicle,
   onUpdate,
+  stations = [], // ✅ stations parent se
 }) {
   const [formData, setFormData] = useState(null);
-  const [stations, setStations] = useState([]);
   const [isDirty, setIsDirty] = useState(false);
-  const [error, setError] = useState(""); // 🔴 NEW
+  const [error, setError] = useState("");
 
   const originalRef = useRef(null);
 
@@ -32,18 +29,8 @@ export default function EditVehicleModal({
     setFormData(vehicle);
     originalRef.current = JSON.stringify(vehicle);
     setIsDirty(false);
-    setError(""); // reset error
+    setError("");
   }, [vehicle]);
-
-  /* ---------- Fetch Stations ---------- */
-  useEffect(() => {
-    if (!open) return;
-
-    fetch(STATION_API)
-      .then((res) => res.json())
-      .then((data) => setStations(data || []))
-      .catch((err) => console.error("❌ Station fetch error:", err));
-  }, [open]);
 
   if (!formData) return null;
 
@@ -51,7 +38,7 @@ export default function EditVehicleModal({
   const handleChange = (e) => {
     const updated = { ...formData, [e.target.name]: e.target.value };
     setFormData(updated);
-    setError(""); // clear old error on change
+    setError("");
     setIsDirty(JSON.stringify(updated) !== originalRef.current);
   };
 
@@ -61,17 +48,17 @@ export default function EditVehicleModal({
 
     const res = await onUpdate(formData);
 
-    // 🔴 DUPLICATE / BACKEND ERROR
+    // 🔴 BACKEND / DUPLICATE ERROR
     if (!res?.success) {
       setError(res?.message || "Update failed");
-      return; // ❌ modal close mat karo
+      return;
     }
 
     // ✅ SUCCESS
     onClose();
   };
 
-  /* ---------- INPUT STYLE ---------- */
+  /* ---------- INPUT STYLE (UNCHANGED) ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -121,7 +108,7 @@ export default function EditVehicleModal({
       </DialogTitle>
 
       <DialogContent sx={{ py: 2 }}>
-        {/* 🔴 ERROR BOX (TITLE KE NICHE) */}
+        {/* 🔴 ERROR BOX */}
         {error && (
           <div
             style={{
@@ -155,13 +142,32 @@ export default function EditVehicleModal({
           <TextField label="Device ID" name="device_id" value={formData.device_id} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
 
-          <TextField select label="Station" name="station" value={formData.station || ""} onChange={handleChange} sx={inputStyle} fullWidth>
+          <TextField
+            select
+            label="Station"
+            name="station"
+            value={formData.station || ""}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          >
             {stations.map((st, i) => (
-              <MenuItem key={i} value={st}>{st}</MenuItem>
+              <MenuItem key={i} value={st}>
+                {st}
+              </MenuItem>
             ))}
           </TextField>
 
-          <TextField select label="Status" name="status" value={formData.status} onChange={handleChange} sx={inputStyle} fullWidth className="sm:col-span-2">
+          <TextField
+            select
+            label="Status"
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+            className="sm:col-span-2"
+          >
             <MenuItem value="available">Available</MenuItem>
             <MenuItem value="busy">Busy</MenuItem>
             <MenuItem value="en-route">En Route</MenuItem>

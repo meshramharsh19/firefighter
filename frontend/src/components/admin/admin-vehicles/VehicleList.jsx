@@ -13,6 +13,7 @@ export default function VehicleList({
   vehicles: initialVehicles,
   onUpdated,
   onView,
+  stations = [], // ✅ NEW
 }) {
   const [vehicles, setVehicles] = useState(initialVehicles || []);
   const [editVehicle, setEditVehicle] = useState(null);
@@ -46,37 +47,35 @@ export default function VehicleList({
 
   // 🔥 UPDATE VEHICLE → DB + UI + REFRESH PARENT
   const handleEditSave = async (updated) => {
-  try {
-    const res = await fetch(`${API}/updateVehicle.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    });
+    try {
+      const res = await fetch(`${API}/updateVehicle.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data?.success) {
-      // ✅ Update list only on success
-      setVehicles((prev) =>
-        prev.map((v) => (v.id === updated.id ? updated : v))
-      );
+      if (data?.success) {
+        // ✅ Update local list
+        setVehicles((prev) =>
+          prev.map((v) => (v.id === updated.id ? updated : v))
+        );
 
-      onUpdated && onUpdated();
-      setEditVehicle(null);
+        onUpdated && onUpdated();
+        setEditVehicle(null);
+      }
+
+      // 🔥 IMPORTANT
+      return data;
+    } catch (e) {
+      console.error(e);
+      return {
+        success: false,
+        message: "Server error while updating vehicle",
+      };
     }
-
-    // 🔥 IMPORTANT: ALWAYS RETURN RESPONSE
-    return data;
-
-  } catch (e) {
-    console.error(e);
-    return {
-      success: false,
-      message: "Server error while updating vehicle",
-    };
-  }
-};
-
+  };
 
   if (!vehicles.length) {
     return (
@@ -169,12 +168,14 @@ export default function VehicleList({
         ))}
       </div>
 
+      {/* 🔥 EDIT MODAL */}
       {editVehicle && (
         <EditVehicleModal
           open={true}
           vehicle={editVehicle}
           onClose={() => setEditVehicle(null)}
           onUpdate={handleEditSave}
+          stations={stations}   // ✅ PASS DOWN
         />
       )}
     </>
