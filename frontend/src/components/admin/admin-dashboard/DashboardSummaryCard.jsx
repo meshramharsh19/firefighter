@@ -1,12 +1,7 @@
 import React from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 
-/**
- * Renders a single summary stat card using shadcn Card component
- * @param {{ card: { title: string, value: number | string, description: string, color: string } }} props
- */
-export default function DashboardSummaryCard({ card }) {
-  // Map old CSS color names → Tailwind classes
+const DashboardSummaryCard = ({ card }) => {
   const colorMap = {
     green: "text-emerald-500",
     orange: "text-orange-500",
@@ -17,7 +12,7 @@ export default function DashboardSummaryCard({ card }) {
   };
 
   return (
-    <Card className="border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
+    <Card className="border border-white/10 transition-all">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground">
           {card.title}
@@ -38,4 +33,6 @@ export default function DashboardSummaryCard({ card }) {
       </CardContent>
     </Card>
   );
-}
+};
+
+export default React.memo(DashboardSummaryCard);

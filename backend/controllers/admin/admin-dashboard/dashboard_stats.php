@@ -6,25 +6,30 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-/* ---------------- TOTAL DRONES ---------------- */
-$totalSql = "SELECT COUNT(*) AS total FROM drones";
-$totalRes = mysqli_query($conn, $totalSql);
-$totalRow = mysqli_fetch_assoc($totalRes);
+/*
+  ONE TABLE SCAN
+  Conditional aggregation (FAST)
+*/
+$sql = "
+  SELECT
+    COUNT(*) AS total_drones,
+    SUM(status = 'offline') AS inactive_drones,
+    SUM(status != 'offline') AS ready_drones
+  FROM drones
+";
 
-/* ---------------- NOT ACTIVE (OFFLINE) ---------------- */
-$inactiveSql = "SELECT COUNT(*) AS cnt FROM drones WHERE status = 'offline'";
-$inactiveRes = mysqli_query($conn, $inactiveSql);
-$inactiveRow = mysqli_fetch_assoc($inactiveRes);
+$result = mysqli_query($conn, $sql);
 
-/* ---------------- READY TO FLY (NOT OFFLINE) ---------------- */
-$readySql = "SELECT COUNT(*) AS cnt FROM drones WHERE status != 'offline'";
-$readyRes = mysqli_query($conn, $readySql);
-$readyRow = mysqli_fetch_assoc($readyRes);
+if (!$result) {
+    http_response_code(500);
+    echo json_encode(["error" => "Failed to fetch dashboard stats"]);
+    exit;
+}
 
-/* ---------------- RESPONSE ---------------- */
+$row = mysqli_fetch_assoc($result);
+
 echo json_encode([
-    "total_drones"      => (int) $totalRow['total'],
-    "inactive_drones"   => (int) $inactiveRow['cnt'],
-    "ready_drones"      => (int) $readyRow['cnt']
+    "total_drones"    => (int)$row['total_drones'],
+    "inactive_drones" => (int)$row['inactive_drones'],
+    "ready_drones"    => (int)$row['ready_drones']
 ]);
-?>

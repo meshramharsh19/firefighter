@@ -6,15 +6,21 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-/* 🔥 GET station from query */
 $station = $_GET['station'] ?? null;
 
 if (!$station) {
-    echo json_encode([]); // ❌ no station = no data
+    echo json_encode([]);
     exit;
 }
 
-/* 🔒 Station-wise query (case-insensitive) */
+/*
+|----------------------------------------------------
+| FAST QUERY (index-friendly)
+|----------------------------------------------------
+| Make sure `station` column uses case-insensitive collation
+| eg: utf8mb4_general_ci
+*/
+
 $sql = "
     SELECT 
         drone_code,
@@ -24,7 +30,8 @@ $sql = "
         status,
         battery
     FROM drones
-    WHERE LOWER(station) = LOWER(?)
+    WHERE station = ?
+    ORDER BY drone_code ASC
 ";
 
 $stmt = $conn->prepare($sql);
@@ -39,4 +46,3 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo json_encode($data);
-?>

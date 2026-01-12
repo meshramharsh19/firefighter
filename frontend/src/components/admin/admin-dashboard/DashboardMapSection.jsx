@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import L from "leaflet";
 import { PlayCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import StatusBadge from "@/components/common/StatusBadge";
 import SafeIcon from "@/components/common/SafeIcon";
 
-// Helper to load scripts dynamically
+// ---------------- HELPERS ----------------
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
@@ -21,7 +21,6 @@ function loadScript(src) {
   });
 }
 
-// Helper to load CSS dynamically
 function loadCss(href) {
   if (document.querySelector(`link[href="${href}"]`)) return;
   const link = document.createElement("link");
@@ -30,22 +29,49 @@ function loadCss(href) {
   document.head.appendChild(link);
 }
 
-export default function DashboardMapSection({
+// 🔥 BACKGROUND PRELOAD (NO INIT)
+function preloadCesium() {
+  if (window.__CESIUM_PRELOADED__) return;
+  window.__CESIUM_PRELOADED__ = true;
+
+  loadCss(
+    "https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
+  );
+  loadCss("/assets/css/style.css");
+
+  loadScript(
+    "https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
+  );
+  loadScript("/assets/js/globel.js");
+  loadScript("/assets/js/map.js");
+}
+
+// =====================================================
+
+function DashboardMapSection({
   droneLocations = [],
   mapMode,
   setMapMode,
   activeDrones = [],
 }) {
   const mapRef = useRef(null);
+  const markerLayerRef = useRef(null);
   const retryRef = useRef(0);
-  const [showAll, setShowAll] = useState(false);
   const cesiumInitRef = useRef(false);
-
-  // 🔑 FIX: auto zoom sirf first time
   const hasAutoZoomedRef = useRef(false);
 
-  // ---------------- 2D MAP INIT ----------------
-  const init2DMap = () => {
+  /* ---------------- BACKGROUND PRELOAD ---------------- */
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => preloadCesium());
+    } else {
+      setTimeout(preloadCesium, 2000);
+    }
+  }, []);
+
+  /* ---------------- 2D MAP INIT ---------------- */
+
+  const init2DMap = useCallback(() => {
     const div = document.getElementById("liveMap");
     if (!div) return;
 
@@ -60,28 +86,32 @@ export default function DashboardMapSection({
     retryRef.current = 0;
 
     if (!mapRef.current) {
-      mapRef.current = L.map("liveMap").setView([18.527693, 73.853166], 14);
+      mapRef.current = L.map("liveMap").setView(
+        [18.527693, 73.853166],
+        14
+      );
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap",
       }).addTo(mapRef.current);
+
+      markerLayerRef.current = L.layerGroup().addTo(mapRef.current);
     }
 
-    if (window.markerLayer) window.markerLayer.clearLayers();
-    window.markerLayer = L.layerGroup().addTo(mapRef.current);
+    markerLayerRef.current.clearLayers();
 
     (Array.isArray(droneLocations) ? droneLocations : []).forEach((d) => {
       if (!d.latitude || !d.longitude) return;
 
       L.marker([d.latitude, d.longitude])
         .bindPopup(`<b>${d.drone_name}</b><br>${d.drone_code}`)
-        .addTo(window.markerLayer);
+        .addTo(markerLayerRef.current);
     });
 
     setTimeout(() => mapRef.current.invalidateSize(), 80);
     setTimeout(() => mapRef.current.invalidateSize(), 200);
-  };
+  }, [droneLocations]);
 
   useEffect(() => {
     if (mapMode !== "2d") return;
@@ -99,19 +129,16 @@ export default function DashboardMapSection({
     if (div) obs.observe(div);
 
     return () => obs.disconnect();
-  }, [mapMode, droneLocations]);
+  }, [mapMode, init2DMap]);
 
-  // ---------------- 3D MAP INIT ----------------
+  /* ---------------- 3D MAP INIT ---------------- */
+
   useEffect(() => {
     if (mapMode !== "3d") return;
 
     async function initCesium() {
       try {
-        loadCss(
-          "https://cesium.com/downloads/cesiumjs/releases/1.96/Build/Cesium/Widgets/widgets.css"
-        );
-        loadCss("/assets/css/style.css");
-
+        // Already preloaded, this becomes instant
         if (!cesiumInitRef.current) {
           await loadScript(
             "https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
@@ -132,7 +159,8 @@ export default function DashboardMapSection({
     initCesium();
   }, [mapMode]);
 
-  // ---------------- SHOW ALL DRONES IN 3D ----------------
+  /* ---------------- SHOW ALL DRONES IN 3D (ORIGINAL LOGIC) ---------------- */
+
   useEffect(() => {
     if (mapMode !== "3d") return;
 
@@ -163,7 +191,11 @@ export default function DashboardMapSection({
 
         const id = `drone_${d.drone_code}`;
 
-        const carto = Cesium.Cartographic.fromDegrees(d.longitude, d.latitude);
+        const carto = Cesium.Cartographic.fromDegrees(
+          d.longitude,
+          d.latitude
+        );
+
         const updated = await Cesium.sampleTerrainMostDetailed(
           viewer.terrainProvider,
           [carto]
@@ -197,7 +229,7 @@ export default function DashboardMapSection({
         }
       }
 
-      // ✅ AUTO ZOOM — ONLY FIRST TIME
+      // 🔥 ORIGINAL FLY / ZOOM
       if (!hasAutoZoomedRef.current) {
         hasAutoZoomedRef.current = true;
 
@@ -221,25 +253,17 @@ export default function DashboardMapSection({
     };
   }, [mapMode, droneLocations]);
 
-  // 🔁 STEP 3: reset ONLY when switching to 3D
+  /* ---------------- RESET AUTO ZOOM ---------------- */
   useEffect(() => {
     if (mapMode === "3d") {
       hasAutoZoomedRef.current = false;
     }
   }, [mapMode]);
 
-  const dronesArray = Array.isArray(activeDrones) ? activeDrones : [];
+  /* ---------------- UI (UNCHANGED) ---------------- */
 
-  const getStatusType = (status) => {
-    if (status === "active_mission") return "busy";
-    if (status === "standby") return "warning";
-    return "available";
-  };
-
-  // ---------------- UI STARTS ----------------
   return (
     <>
-      {/* MAP CARD */}
       <Card className="mb-0 bg-card border border-none">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
@@ -296,3 +320,5 @@ export default function DashboardMapSection({
     </>
   );
 }
+
+export default memo(DashboardMapSection);
