@@ -10,10 +10,17 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import SafeIcon from "@/components/common/SafeIcon";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 
 export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   const [incidents, setIncidents] = useState([]);
   const [playedAlerts, setPlayedAlerts] = useState(new Set());
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedIncident, setSelectedIncident] = useState(null);
 
   const DARK = {
     base: "#121314",
@@ -92,17 +99,73 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   };
 
   /** 🟢 Acknowledge API */
-  const acknowledge = (incident) => {
-    navigate(`/confirm-location/${incident.id}`, {
-      state: { incident }, // 👈 full data pass ho raha hai
-    });
+  const acknowledge = (id) => {
+    navigate(`/confirm-location/${id}`); // redirect to confirm-location screen
   };
 
   /** 🟦 View Details click */
+  // const viewDetails = (id) => {
+  //   alert("View Incident : " + id);
+  //   // Modal/Drawer open logic add later
+  // };
+
   const viewDetails = (id) => {
-    alert("View Incident : " + id);
-    // Modal/Drawer open logic add later
+    const incident = incidents.find((i) => i.id === id);
+    if (incident) {
+      setSelectedIncident(incident);
+      setOpenDialog(true);
+    }
   };
+
+  const closeDialog = () => {
+    setOpenDialog(false);
+    setSelectedIncident(null);
+  };
+
+  const Section = ({ title, children, full }) => (
+    <Box
+      sx={{
+        gridColumn: full ? "1 / -1" : "auto",
+        background: "#18191b",
+        border: "1px solid #24262a",
+        borderRadius: "10px",
+        p: 2.5,
+        mt: 1, // ✅ slight internal separation
+      }}
+    >
+      <div
+        className="text-red-400 mb-2 tracking-wide"
+        style={{
+          fontSize: "0.77rem", // ⬆️ ~10% from 0.7rem
+          fontWeight: 600,
+        }}
+      >
+        {title.toUpperCase()}
+      </div>
+
+      <div className="space-y-2.5">{children}</div>
+    </Box>
+  );
+
+  const Row = ({ label, value, mono, children }) => (
+    <div className="flex justify-between items-start gap-3">
+      <div
+        className="text-gray-400"
+        style={{ fontSize: "0.9rem" }} // ⬆️ labels
+      >
+        {label}
+      </div>
+
+      <div
+        className={`text-right ${
+          mono ? "font-mono text-gray-200" : "text-white"
+        }`}
+        style={{ fontSize: "0.95rem" }} // ⬆️ values
+      >
+        {children || value}
+      </div>
+    </div>
+  );
 
   if (!incidents.length)
     return (
@@ -182,7 +245,7 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
                 <Button
                   fullWidth
                   size="small"
-                  onClick={() => acknowledge(inc)} // will redirect now
+                  onClick={() => acknowledge(inc.id)} // will redirect now
                   sx={{
                     background: "#ff4444",
                     color: "#fff",
@@ -214,6 +277,117 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
       })}
 
       <Divider className="border-[#232427]" />
+
+      <Dialog
+        open={openDialog}
+        onClose={closeDialog}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            background: "#141516",
+            borderRadius: "12px",
+            border: "1px solid #2a2c30",
+            boxShadow: "0 0 30px rgba(255,0,0,0.15)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid #2a2c30",
+            px: 3,
+            py: 2.5,
+          }}
+        >
+          <div>
+            <div className="text-lg font-semibold text-white">
+              Incident Details
+            </div>
+            <div className="text-xs text-gray-400">{selectedIncident?.id}</div>
+          </div>
+
+          {selectedIncident && <StatusTag status={selectedIncident.status} />}
+        </DialogTitle>
+
+        {/* CONTENT */}
+        <DialogContent sx={{ px: 3, py: 3 }}>
+          {selectedIncident && (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 1.5,
+              }}
+            >
+              {/* LEFT */}
+              <Section title="Incident Info">
+                <Row label="Name" value={selectedIncident.name} />
+                <Row label="Type" value={selectedIncident.type} />
+                <Row label="Status">
+                  <StatusTag status={selectedIncident.status} />
+                </Row>
+              </Section>
+
+              {/* RIGHT */}
+              <Section title="Location Info">
+                <Row label="Address" value={selectedIncident.location} />
+                <Row
+                  label="Coordinates"
+                  mono
+                  value={`${selectedIncident.coordinates.lat}, ${selectedIncident.coordinates.lng}`}
+                />
+                <Row
+                  label="Station"
+                  value={selectedIncident.coordinates.stationName}
+                />
+              </Section>
+
+              {/* FULL WIDTH */}
+              <Section full title="Timeline">
+                <Row
+                  label="Reported At"
+                  value={new Date(
+                    selectedIncident.timeReported,
+                  ).toLocaleString()}
+                />
+                <Row
+                  label="Alert State"
+                  value={
+                    selectedIncident.isNewAlert ? "New Alert" : "Acknowledged"
+                  }
+                />
+              </Section>
+            </Box>
+          )}
+        </DialogContent>
+
+        {/* FOOTER */}
+        <DialogActions
+          sx={{
+            borderTop: "1px solid #2a2c30",
+            px: 3,
+            py: 2,
+          }}
+        >
+          <Button
+            onClick={closeDialog}
+            sx={{
+              border: "1px solid #ff4d4d",
+              color: "#ff6b6b",
+              px: 4,
+              fontWeight: 600,
+              "&:hover": {
+                background: "rgba(255,77,77,0.1)",
+              },
+            }}
+          >
+            CLOSE
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
