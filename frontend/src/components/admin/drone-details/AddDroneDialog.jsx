@@ -1,0 +1,193 @@
+import { useState, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
+
+const API_ENDPOINT = `${import.meta.env.VITE_API_BASE_URL}/admin/admin-drone-details/addDrone.php`;
+
+const INITIAL_DRONE = {
+  drone_code: "",
+  drone_name: "",
+  status: "standby",
+  flight_hours: 0,
+  health_status: "Optimal",
+  firmware_version: "",
+  is_ready: 1,
+  station: "",
+};
+
+export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess }) {
+  const [drone, setDrone] = useState(INITIAL_DRONE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFormValid =
+    drone.drone_code &&
+    drone.drone_name &&
+    drone.station &&
+    drone.firmware_version;
+
+  const updateField = (field, value) => {
+    setDrone((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = useCallback(async () => {
+    if (!isFormValid) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      Object.entries(drone).forEach(([key, value]) =>
+        formData.append(key, value)
+      );
+
+      const res = await fetch(API_ENDPOINT, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Network error");
+
+      const result = await res.json();
+
+      if (!result.success) {
+        toast.error("Failed to add drone");
+        return;
+      }
+
+      toast.success("Drone added successfully");
+      setDrone(INITIAL_DRONE);
+      onOpenChange(false);
+      onSuccess();
+    } catch {
+      toast.error("Server error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [drone, isFormValid, onOpenChange, onSuccess]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
+        <DialogHeader>
+          <DialogTitle>Add New Drone</DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-4 py-4">
+          <InputField
+            label="Drone Code"
+            value={drone.drone_code}
+            placeholder="DR-001"
+            onChange={(v) => updateField("drone_code", v)}
+          />
+
+          <InputField
+            label="Drone Name"
+            value={drone.drone_name}
+            placeholder="Phantom X"
+            onChange={(v) => updateField("drone_name", v)}
+          />
+
+          <InputField
+            label="Flight Hours"
+            type="number"
+            value={drone.flight_hours}
+            onChange={(v) => {
+              const value = Math.max(0, Number(v) || 0);
+              updateField("flight_hours", value);
+            }}
+          />
+
+          <InputField
+            label="Firmware"
+            value={drone.firmware_version}
+            placeholder="v1.0.0"
+            onChange={(v) => updateField("firmware_version", v)}
+          />
+
+          <SelectField
+            label="Status"
+            value={drone.status}
+            options={["patrolling", "active_mission", "standby", "offline"]}
+            onChange={(v) => updateField("status", v)}
+          />
+
+          <SelectField
+            label="Health Status"
+            value={drone.health_status}
+            options={["Optimal", "Degraded", "Requires Service"]}
+            onChange={(v) => updateField("health_status", v)}
+          />
+
+          <SelectField
+            label="Is Ready"
+            value={drone.is_ready ? "Yes" : "No"}
+            options={["Yes", "No"]}
+            onChange={(v) => updateField("is_ready", v === "Yes" ? 1 : 0)}
+          />
+
+          <SelectField
+            label="Station"
+            value={drone.station}
+            options={stations}
+            onChange={(v) => updateField("station", v)}
+          />
+        </div>
+
+        <Button
+          disabled={!isFormValid || isSubmitting}
+          className="w-full bg-[#dc2626] hover:bg-[#b81f1f]"
+          onClick={handleSubmit}
+        >
+          {isSubmitting ? "Saving..." : "Save Drone"}
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ---------------- Reusable Inputs ---------------- */
+
+function InputField({ label, value, onChange, type = "text", placeholder }) {
+  return (
+    <div>
+      <label className="text-sm text-muted-foreground">{label}</label>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E] px-3 focus:outline-none focus:border-[#dc2626]"
+      />
+    </div>
+  );
+}
+
+function SelectField({ label, value, options, onChange }) {
+  return (
+    <div>
+      <label className="text-sm text-muted-foreground">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E] px-3"
+      >
+        <option value="">Select {label}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
