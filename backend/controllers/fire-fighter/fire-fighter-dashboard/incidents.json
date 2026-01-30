@@ -10,7 +10,7 @@
             "stationName": "Katraj Fire Station"
         },
         "timeReported": "2025-11-20T10:35:00Z",
-        "status": "forwarded",
+        "status": "new",
         "isNewAlert": true
     }
 ]

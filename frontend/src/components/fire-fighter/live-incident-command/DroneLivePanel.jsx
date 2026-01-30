@@ -1,19 +1,34 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import SafeIcon from "@/components/common/SafeIcon";
 import { useParams } from "react-router-dom";
 import { Chip } from "@mui/material";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import SafeIcon from "@/components/common/SafeIcon";
+
+/* 🔥 Leaflet default icon fix */
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+/* 🚁 Custom Drone Icon */
+const droneIcon = new L.Icon({
+  iconUrl: "/assets/images/drone.png", // from public folder
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+});
 
 const BASE_API = import.meta.env.VITE_API_BASE_URL;
-// 🔁 FRONTEND MAPPING (SECOND OPTION)
+
 const DRONE_CODE_TO_DB_ID = {
   "DRN-002": 101,
   "DRN-001": 102,
 };
-
-const INCIDENT_API =
-  `${BASE_API}/incidents/get_incidents.php`;
 
 export default function DroneLivePanel({
   incidentId,
@@ -22,23 +37,41 @@ export default function DroneLivePanel({
   onExit,
 }) {
   const iframeRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const leafletMapRef = useRef(null);
+  const droneMarkerRef = useRef(null);
+
   const [iframeReady, setIframeReady] = useState(false);
   const [droneLocations, setDroneLocations] = useState([]);
-  const [incident, setIncident] = useState(null);
+  const [mapMode, setMapMode] = useState("2d");
 
-  // URL param = droneCode (DRN-001)
   const { droneId: droneCode } = useParams();
-
-  // map to DB id (101)
   const dbDroneId = DRONE_CODE_TO_DB_ID[droneCode];
 
-  // 🔹 Fetch Drone (CORRECT)
+  /* ---------------- INIT LEAFLET ---------------- */
   useEffect(() => {
-    if (!dbDroneId) {
-      console.warn("❌ No mapping for droneCode:", droneCode);
-      setDroneLocations([]);
-      return;
-    }
+    if (mapMode !== "2d") return;
+    if (leafletMapRef.current) return;
+
+    leafletMapRef.current = L.map(mapContainerRef.current).setView(
+      [20.5937, 78.9629],
+      5,
+    );
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+      leafletMapRef.current,
+    );
+
+    return () => {
+      leafletMapRef.current?.remove();
+      leafletMapRef.current = null;
+      droneMarkerRef.current = null;
+    };
+  }, [mapMode]);
+
+  /* ---------------- FETCH DRONE ---------------- */
+  useEffect(() => {
+    if (!dbDroneId) return;
 
     const DRONE_API = `http://13.127.119.7/fire-fighter/get_drone_location.php?droneId=${dbDroneId}`;
 
@@ -47,84 +80,110 @@ export default function DroneLivePanel({
         const res = await fetch(DRONE_API);
         const data = await res.json();
 
-        if (!data || !data.latitude || !data.longitude) {
-          console.warn("❌ Invalid drone data:", data);
-          setDroneLocations([]);
-          return;
-        }
+        if (!data?.latitude || !data?.longitude) return;
 
-        // ⚠️ iframe expects ARRAY
+        const lat = parseFloat(data.latitude);
+        const lng = parseFloat(data.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
         setDroneLocations([data]);
+
+        // 🚁 Update 2D Map Marker with Drone Icon
+        if (mapMode === "2d" && leafletMapRef.current) {
+          const latLng = [lat, lng];
+
+          if (!droneMarkerRef.current) {
+            droneMarkerRef.current = L.marker(latLng, {
+              icon: droneIcon,
+            }).addTo(leafletMapRef.current);
+            leafletMapRef.current.setView(latLng, 16);
+          } else {
+            droneMarkerRef.current.setLatLng(latLng);
+          }
+        }
       } catch (err) {
-        console.error("❌ Drone fetch error:", err);
+        console.error("Drone fetch error:", err);
       }
     }
 
     getDrone();
     const i = setInterval(getDrone, 5000);
     return () => clearInterval(i);
-  }, [droneCode, dbDroneId]);
+  }, [dbDroneId, mapMode]);
 
-  // 🔹 Fetch Incident
+  /* ---------------- SEND DATA TO 3D ---------------- */
   useEffect(() => {
-    async function getIncident() {
-      const res = await fetch(INCIDENT_API);
-      const data = await res.json();
-      const found = data.find((i) => i.id === incidentId);
-      setIncident(found || null);
-    }
-
-    if (incidentId) getIncident();
-  }, [incidentId]);
-
-  const handleIframeLoad = () => setIframeReady(true);
-
-  // 🔹 Send data to iframe
-  useEffect(() => {
+    if (mapMode !== "3d") return;
     if (!iframeReady || !iframeRef.current?.contentWindow) return;
 
     iframeRef.current.contentWindow.postMessage(
       { type: "DRONE_POSITIONS", data: droneLocations },
-      "*"
+      "*",
     );
-
-    if (incident?.coordinates) {
-      iframeRef.current.contentWindow.postMessage(
-        {
-          type: "FIRE_HAZARD_POINT",
-          payload: {
-            lat: incident.coordinates.lat,
-            lng: incident.coordinates.lng,
-            height: 100,
-          },
-        },
-        "*"
-      );
-    }
-  }, [iframeReady, droneLocations, incident]);
+  }, [iframeReady, droneLocations, mapMode]);
 
   return (
-    <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
-      <div className="flex justify-between mb-2">
-        <h3 className="font-semibold text-lg text-white">
-          Drone Live 3D View
-        </h3>
+    <div className="flex flex-col h-full p-4">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-semibold text-lg text-white">Drone Live View</h3>
 
-        <Chip
-          label="LIVE"
-          size="small"
-          color="error"
-          className="animate-pulse"
-        />
+        <div className="flex items-center gap-3">
+          <Chip
+            label="LIVE"
+            size="small"
+            color="error"
+            className="animate-pulse"
+          />
+
+          {/* 🔴⚫ 2D / 3D Capsule Toggle */}
+          <div className="relative flex items-center bg-black/70 border border-[#2E2E2E] rounded-full p-1 w-[110px] h-8">
+            <div
+              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${
+                mapMode === "3d" ? "left-[50%]" : "left-1"
+              }`}
+            />
+            <button
+              onClick={() => setMapMode("2d")}
+              className={`relative z-10 w-1/2 text-xs font-semibold ${
+                mapMode === "2d" ? "text-white" : "text-gray-400"
+              }`}
+            >
+              2D
+            </button>
+            <button
+              onClick={() => setMapMode("3d")}
+              className={`relative z-10 w-1/2 text-xs font-semibold ${
+                mapMode === "3d" ? "text-white" : "text-gray-400"
+              }`}
+            >
+              3D
+            </button>
+          </div>
+          {!isMaximized && (
+            <button onClick={onMaximize} className="p-1 hover:bg-muted rounded">
+              <SafeIcon name="Maximize2" className="h-4 w-4" />
+            </button>
+          )}
+
+          {isMaximized && (
+            <button onClick={onExit} className="p-1 hover:bg-muted rounded">
+              <SafeIcon name="X" className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 border border-dashed border-[#2E2E2E] rounded-lg overflow-hidden">
-        <iframe
-          ref={iframeRef}
-          onLoad={handleIframeLoad}
-          src="/drone-map.html"
-          className="w-full h-full border-none"
-        />
+        {mapMode === "3d" ? (
+          <iframe
+            ref={iframeRef}
+            onLoad={() => setIframeReady(true)}
+            src="/drone-map.html"
+            className="w-full h-full border-none"
+          />
+        ) : (
+          <div ref={mapContainerRef} className="w-full h-full" />
+        )}
       </div>
     </div>
   );

@@ -30,7 +30,9 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${IncidentAPI_BASE}/get_incidents.php?station=${encodeURIComponent(station)}`);
+        const res = await fetch(
+          `${IncidentAPI_BASE}/get_incidents.php?station=${encodeURIComponent(station)}`,
+        );
         const data = await res.json();
         setIncidents(data);
       } catch (e) {
@@ -46,12 +48,12 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   /** 🔔 Alert Sound for NEW incident (only once) */
   useEffect(() => {
     const newAlerts = incidents.filter(
-      (i) => i.isNewAlert && !playedAlerts.has(i.id)
+      (i) => i.isNewAlert && !playedAlerts.has(i.id),
     );
 
     newAlerts.forEach((incident) => {
       const audio = new Audio(
-        "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA=="
+        "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
       );
       audio.play().catch(() => {});
       setPlayedAlerts((prev) => new Set([...prev, incident.id]));
@@ -90,8 +92,10 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   };
 
   /** 🟢 Acknowledge API */
-  const acknowledge = (id) => {
-    navigate(`/confirm-location/${id}`); // redirect to confirm-location screen
+  const acknowledge = (incident) => {
+    navigate(`/confirm-location/${incident.id}`, {
+      state: { incident }, // 👈 full data pass ho raha hai
+    });
   };
 
   /** 🟦 View Details click */
@@ -178,7 +182,7 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
                 <Button
                   fullWidth
                   size="small"
-                  onClick={() => acknowledge(inc.id)} // will redirect now
+                  onClick={() => acknowledge(inc)} // will redirect now
                   sx={{
                     background: "#ff4444",
                     color: "#fff",

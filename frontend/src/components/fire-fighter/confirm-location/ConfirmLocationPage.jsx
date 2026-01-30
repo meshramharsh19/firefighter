@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
-// MUI
 import {
   Button,
   Card,
@@ -40,34 +39,61 @@ const API = `${API_BASE}/fire-fighter/fire-fighter-dashboard`;
 export default function ConfirmLocationPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
 
-  const [incident, setIncident] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [incident, setIncident] = useState(state?.incident || null);
+  const [loading, setLoading] = useState(!state?.incident);
 
   const [currentLat, setCurrentLat] = useState(null);
   const [currentLng, setCurrentLng] = useState(null);
   const [hasMarkerMoved, setHasMarkerMoved] = useState(false);
-
-  // 🔥 IMPORTANT: station NAME (not ID)
   const [selectedStationName, setSelectedStationName] = useState(null);
 
+  /** 🔥 Load incident if page opened directly */
   useEffect(() => {
+    if (incident) {
+      setLoading(false);
+      return;
+    }
+
     fetch(`${API}/get_incidents.php`)
       .then((res) => res.json())
       .then((data) => {
         const inc = data.find((i) => i.id === id);
         if (!inc) {
           alert("Incident not found");
+          navigate("/firefighter-dashboard");
           return;
         }
         setIncident(inc);
-        setCurrentLat(inc.coordinates.lat);
-        setCurrentLng(inc.coordinates.lng);
         setLoading(false);
+      })
+      .catch(() => {
+        alert("Failed to load incident");
+        navigate("/firefighter-dashboard");
       });
-  }, [id]);
+  }, [id, incident, navigate]);
 
-  if (loading) {
+  /** ✅ SAFE COORDINATE RESOLVE */
+  useEffect(() => {
+    if (!incident) return;
+
+    const lat = Number(incident.latitude ?? incident.coordinates?.lat);
+    const lng = Number(incident.longitude ?? incident.coordinates?.lng);
+
+    console.log("Incident coords resolved:", lat, lng);
+
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      setCurrentLat(lat);
+      setCurrentLng(lng);
+    } else {
+      console.error("❌ Invalid coordinates after resolve:", incident);
+      setCurrentLat(null);
+      setCurrentLng(null);
+    }
+  }, [incident]);
+
+  if (loading || !incident) {
     return <p style={{ color: "white", padding: 40 }}>Loading...</p>;
   }
 
@@ -77,16 +103,29 @@ export default function ConfirmLocationPage() {
   ];
 
   const confirmAndProceed = () => {
+    const payload = {
+      ...incident,
+      latitude: currentLat,
+      longitude: currentLng,
+      coordinates: {
+        lat: currentLat,
+        lng: currentLng,
+      },
+      locationAdjusted: hasMarkerMoved,
+      selectedStationName: selectedStationName || null,
+    };
+
     if (selectedStationName) {
-      // 🔁 FORWARD FLOW (station NAME)
       navigate(
-        `/confirm-forward-incidence/${id}/${encodeURIComponent(
-          selectedStationName
-        )}`
+        `/confirm-forward-incidence/${incident.id}/${encodeURIComponent(
+          selectedStationName,
+        )}`,
+        { state: { incident: payload } },
       );
     } else {
-      // ✅ OWN STATION FLOW
-      navigate(`/vehicle-drone-selection/${id}`);
+      navigate(`/vehicle-drone-selection/${incident.id}`, {
+        state: { incident: payload },
+      });
     }
   };
 
@@ -96,7 +135,6 @@ export default function ConfirmLocationPage() {
 
       <Box sx={{ minHeight: "100vh", p: 3 }}>
         <Stack spacing={4} maxWidth="1200px" mx="auto">
-
           {/* Header */}
           <Stack direction="row" spacing={2} alignItems="center">
             <Box
@@ -124,7 +162,7 @@ export default function ConfirmLocationPage() {
             </Box>
           </Stack>
 
-          {/* Incident Card */}
+          {/* Incident Info */}
           <Card>
             <CardHeader
               title={<Typography variant="h6">{incident.name}</Typography>}
@@ -132,7 +170,11 @@ export default function ConfirmLocationPage() {
             <CardContent>
               <Stack direction="row" spacing={4} flexWrap="wrap">
                 <InfoField label="Incident ID" value={incident.id} mono />
-                <InfoField label="Type" value={incident.type} mono />
+                <InfoField
+                  label="Type"
+                  value={incident.type || incident.name}
+                  mono
+                />
                 <InfoField
                   label="Status"
                   value={
@@ -140,25 +182,52 @@ export default function ConfirmLocationPage() {
                   }
                 />
                 <InfoField label="Location" value={incident.location} />
+                <InfoField
+                  label="Coordinates"
+                  value={
+                    Number.isFinite(currentLat) && Number.isFinite(currentLng)
+                      ? `${currentLat}, ${currentLng}`
+                      : "Not Available"
+                  }
+                  mono
+                />
               </Stack>
             </CardContent>
           </Card>
 
           <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
-            {/* Map */}
+            {/* 🗺 SAFE MAP */}
             <Box flex={2}>
-              <MapWithDraggableMarker
-                initialLat={currentLat}
-                initialLng={currentLng}
-                onMarkerMove={(lat, lng) => {
-                  setCurrentLat(lat);
-                  setCurrentLng(lng);
-                  setHasMarkerMoved(true);
-                }}
-              />
+              {Number.isFinite(currentLat) && Number.isFinite(currentLng) ? (
+                <MapWithDraggableMarker
+                  initialLat={currentLat}
+                  initialLng={currentLng}
+                  incidentName={incident.name}
+                  hasMarkerMoved={hasMarkerMoved}
+                  onMarkerMove={(lat, lng) => {
+                    setCurrentLat(lat);
+                    setCurrentLng(lng);
+                    setHasMarkerMoved(true);
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    height: 400,
+                    bgcolor: "#111",
+                    border: "1px solid #2A2A2A",
+                    borderRadius: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#777",
+                  }}
+                >
+                  Invalid or missing incident coordinates
+                </Box>
+              )}
             </Box>
 
-            {/* Right */}
             <Stack flex={1} spacing={3}>
               <NearbyAssetsPanel assets={assets} />
 
@@ -216,14 +285,16 @@ export default function ConfirmLocationPage() {
   );
 }
 
+/** ✅ Typography fix (no <p> nesting issue) */
 function InfoField({ label, value, mono }) {
   return (
     <Box>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="text.secondary" component="div">
         {label}
       </Typography>
       <Typography
         variant="body2"
+        component="div"
         sx={{ fontFamily: mono ? "monospace" : "inherit", fontWeight: 500 }}
       >
         {value}

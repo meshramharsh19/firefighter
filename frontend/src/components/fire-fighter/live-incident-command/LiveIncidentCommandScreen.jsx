@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import SafeIcon from "@/components/common/SafeIcon";
 
 // Panels
@@ -13,132 +14,173 @@ import DigitalTwinPanel from "./DigitalTwinPanel";
 // MUI
 import { Button } from "@mui/material";
 
-export default function LiveIncidentCommandScreen({
-  incidentId = "INC-20251120-003",
-  incidentName = "Major Structural Fire - Downtown",
-}) {
-  const [viewMode, setViewMode] = useState("split");
-  const [maximizedPanel, setMaximizedPanel] = useState(null);
+export default function LiveIncidentCommandScreen() {
+  const { state } = useLocation();
+  const { incidentId, droneId } = useParams();
+  const navigate = useNavigate();
+
+  const incident = state?.incident;
+  const selectedVehicles = state?.selectedVehicles || [];
+  const selectedDrones = state?.selectedDrones || [];
+
+  // 🚨 If opened directly without state
+  useEffect(() => {
+    if (!incident) {
+      navigate("/firefighter-dashboard");
+    }
+  }, [incident, navigate]);
+
+  if (!incident) return null;
+
+  const [layout, setLayout] = useState("split");
+  const [activePanel, setActivePanel] = useState(null);
+  const [focusedPanel, setFocusedPanel] = useState("vts");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Handlers
-  const handleMaximizePanel = (panel) => {
-    setMaximizedPanel(panel);
-    setViewMode("full");
+  /* ---------------- Panel Controls ---------------- */
+
+  const maximizePanel = (panelKey) => {
+    setActivePanel(panelKey);
+    setFocusedPanel(panelKey);
+    setLayout("full");
   };
 
-  const handleExitMaximize = () => {
-    setMaximizedPanel(null);
-    setViewMode("split");
+  const minimizePanel = () => {
+    setActivePanel(null);
+    setLayout("split");
   };
 
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    setMaximizedPanel(null);
+  const changeLayout = (mode) => {
+    setLayout(mode);
+    setActivePanel(null);
+    if (mode === "focus") setFocusedPanel("vts");
   };
 
-  const handleFullscreen = () => {
+  const handleFocusChange = (panelKey) => {
+    if (layout === "focus" || layout === "full") {
+      setFocusedPanel(panelKey);
+      setActivePanel(panelKey);
+    }
+  };
+
+  /* ---------------- Fullscreen Controls ---------------- */
+
+  const enterBrowserFullscreen = () => {
     document.documentElement.requestFullscreen?.();
-    setIsFullscreen(true);
   };
 
-  const handleExitFullscreen = () => {
-    document.fullscreenElement && document.exitFullscreen();
-    setIsFullscreen(false);
+  const exitBrowserFullscreen = () => {
+    document.exitFullscreen?.();
   };
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  /* ---------------- Reusable Panel Renderer ---------------- */
+
+  const renderPanel = (key, Component, clickable = false) => (
+    <div
+      className={`rounded-lg h-full min-h-0 overflow-hidden bg-[#1F1F1F] ${
+        clickable ? "cursor-pointer hover:ring-2 hover:ring-red-500" : ""
+      }`}
+      onClick={clickable ? () => handleFocusChange(key) : undefined}
+    >
+      <Component
+        incident={incident}
+        selectedVehicles={selectedVehicles}
+        selectedDrones={selectedDrones}
+        onMaximize={() => maximizePanel(key)}
+        isMaximized={layout === "full" && activePanel === key}
+        onExit={minimizePanel}
+      />
+    </div>
+  );
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-background">
-      
-      {/* Toolbar */}
+    <div className="h-screen flex flex-col bg-background">
       <CommandToolbar
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
-        onFullscreen={handleFullscreen}
-        onExitFullscreen={handleExitFullscreen}
+        layout={layout}
+        onLayoutChange={changeLayout}
+        onFullscreen={enterBrowserFullscreen}
+        onExitFullscreen={exitBrowserFullscreen}
         isFullscreen={isFullscreen}
-        incidentId={incidentId}
-        incidentName={incidentName}
+        incidentId={incident.id}
+        incidentName={incident.name}
       />
 
-      {/* Main Content */}
-      {/* FIX APPLIED HERE ↓↓↓↓ */}
-      <div className="p-4 min-h-[calc(100vh-128px)] overflow-visible bg-[#0A0A0A]">
-        
-        {/* ---------- SPLIT MODE ---------- */}
-        {viewMode === "split" && !maximizedPanel && (
-          <div className="grid grid-cols-2 gap-4 pb-4 overflow-visible">
-            
-            <div className="rounded-lg min-h-[50vh] h-[70vh] overflow-hidden bg-[#1F1F1F]">
-              <VTSLivePanel onMaximize={() => handleMaximizePanel("vts")} />
-            </div>
-
-            <div className="rounded-lg min-h-[50vh] h-[70vh] overflow-hidden bg-[#1F1F1F]">
-              <DroneLivePanel
-                onMaximize={() => handleMaximizePanel("drone-location")}
-              />
-            </div>
-
-            <div className="rounded-lg min-h-[50vh] h-[70vh] overflow-hidden bg-[#1F1F1F]">
-              <DroneCameraPanel
-                onMaximize={() => handleMaximizePanel("drone-camera")}
-              />
-            </div>
-
-            <div className="rounded-lg min-h-[40vh] h-[70vh] overflow-hidden bg-[#1F1F1F]">
-              <DigitalTwinPanel
-                onMaximize={() => handleMaximizePanel("3d-twin")}
-              />
-            </div>
-
+      <div className="flex-1 min-h-[calc(160vh-168px)] overflow-visible p-4 bg-[#0A0A0A]">
+        {/* SPLIT MODE */}
+        {layout === "split" && (
+          <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
+            {renderPanel("vts", VTSLivePanel)}
+            {renderPanel("drone-location", DroneLivePanel)}
+            {renderPanel("drone-camera", DroneCameraPanel)}
+            {renderPanel("3d-twin", DigitalTwinPanel)}
           </div>
         )}
 
-        {/* ---------- FULL MODE ---------- */}
-        {viewMode === "full" && maximizedPanel && (
-          <div className="h-full flex flex-col">
-            <div className="flex-1 overflow-hidden rounded-lg">
-              {maximizedPanel === "vts" && (
-                <VTSLivePanel isMaximized onExit={handleExitMaximize} />
-              )}
-              {maximizedPanel === "drone-location" && (
-                <DroneLivePanel isMaximized onExit={handleExitMaximize} />
-              )}
-              {maximizedPanel === "drone-camera" && (
-                <DroneCameraPanel isMaximized onExit={handleExitMaximize} />
-              )}
-              {maximizedPanel === "3d-twin" && (
-                <DigitalTwinPanel isMaximized onExit={handleExitMaximize} />
-              )}
+        {/* FOCUS MODE */}
+        {layout === "focus" && (
+          <div className="flex flex-col gap-3 h-full">
+            <div className="h-[50%] min-h-0">
+              {focusedPanel === "vts" && renderPanel("vts", VTSLivePanel)}
+              {focusedPanel === "drone-location" &&
+                renderPanel("drone-location", DroneLivePanel)}
+              {focusedPanel === "drone-camera" &&
+                renderPanel("drone-camera", DroneCameraPanel)}
+              {focusedPanel === "3d-twin" &&
+                renderPanel("3d-twin", DigitalTwinPanel)}
             </div>
 
-            <div className="mt-4 flex justify-center">
+            <div className="h-[40%] grid grid-cols-3 gap-2">
+              {focusedPanel !== "vts" && renderPanel("vts", VTSLivePanel, true)}
+              {focusedPanel !== "drone-location" &&
+                renderPanel("drone-location", DroneLivePanel, true)}
+              {focusedPanel !== "drone-camera" &&
+                renderPanel("drone-camera", DroneCameraPanel, true)}
+              {focusedPanel !== "3d-twin" &&
+                renderPanel("3d-twin", DigitalTwinPanel, true)}
+            </div>
+          </div>
+        )}
+
+        {/* FULL MODE */}
+        {layout === "full" && (
+          <div className="flex flex-col gap-4 h-full">
+            <div className="h-[75%] min-h-0">
+              {focusedPanel === "vts" && renderPanel("vts", VTSLivePanel)}
+              {focusedPanel === "drone-location" &&
+                renderPanel("drone-location", DroneLivePanel)}
+              {focusedPanel === "drone-camera" &&
+                renderPanel("drone-camera", DroneCameraPanel)}
+              {focusedPanel === "3d-twin" &&
+                renderPanel("3d-twin", DigitalTwinPanel)}
+            </div>
+
+            <div className="h-[25%] grid grid-cols-3 gap-2">
+              {focusedPanel !== "vts" && renderPanel("vts", VTSLivePanel, true)}
+              {focusedPanel !== "drone-location" &&
+                renderPanel("drone-location", DroneLivePanel, true)}
+              {focusedPanel !== "drone-camera" &&
+                renderPanel("drone-camera", DroneCameraPanel, true)}
+              {focusedPanel !== "3d-twin" &&
+                renderPanel("3d-twin", DigitalTwinPanel, true)}
+            </div>
+
+            <div className="flex justify-center pt-2">
               <Button
                 variant="outlined"
-                onClick={handleExitMaximize}
-                startIcon={<SafeIcon name="X" />}
+                onClick={minimizePanel}
+                startIcon={<SafeIcon name="Minimize2" />}
               >
-                Exit Fullscreen
+                Exit Full View
               </Button>
             </div>
           </div>
         )}
-
-        {/* ---------- FOCUS MODE ---------- */}
-        {viewMode === "focus" && !maximizedPanel && (
-          <div className="h-full flex flex-col gap-4">
-            <div className="flex-1 overflow-hidden rounded-lg">
-              <VTSLivePanel />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 h-32 overflow-hidden">
-              <DroneLivePanel />
-              <DroneCameraPanel />
-              <DigitalTwinPanel />
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );

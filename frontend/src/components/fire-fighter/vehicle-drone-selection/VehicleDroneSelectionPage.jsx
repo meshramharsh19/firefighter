@@ -1,6 +1,5 @@
-// VehicleDroneSelectionPage.jsx
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -19,13 +18,11 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import FlightIcon from "@mui/icons-material/Flight";
-import BusinessIcon from "@mui/icons-material/Business";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 // Components
 import VehicleSelectionCard from "./VehicleSelectionCard";
 import DroneSelectionCard from "./DroneSelectionCard";
-import StationSuggestionCard from "./StationSuggestionCard";
 import SelectionSummary from "./SelectionSummary";
 
 // Theme
@@ -59,7 +56,6 @@ const darkIncidentTheme = createTheme({
 const safeNumber = (v) =>
   v === null || v === undefined || v === "" ? null : Number(v);
 
-// ✅ Vehicle normalizer (unchanged)
 const normalizeVehicleRow = (v = {}) => ({
   ...v,
   id: v.id,
@@ -75,40 +71,44 @@ const normalizeVehicleRow = (v = {}) => ({
   etaMinutes: safeNumber(v.etaMinutes),
 });
 
-// ✅ FIXED Drone normalizer
 const normalizeDroneRow = (row = {}) => ({
   id: row.id,
-
-  // 🔥 CORRECT FIELD FROM API
-  drone_id: row.drone_code,   // <-- THIS IS THE FIX
+  drone_id: row.drone_code,
   name: row.name,
-
   status: row.status,
   battery: row.battery,
   flight_hours: row.flight_hours,
   station: row.station,
-
   pilot_name: row.pilot_name,
   pilot_number: row.pilot_number,
   is_ready: Boolean(row.is_ready),
-
   _raw: row,
 });
 
-
 export default function VehicleDroneSelectionPage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const { id } = useParams();
 
-  // 🔐 USER STATION (LOCKED)
-  const session = JSON.parse(
-    sessionStorage.getItem("fireOpsSession") || "{}"
-  );
+  // 🔥 Incident from ConfirmLocationPage
+  const incident = state?.incident;
+
+  // 🔐 Station still from session
+  const session = JSON.parse(sessionStorage.getItem("fireOpsSession") || "{}");
   const userStation = session.station;
-  const incidentId = session.incidentId || "INC-20251120-003";
+
+  useEffect(() => {
+    if (!incident) {
+      navigate("/firefighter-dashboard");
+    }
+  }, [incident, navigate]);
+
+  if (!incident) return null;
+
+  const incidentId = incident.id;
 
   const [vehicles, setVehicles] = useState([]);
   const [drones, setDrones] = useState([]);
-  const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [selectedAssets, setSelectedAssets] = useState({
@@ -125,34 +125,22 @@ export default function VehicleDroneSelectionPage() {
   // ---------------- FETCH ----------------
   useEffect(() => {
     if (!userStation) return;
-
     let mounted = true;
 
     async function fetchAll() {
       setLoading(true);
       try {
-        // Vehicles
         const vehRes = await fetch(
           `${API_BASE}/admin/admin-vehicle/get_vehicles.php`
         );
         const vehJson = await vehRes.json();
 
-        // Drones (station-filtered from backend)
-        const droneRes = await fetch(
-          `${API}/get_drones.php`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ station: userStation }),
-          }
-        );
+        const droneRes = await fetch(`${API}/get_drones.php`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ station: userStation }),
+        });
         const droneJson = await droneRes.json();
-
-        // Stations (only for suggestion card)
-        const stationRes = await fetch(
-          `${API}/get_firestations.php`
-        );
-        const stationJson = await stationRes.json();
 
         if (!mounted) return;
 
@@ -166,7 +154,6 @@ export default function VehicleDroneSelectionPage() {
 
         setVehicles(normalizedVehicles);
         setDrones(normalizedDrones);
-        setStations(stationJson?.stations || []);
         setLoading(false);
       } catch (e) {
         console.error(e);
@@ -183,7 +170,6 @@ export default function VehicleDroneSelectionPage() {
     return () => (mounted = false);
   }, [userStation]);
 
-  // ---------------- SELECTION ----------------
   const selectedVehicleObjects = useMemo(
     () => vehicles.filter((v) => selectedAssets.vehicleIds.includes(v.id)),
     [vehicles, selectedAssets]
@@ -196,7 +182,6 @@ export default function VehicleDroneSelectionPage() {
 
   const canActivate = selectedDroneObjects.length > 0;
 
-  // ---------------- UI ----------------
   return (
     <ThemeProvider theme={darkIncidentTheme}>
       <CssBaseline />
@@ -212,6 +197,9 @@ export default function VehicleDroneSelectionPage() {
                 <Typography variant="h4" fontWeight={800}>
                   Vehicle & Drone Selection
                 </Typography>
+                {/* <Typography variant="body2" color="text.secondary">
+                  Incident: {incident.name}
+                </Typography> */}
                 <Typography variant="body2" color="text.secondary">
                   Station: {userStation}
                 </Typography>
@@ -228,9 +216,9 @@ export default function VehicleDroneSelectionPage() {
             </Button>
           </Stack>
 
-          {/* GRID */}
           <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 4 }}>
             <Stack spacing={4}>
+
               <AssetSection
                 icon={<LocalShippingIcon color="primary" />}
                 title="Available Vehicles"
@@ -290,14 +278,20 @@ export default function VehicleDroneSelectionPage() {
               </AssetSection>
             </Stack>
 
-            {/* STICKY SUMMARY */}
             <SelectionSummary
               selectedVehicles={selectedVehicleObjects}
               selectedDrones={selectedDroneObjects}
               canActivate={canActivate}
               onActivate={() =>
                 navigate(
-                  `/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`
+                  `/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`,
+                  {
+                    state: {
+                      incident,
+                      selectedVehicles: selectedVehicleObjects,
+                      selectedDrones: selectedDroneObjects,
+                    },
+                  }
                 )
               }
               onBack={() => navigate(-1)}
