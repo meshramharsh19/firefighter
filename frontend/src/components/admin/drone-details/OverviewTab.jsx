@@ -113,6 +113,35 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
     return () => clearInterval(interval);
   }, [selectedDrone?.drone_code]);
 
+  const reassignPilot = () => {
+    if (!selectedPilot || !selectedDrone?.pilot_id) return;
+
+    const formData = new FormData();
+    formData.append("drone_code", selectedDrone.drone_code);
+    formData.append("pilot_id", selectedPilot.id);          // ✅ FIX
+    formData.append("pilot_name", selectedPilot.fullName);  // ✅ FIX
+    formData.append("pilot_email", selectedPilot.email);
+    formData.append("pilot_phone", selectedPilot.phone);
+    formData.append("pilot_role", selectedPilot.designation);
+    formData.append("old_pilot_id", selectedDrone.pilot_id);
+
+    fetch(`${API}/reassignPilotToDrone.php`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success("Pilot reassigned successfully");
+          refreshDrone();
+        } else {
+          toast.error(data.error || "Failed to reassign pilot");
+        }
+      });
+  };
+
+
   const assignPilot = () => {
     if (!selectedPilot) return;
 
@@ -235,7 +264,7 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
                       <Button
                         variant="outline"
                         disabled={!selectedPilot}
-                        onClick={assignPilot}
+                        onClick={reassignPilot}
                         className="w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed "
                       >
                         Assign Pilot
@@ -266,7 +295,9 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
                     <Button variant="outline" className="w-full">Assign Pilot</Button>
                   </DialogTrigger>
                   <DialogContent className="bg-[#0D0F12] text-white border-zinc-800">
-                    <DialogHeader><DialogTitle>Select Pilot ({selectedDrone?.station})</DialogTitle></DialogHeader>
+                    <DialogHeader>
+                      <DialogTitle>Select Pilot ({selectedDrone?.station})</DialogTitle>
+                    </DialogHeader>
                     <PilotList 
                       station={selectedDrone?.station} 
                       selectedPilot={selectedPilot} 
