@@ -23,7 +23,7 @@ export default function StationFilters({ filters, setFilters }) {
         </div>
 
         {/* STATUS */}
-        <div>
+        {/* <div>
           <label className="block text-sm mb-1">Status</label>
           <select
             className="w-full bg-black border border-white/20 rounded-lg py-2 px-3"
@@ -36,10 +36,10 @@ export default function StationFilters({ filters, setFilters }) {
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-        </div>
+        </div> */}
 
         {/* CITY */}
-        <div>
+        {/* <div>
           <label className="block text-sm mb-1">City</label>
           <select
             className="w-full bg-black border border-white/20 rounded-lg py-2 px-3"
@@ -52,7 +52,7 @@ export default function StationFilters({ filters, setFilters }) {
             <option>Nagpur</option>
             <option>Pune</option>
           </select>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from "react";
 
 export default function UserFilters({ isDark, roles, filters, setFilters }) {
-  const [stations, setStations] = useState([]); // 🔥 ADDED
+  const [stations, setStations] = useState([]);
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
-  // 🔥 FETCH STATIONS (ONLY ADDITION)
+
+  // 🔥 FETCH STATIONS SAFELY
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE}/fire-fighter/vehicle-drone-selection/get_firestations.php`
-        );
+        const res = await fetch(`${API_BASE}/admin/station/get_stations.php`);
         const data = await res.json();
 
-        if (data.success) {
+        // Handle BOTH response formats
+        if (Array.isArray(data)) {
+          setStations(data);
+        } else if (Array.isArray(data.stations)) {
           setStations(data.stations);
+        } else {
+          setStations([]);
         }
       } catch (error) {
-        console.error("Failed to fetch stations");
+        console.error("Failed to fetch stations", error);
+        setStations([]);
       }
     };
 
@@ -50,25 +55,27 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
       <input
         className={base}
         placeholder="Search Name"
-        onChange={(e) =>
-          setFilters({ ...filters, name: e.target.value })
-        }
+        onChange={(e) => setFilters({ ...filters, name: e.target.value })}
       />
 
-      {/* 🔥 STATION (DYNAMIC) */}
+      {/* 🔥 STATION FILTER */}
       <div className="relative">
         <select
           className={base}
-          onChange={(e) =>
-            setFilters({ ...filters, station: e.target.value })
-          }
+          onChange={(e) => setFilters({ ...filters, station: e.target.value })}
         >
           <option value="">All Stations</option>
-          {stations.map((s) => (
-            <option key={s.id} value={s.name}>
-              {s.name}
-            </option>
-          ))}
+
+          {stations.map((s, i) => {
+            const name = typeof s === "string" ? s : s.name;
+            const key = typeof s === "string" ? i : s.id;
+
+            return (
+              <option key={key} value={name}>
+                {name}
+              </option>
+            );
+          })}
         </select>
         <DropdownIcon />
       </div>
@@ -77,9 +84,7 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
       <div className="relative">
         <select
           className={base}
-          onChange={(e) =>
-            setFilters({ ...filters, role: e.target.value })
-          }
+          onChange={(e) => setFilters({ ...filters, role: e.target.value })}
         >
           <option value="">All Roles</option>
           {roles.map((r) => (
@@ -95,9 +100,7 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
       <div className="relative">
         <select
           className={base}
-          onChange={(e) =>
-            setFilters({ ...filters, status: e.target.value })
-          }
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -106,13 +109,11 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
         <DropdownIcon />
       </div>
 
-      {/* SORT BY */}
+      {/* SORT */}
       <div className="relative">
         <select
           className={base}
-          onChange={(e) =>
-            setFilters({ ...filters, sortBy: e.target.value })
-          }
+          onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
         >
           <option value="">Sort By</option>
           <option value="id_asc">ID ↑</option>

@@ -1,50 +1,46 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
+
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: *");
+header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-require __DIR__ . "/../../../config/db.php";
+require "../../../config/db.php";
 
+if (!$conn) {
+    echo json_encode(["status" => false, "message" => "Database connection failed"]);
+    exit;
+}
 
-/*
-Assuming table: demo_station
-Columns:
-- id
-- station_name
-- location_name
-- latitude
-- longitude
-*/
+$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : "";
 
-$sql = "
-  SELECT 
-    id,
-    station_name,
-    location_name,
-    latitude,
-    longitude
-  FROM demo_station
-  ORDER BY station_name ASC
-";
+$sql = "SELECT id, station_name, station_code, latitude, longitude FROM fire_station WHERE 1";
 
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$result = $stmt->get_result();
+if ($search !== "") {
+    $sql .= " AND (station_name LIKE '%$search%' OR station_code LIKE '%$search%')";
+}
+
+$result = $conn->query($sql);
+
+if (!$result) {
+    echo json_encode(["status" => false, "message" => "Query failed"]);
+    exit;
+}
 
 $stations = [];
 
 while ($row = $result->fetch_assoc()) {
-  $stations[] = [
-    "id" => (int)$row["id"],
-    "station_name" => $row["station_name"],
-    "location_name" => $row["location_name"],
-    "lat" => (float)$row["latitude"],
-    "lng" => (float)$row["longitude"]
-  ];
+    $stations[] = [
+        "id" => $row["id"],
+        "name" => $row["station_name"],
+        "code" => $row["station_code"],
+        "lat" => $row["latitude"],
+        "lng" => $row["longitude"],
+    ];
 }
 
-echo json_encode([
-  "success" => true,
-  "count" => count($stations),
-  "data" => $stations
-]);
+echo json_encode(["status" => true, "stations" => $stations]);
+$conn->close();
+?>

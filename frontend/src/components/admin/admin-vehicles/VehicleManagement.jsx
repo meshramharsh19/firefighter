@@ -34,20 +34,26 @@ export default function VehicleManagement() {
     try {
       const res = await fetch(`${API}/get_vehicles.php`);
       const data = await res.json();
-      setVehicles(data || []);
+      setVehicles(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.log("Fetch Error:", e);
+      console.log("Vehicle Fetch Error:", e);
+      setVehicles([]);
     }
   };
 
-  // ================= FETCH STATIONS (MOVED HERE) =================
+  // ================= FETCH STATIONS =================
   const loadStations = async () => {
     try {
-      const res = await fetch(`${API}/getStations.php`);
+      const res = await fetch(`${API_BASE}/admin/station/get_stations.php`);
       const data = await res.json();
-      setStations(data || []);
+
+      const stationArray = Array.isArray(data) ? data : data.stations || [];
+      setStations(stationArray);
+
+      console.log("Stations loaded:", stationArray);
     } catch (e) {
       console.log("Station fetch error:", e);
+      setStations([]);
     }
   };
 
@@ -66,18 +72,12 @@ export default function VehicleManagement() {
       });
 
       const data = await res.json();
-
-      if (data?.success) {
-        loadVehicles();
-      }
+      if (data?.success) loadVehicles();
 
       return data;
     } catch (e) {
       console.error(e);
-      return {
-        success: false,
-        message: "Server error while adding vehicle",
-      };
+      return { success: false, message: "Server error while adding vehicle" };
     }
   };
 
@@ -157,12 +157,10 @@ export default function VehicleManagement() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300 hover:border-red-700"
+              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E]"
             >
               {statuses.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
@@ -173,12 +171,12 @@ export default function VehicleManagement() {
             <select
               value={selectedStation}
               onChange={(e) => setSelectedStation(e.target.value)}
-              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] focus:outline-none focus:border-gray-300 hover:border-red-700"
+              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E]"
             >
               <option value="all">All</option>
-              {stations.map((st, i) => (
-                <option key={i} value={st}>
-                  {st}
+              {stations.map((st) => (
+                <option key={st.id} value={st.name}>
+                  {st.name}
                 </option>
               ))}
             </select>
@@ -199,6 +197,7 @@ export default function VehicleManagement() {
             vehicles={filteredVehicles}
             onUpdated={loadVehicles}
             onView={handleViewVehicle}
+            stations={stations}
           />
         </TabsContent>
 

@@ -1,7 +1,15 @@
 import { MapContainer, TileLayer, Marker, Popup, LayersControl } from "react-leaflet";
 import L from "leaflet";
-import { useState, useEffect, useMemo } from "react";
-import { Card, CardHeader, CardContent, Typography, Box, Chip, Button } from "@mui/material";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
+  Button,
+} from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const { BaseLayer } = LayersControl;
@@ -18,23 +26,24 @@ export default function MapWithDraggableMarkerMui({
   initialLng,
   onMarkerMove,
   incidentName = "Incident",
-  hasMarkerMoved
+  hasMarkerMoved,
 }) {
-  // ✅ Validate incoming coordinates
-  const validLat = Number.isFinite(initialLat) ? initialLat : null;
-  const validLng = Number.isFinite(initialLng) ? initialLng : null;
+  const [position, setPosition] = useState(null);
+  const [originalPosition, setOriginalPosition] = useState(null);
 
-  const [position, setPosition] = useState(
-    validLat !== null && validLng !== null ? [validLat, validLng] : null
-  );
-
+  // 🔥 Set original ONLY once when valid coords first arrive
   useEffect(() => {
-    if (Number.isFinite(initialLat) && Number.isFinite(initialLng)) {
-      setPosition([initialLat, initialLng]);
+    if (
+      Number.isFinite(initialLat) &&
+      Number.isFinite(initialLng) &&
+      !originalPosition
+    ) {
+      const startPos = [initialLat, initialLng];
+      setPosition(startPos);
+      setOriginalPosition(startPos);
     }
-  }, [initialLat, initialLng]);
+  }, [initialLat, initialLng, originalPosition]);
 
-  // 🛑 Prevent Leaflet crash if coords invalid
   if (!position) {
     return (
       <Card sx={{ background: "#141414", border: "1px solid #222", borderRadius: 3 }}>
@@ -63,20 +72,18 @@ export default function MapWithDraggableMarkerMui({
       dragend(e) {
         const { lat, lng } = e.target.getLatLng();
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          setPosition([lat, lng]);
-          onMarkerMove(lat, lng);
+          const newPos = [lat, lng];
+          setPosition(newPos);
+          onMarkerMove(lat, lng, false); // normal movement
         }
       },
     };
-
-    const safeLat = Number.isFinite(position[0]) ? position[0].toFixed(4) : "--";
-    const safeLng = Number.isFinite(position[1]) ? position[1].toFixed(4) : "--";
 
     return (
       <Marker icon={markerIcon} draggable eventHandlers={eventHandlers} position={position}>
         <Popup>
           <b>{incidentName}</b> <br />
-          {safeLat}, {safeLng}
+          {position[0].toFixed(4)}, {position[1].toFixed(4)}
         </Popup>
       </Marker>
     );
@@ -120,24 +127,24 @@ export default function MapWithDraggableMarkerMui({
         </MapContainer>
 
         <Box mt={2} p={1} sx={{ bgcolor: "#1e1e1e", borderRadius: 1 }}>
-          <Typography fontSize={13} color="gray">Coordinates</Typography>
+          <Typography fontSize={13} color="gray">
+            Coordinates
+          </Typography>
           <Typography fontFamily="monospace">
-            {Number.isFinite(position[0]) ? position[0].toFixed(6) : "--"},{" "}
-            {Number.isFinite(position[1]) ? position[1].toFixed(6) : "--"}
+            {position[0].toFixed(6)}, {position[1].toFixed(6)}
           </Typography>
         </Box>
 
-        {hasMarkerMoved && (
+        {hasMarkerMoved && originalPosition && (
           <Button
             variant="outlined"
             color="primary"
             fullWidth
             sx={{ mt: 2 }}
             onClick={() => {
-              if (Number.isFinite(initialLat) && Number.isFinite(initialLng)) {
-                setPosition([initialLat, initialLng]);
-                onMarkerMove(initialLat, initialLng);
-              }
+              const [resetLat, resetLng] = originalPosition;
+              setPosition(originalPosition);          // move marker
+              onMarkerMove(resetLat, resetLng, true); // tell parent reset
             }}
           >
             Reset to Original Location

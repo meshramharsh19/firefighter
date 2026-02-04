@@ -22,28 +22,25 @@ export default function RegistrationForm({
     focus:ring-2 focus:ring-red-500/40
     ${
       isDark
-        ? `
-          bg-[#0f1114] text-white border-[#ffffff40]
-          hover:border-white
-          focus:border-white
-        `
-        : `
-          bg-white text-black border-gray-400
-          hover:border-black
-          focus:border-black
-        `
+        ? `bg-[#0f1114] text-white border-[#ffffff40] hover:border-white focus:border-white`
+        : `bg-white text-black border-gray-400 hover:border-black focus:border-black`
     }
   `;
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  // 🔥 FETCH STATIONS FROM CENTRAL STATION TABLE
   useEffect(() => {
-    fetch(
-      `${API_BASE}/fire-fighter/vehicle-drone-selection/get_firestations.php`
-    )
+    fetch(`${API_BASE}/admin/station/get_stations.php`)
       .then((res) => res.json())
-      .then((data) => data.success && setStations(data.stations));
+      .then((data) => {
+        const stationList = Array.isArray(data)
+          ? data
+          : data.stations || [];
+        setStations(stationList);
+      })
+      .catch(() => setStations([]));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -123,13 +120,7 @@ export default function RegistrationForm({
           <button
             type="button"
             onClick={handleRegisterNewUser}
-            className="
-              px-4 py-2 rounded-lg text-sm font-semibold text-white
-              bg-[#EF4343]
-              transition-all duration-200
-              hover:bg-red-600
-              active:bg-red-700 active:scale-[0.97]
-            "
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#EF4343] hover:bg-red-600"
           >
             Register New User
           </button>
@@ -146,79 +137,22 @@ export default function RegistrationForm({
       )}
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-        {/* FULL NAME - REQUIRED */}
-        <input
-          className={inputClass}
-          name="fullName"
-          placeholder="Full Name"
-          value={form.fullName}
-          onChange={handleChange}
-          required
-        />
+        <input className={inputClass} name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} required />
+        <input className={inputClass} name="address" placeholder="Address" value={form.address} onChange={handleChange} />
+        <input className={inputClass} name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} />
+        <input className={inputClass} name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} required />
+        <input className={inputClass} name="designation" placeholder="Designation" value={form.designation} onChange={handleChange} required />
 
-        {/* ADDRESS - OPTIONAL */}
-        <input
-          className={inputClass}
-          name="address"
-          placeholder="Address"
-          value={form.address}
-          onChange={handleChange}
-        />
-
-        {/* EMAIL - OPTIONAL */}
-        <input
-          className={inputClass}
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-        />
-
-        {/* PHONE - REQUIRED */}
-        <input
-          className={inputClass}
-          name="phone"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={handleChange}
-          required
-        />
-
-        {/* DESIGNATION - REQUIRED */}
-        <input
-          className={inputClass}
-          name="designation"
-          placeholder="Designation"
-          value={form.designation}
-          onChange={handleChange}
-          required
-        />
-
-        {/* ROLE - REQUIRED */}
-        <select
-          className={inputClass}
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          required
-        >
+        {/* ROLE */}
+        <select className={inputClass} name="role" value={form.role} onChange={handleChange} required>
           <option value="">Select Role</option>
           {roles.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
+            <option key={r} value={r}>{r}</option>
           ))}
         </select>
 
-        {/* STATION - REQUIRED */}
-        <select
-          className={inputClass}
-          name="station"
-          value={form.station}
-          onChange={handleChange}
-          required
-        >
+        {/* 🔥 STATION DROPDOWN FIXED */}
+        <select className={inputClass} name="station" value={form.station} onChange={handleChange} required>
           <option value="">Select Fire Station</option>
           {stations.map((s) => (
             <option key={s.id} value={s.name}>
@@ -230,14 +164,7 @@ export default function RegistrationForm({
         <button
           type="submit"
           disabled={loading}
-          className="
-            col-span-2 py-3 rounded-lg font-semibold text-white
-            bg-[#EF4343]
-            transition-all duration-200
-            hover:bg-red-600
-            active:bg-red-700 active:scale-[0.97]
-            disabled:opacity-60 disabled:cursor-not-allowed
-          "
+          className="col-span-2 py-3 rounded-lg font-semibold text-white bg-[#EF4343] hover:bg-red-600 disabled:opacity-60"
         >
           {loading
             ? editUserId

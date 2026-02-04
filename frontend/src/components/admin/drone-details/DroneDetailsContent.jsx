@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Fragment Imports
 import DroneHeader from "./DroneHeader";
 import QuickStats from "./QuickStats";
 import OverviewTab from "./OverviewTab";
@@ -22,34 +21,40 @@ export default function DroneDetailsContent() {
   const [selectedStation, setSelectedStation] = useState("");
   const [selectedDrone, setSelectedDrone] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-  
-  // Dialog States
+
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
+  // 🔥 FETCH STATIONS
   useEffect(() => {
-    fetch(`${API}/getStations.php`)
+    fetch(`${API_BASE}/admin/station/get_stations.php`)
       .then((res) => res.json())
       .then((data) => {
-        setStations(data);
-        if (data.length) {
-          setSelectedStation(data[0]);
-          fetchDronesByStation(data[0]);
+        const stationList = Array.isArray(data) ? data : data.stations || [];
+        setStations(stationList);
+
+        if (stationList.length) {
+          setSelectedStation(stationList[0].name);
+          fetchDronesByStation(stationList[0].name);
         }
       });
   }, []);
 
-  const fetchDronesByStation = (station) => {
-    fetch(`${API}/getDronesByStation.php?station=${station}`)
+  // 🔥 FETCH DRONES BY STATION
+  const fetchDronesByStation = (stationName) => {
+    fetch(`${API}/getDronesByStation.php?station=${stationName}`)
       .then((res) => res.json())
       .then((data) => {
-        setDrones(data);
+        setDrones(data || []);
         if (data.length) {
           fetchDroneDetails(data[0].drone_code);
+        } else {
+          setSelectedDrone(null);
         }
       });
   };
 
+  // 🔥 FETCH DRONE DETAILS
   const fetchDroneDetails = (code) => {
     fetch(`${API}/getDroneDetails.php?drone_code=${code}`)
       .then((res) => res.json())
@@ -60,38 +65,53 @@ export default function DroneDetailsContent() {
 
   return (
     <div className="space-y-6 p-6">
+
       {/* Station & Drone Selectors */}
       <div className="flex gap-6 items-end">
+        {/* STATION SELECT */}
         <div className="flex flex-col">
-          <label className="text-md font-medium text-muted-foreground mb-2">Select station:</label>
-          <select 
+          <label className="text-md font-medium text-muted-foreground mb-2">
+            Select Station:
+          </label>
+          <select
             className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12] border border-[#2E2E2E]"
-            value={selectedStation} 
+            value={selectedStation}
             onChange={(e) => {
               setSelectedStation(e.target.value);
               fetchDronesByStation(e.target.value);
             }}
           >
-            {stations.map((s, i) => <option key={i} value={s}>{s}</option>)}
+            {stations.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
           </select>
         </div>
 
+        {/* DRONE SELECT */}
         <div className="flex flex-col">
-          <label className="text-md font-medium text-muted-foreground mb-2">Select Drone:</label>
-          <select 
+          <label className="text-md font-medium text-muted-foreground mb-2">
+            Select Drone:
+          </label>
+          <select
             className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12] border border-[#2E2E2E]"
-            value={selectedDrone?.drone_code || ""} 
+            value={selectedDrone?.drone_code || ""}
             onChange={(e) => fetchDroneDetails(e.target.value)}
           >
-            {drones.map((d, i) => <option key={i} value={d.drone_code}>{d.drone_name}</option>)}
+            {drones.map((d) => (
+              <option key={d.drone_code} value={d.drone_code}>
+                {d.drone_name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
-      <DroneHeader 
-        selectedDrone={selectedDrone} 
-        onAddClick={() => setShowAddDialog(true)} 
-        onEditClick={() => setShowEditDialog(true)} 
+      <DroneHeader
+        selectedDrone={selectedDrone}
+        onAddClick={() => setShowAddDialog(true)}
+        onEditClick={() => setShowEditDialog(true)}
       />
 
       <QuickStats selectedDrone={selectedDrone} />
@@ -104,7 +124,12 @@ export default function DroneDetailsContent() {
         </TabsList>
 
         <TabsContent value="overview">
-          <OverviewTab selectedDrone={selectedDrone} refreshDrone={() => fetchDroneDetails(selectedDrone.drone_code)} />
+          <OverviewTab
+            selectedDrone={selectedDrone}
+            refreshDrone={() =>
+              fetchDroneDetails(selectedDrone.drone_code)
+            }
+          />
         </TabsContent>
 
         <TabsContent value="history">
@@ -116,9 +141,22 @@ export default function DroneDetailsContent() {
         </TabsContent>
       </Tabs>
 
-      <AddDroneDialog open={showAddDialog} onOpenChange={setShowAddDialog} stations={stations} onSuccess={() => fetchDronesByStation(selectedStation)} />
+      <AddDroneDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        stations={stations}
+        onSuccess={() => fetchDronesByStation(selectedStation)}
+      />
+
       {selectedDrone && (
-        <EditDroneDialog open={showEditDialog} onOpenChange={setShowEditDialog} drone={selectedDrone} onSuccess={() => fetchDroneDetails(selectedDrone.drone_code)} />
+        <EditDroneDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          drone={selectedDrone}
+          onSuccess={() =>
+            fetchDroneDetails(selectedDrone.drone_code)
+          }
+        />
       )}
     </div>
   );

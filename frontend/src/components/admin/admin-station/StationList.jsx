@@ -1,38 +1,65 @@
+import { useEffect, useState, useCallback } from "react";
 import StationCard from "./StationCard";
+import { toast } from "react-hot-toast";
 
-const stations = [
-  {
-    name: "Katraj Fire Station",
-    code: "ST-001",
-    city: "Pune",
-    contact: "9876543210",
-    status: "Active",
-    location: "South Sector Yard",
-  },
-  {
-    name: "Civil Lines Station",
-    code: "ST-002",
-    city: "Nagpur",
-    contact: "9123456789",
-    status: "Inactive",
-    location: "Central Zone",
-  },
-];
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/admin/station`;
 
-export default function StationList({ filters }) {
-  const filteredStations = stations.filter((s) => {
-    return (
-      (filters.status === "all" || s.status === filters.status) &&
-      (filters.city === "All" || s.city === filters.city) &&
-      (s.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        s.code.toLowerCase().includes(filters.search.toLowerCase()))
-    );
-  });
+export default function StationList({
+  filters,
+  onViewMap = () => {},       // prevent undefined crash
+  onEditStation = () => {},   // prevent undefined crash
+  refreshTrigger,
+}) {
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStations = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${API}/get_stations.php?search=${encodeURIComponent(filters.search || "")}`
+      );
+
+      if (!res.ok) throw new Error("Network response not ok");
+
+      const data = await res.json();
+
+      if (data.status) {
+        setStations(data.stations || []);
+      } else {
+        toast.error("Failed to load stations");
+      }
+    } catch (err) {
+      console.error("Fetch stations error:", err);
+      toast.error("Server error while fetching stations");
+    } finally {
+      setLoading(false);
+    }
+  }, [filters.search]);
+
+  useEffect(() => {
+    fetchStations();
+  }, [fetchStations, refreshTrigger]);
+
+  if (loading) {
+    return <p className="text-gray-400">Loading stations...</p>;
+  }
+
+  if (stations.length === 0) {
+    return <p className="text-gray-500">No stations found</p>;
+  }
 
   return (
     <div className="space-y-6">
-      {filteredStations.map((station, i) => (
-        <StationCard key={i} station={station} />
+      {stations.map((station) => (
+        <StationCard
+          key={station.id}
+          station={station}
+          onViewMap={onViewMap}
+          onEditStation={onEditStation}
+        />
       ))}
     </div>
   );

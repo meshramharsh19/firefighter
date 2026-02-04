@@ -14,7 +14,7 @@ export default function EditVehicleModal({
   onClose,
   vehicle,
   onUpdate,
-  stations = [], // ✅ stations parent se
+  stations = [],
 }) {
   const [formData, setFormData] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -26,8 +26,13 @@ export default function EditVehicleModal({
   useEffect(() => {
     if (!vehicle) return;
 
-    setFormData(vehicle);
-    originalRef.current = JSON.stringify(vehicle);
+    const safeVehicle = {
+      ...vehicle,
+      station: vehicle.station || "",
+    };
+
+    setFormData(safeVehicle);
+    originalRef.current = JSON.stringify(safeVehicle);
     setIsDirty(false);
     setError("");
   }, [vehicle]);
@@ -36,7 +41,9 @@ export default function EditVehicleModal({
 
   /* ---------- CHANGE HANDLER ---------- */
   const handleChange = (e) => {
-    const updated = { ...formData, [e.target.name]: e.target.value };
+    const { name, value } = e.target;
+    const updated = { ...formData, [name]: value };
+
     setFormData(updated);
     setError("");
     setIsDirty(JSON.stringify(updated) !== originalRef.current);
@@ -48,17 +55,15 @@ export default function EditVehicleModal({
 
     const res = await onUpdate(formData);
 
-    // 🔴 BACKEND / DUPLICATE ERROR
     if (!res?.success) {
       setError(res?.message || "Update failed");
       return;
     }
 
-    // ✅ SUCCESS
     onClose();
   };
 
-  /* ---------- INPUT STYLE (UNCHANGED) ---------- */
+  /* ---------- INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -95,20 +100,15 @@ export default function EditVehicleModal({
         },
       }}
     >
-      {/* ---------- TITLE ---------- */}
+      {/* TITLE */}
       <DialogTitle
-        sx={{
-          borderBottom: "1px solid #25262a",
-          pb: 2,
-          fontWeight: 600,
-        }}
+        sx={{ borderBottom: "1px solid #25262a", pb: 2, fontWeight: 600 }}
       >
         ✏ Edit Vehicle -{" "}
         <span style={{ color: "#ef4444" }}>{formData.name}</span>
       </DialogTitle>
 
       <DialogContent sx={{ py: 2 }}>
-        {/* 🔴 ERROR BOX */}
         {error && (
           <div
             style={{
@@ -118,7 +118,6 @@ export default function EditVehicleModal({
               background: "rgba(239,68,68,0.12)",
               border: "1px solid rgba(239,68,68,0.6)",
               color: "#ef4444",
-              fontSize: "15px",
               fontWeight: 600,
             }}
           >
@@ -130,32 +129,31 @@ export default function EditVehicleModal({
           <TextField label="Vehicle Name" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Type" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
 
-          <TextField
-            label="Registration No"
-            name="registration"
-            value={formData.registration}
-            sx={inputStyle}
-            fullWidth
-            disabled
-          />
+          <TextField label="Registration No" name="registration" value={formData.registration} sx={inputStyle} fullWidth disabled />
 
           <TextField label="Device ID" name="device_id" value={formData.device_id} onChange={handleChange} sx={inputStyle} fullWidth />
           <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
 
+          {/* 🔥 STATION DROPDOWN FIXED */}
           <TextField
             select
             label="Station"
             name="station"
-            value={formData.station || ""}
+            value={formData.station}
             onChange={handleChange}
             sx={inputStyle}
             fullWidth
           >
-            {stations.map((st, i) => (
-              <MenuItem key={i} value={st}>
-                {st}
-              </MenuItem>
-            ))}
+            {(Array.isArray(stations) ? stations : []).map((st, i) => {
+              const name = typeof st === "string" ? st : st.name;
+              const key = typeof st === "string" ? i : st.id;
+
+              return (
+                <MenuItem key={key} value={name}>
+                  {name}
+                </MenuItem>
+              );
+            })}
           </TextField>
 
           <TextField
@@ -177,9 +175,7 @@ export default function EditVehicleModal({
       </DialogContent>
 
       <DialogActions sx={{ borderTop: "1px solid #25262a", p: 2 }}>
-        <Button onClick={onClose} sx={{ color: "#a1a1a1" }}>
-          Cancel
-        </Button>
+        <Button onClick={onClose} sx={{ color: "#a1a1a1" }}>Cancel</Button>
 
         <Button
           variant="contained"
@@ -189,9 +185,7 @@ export default function EditVehicleModal({
             background: isDirty ? "#ef4444" : "#444",
             px: 4,
             cursor: isDirty ? "pointer" : "not-allowed",
-            "&:hover": {
-              background: isDirty ? "#dc2626" : "#444",
-            },
+            "&:hover": { background: isDirty ? "#dc2626" : "#444" },
           }}
         >
           Update

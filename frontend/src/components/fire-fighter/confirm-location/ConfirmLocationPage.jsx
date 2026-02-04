@@ -204,10 +204,10 @@ export default function ConfirmLocationPage() {
                   initialLng={currentLng}
                   incidentName={incident.name}
                   hasMarkerMoved={hasMarkerMoved}
-                  onMarkerMove={(lat, lng) => {
+                  onMarkerMove={(lat, lng, isReset = false) => {
                     setCurrentLat(lat);
                     setCurrentLng(lng);
-                    setHasMarkerMoved(true);
+                    setHasMarkerMoved(!isReset);
                   }}
                 />
               ) : (

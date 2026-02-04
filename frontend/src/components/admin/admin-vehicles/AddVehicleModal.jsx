@@ -144,32 +144,69 @@ export default function AddVehicleModal({
 
       <DialogContent sx={{ py: 2 }}>
         {error && (
-          <div className="mb-3 text-lg text-red-500 font-medium">
-            {error}
-          </div>
+          <div className="mb-3 text-lg text-red-500 font-medium">{error}</div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-          <TextField label="Vehicle Name *" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Vehicle Type *" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Registration No. *" name="registrationNumber" value={formData.registrationNumber} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="VTS Device ID *" name="deviceId" value={formData.deviceId} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
-
           <TextField
-            select
-            label="Station *"
-            name="station"
-            value={formData.station}
+            label="Vehicle Name *"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             sx={inputStyle}
             fullWidth
+          />
+          <TextField
+            label="Vehicle Type *"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+          <TextField
+            label="Registration No. *"
+            name="registrationNumber"
+            value={formData.registrationNumber}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+          <TextField
+            label="VTS Device ID *"
+            name="deviceId"
+            value={formData.deviceId}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+          <TextField
+            label="Location"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+
+          <TextField
+            select
+            label="Station"
+            name="station"
+            value={formData.station || ""}
+            onChange={handleChange}
+            fullWidth
           >
-            {stations.map((st, i) => (
-              <MenuItem key={i} value={st}>
-                {st}
-              </MenuItem>
-            ))}
+            {(Array.isArray(stations) ? stations : []).map((st, i) => {
+              const name = typeof st === "string" ? st : st.name;
+              const key = typeof st === "string" ? i : st.id;
+
+              return (
+                <MenuItem key={key} value={name}>
+                  {name}
+                </MenuItem>
+              );
+            })}
           </TextField>
 
           <TextField

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import StatsCards from "./StatsCards";
 import StationsMap from "./StationsMap";
 import AddStationModal from "./AddStationModal";
@@ -7,12 +7,29 @@ import StationList from "./StationList";
 
 export default function StationManagement() {
   const [open, setOpen] = useState(false);
+  const [editStation, setEditStation] = useState(null);
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const [filters, setFilters] = useState({
     search: "",
     status: "all",
     city: "All",
   });
+
+  const mapRef = useRef(null);
+
+  const handleViewOnMap = (station) => {
+    setSelectedStation(station);
+
+    // Smooth scroll to map section
+    setTimeout(() => {
+      mapRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+  };
 
   return (
     <div className="p-6 bg-[#0b0e11] min-h-screen text-white">
@@ -33,11 +50,11 @@ export default function StationManagement() {
       </div>
 
       {/* STATS */}
-      <StatsCards />
+      {/* <StatsCards /> */}
 
       {/* MAP */}
-      <div className="mt-6">
-        <StationsMap />
+      <div ref={mapRef} className="mt-6">
+        <StationsMap selectedStation={selectedStation} />
       </div>
 
       {/* FILTERS */}
@@ -47,11 +64,34 @@ export default function StationManagement() {
 
       {/* LIST */}
       <div className="mt-6">
-        <StationList filters={filters} />
+        <StationList
+          filters={filters}
+          onViewMap={handleViewOnMap}   // 🔥 scroll + center map
+          onEditStation={setEditStation}
+          refreshTrigger={refreshTrigger}
+        />
       </div>
 
-      {/* MODAL */}
-      {open && <AddStationModal onClose={() => setOpen(false)} />}
+      {/* ADD MODAL */}
+      {open && (
+        <AddStationModal
+          onClose={() => {
+            setOpen(false);
+            setRefreshTrigger((prev) => prev + 1);
+          }}
+        />
+      )}
+
+      {/* EDIT MODAL */}
+      {editStation && (
+        <AddStationModal
+          stationData={editStation}
+          onClose={() => {
+            setEditStation(null);
+            setRefreshTrigger((prev) => prev + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -30,7 +30,7 @@ export default function OtpModal({ isDark, otpModal, setOtpModal, updateStatus }
 
     try {
       const response = await fetch(
-        `${API_BASE}/update_user_status.php`,
+        `${API}/update_user_status.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

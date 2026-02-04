@@ -10,42 +10,33 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/admin/admin-vehicle`;
 
 export default function VehicleList({
-  vehicles: initialVehicles,
+  vehicles: initialVehicles = [],
   onUpdated,
   onView,
-  stations = [], // ✅ NEW
+  stations = [],
 }) {
-  const [vehicles, setVehicles] = useState(initialVehicles || []);
+  const [vehicles, setVehicles] = useState(initialVehicles);
   const [editVehicle, setEditVehicle] = useState(null);
 
   useEffect(() => {
-    setVehicles(initialVehicles);
+    setVehicles(Array.isArray(initialVehicles) ? initialVehicles : []);
   }, [initialVehicles]);
 
   const getVehicleTypeIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case "fire tender":
-        return "Truck";
-      case "ambulance":
-        return "AlertTriangle";
-      case "hydrant vehicle":
-        return "Droplet";
-      case "quick response vehicle":
-        return "Zap";
-      case "drone":
-        return "Plane";
-      case "support vehicle":
-        return "Package";
-      case "foam truck":
-        return "Wind";
-      case "ladder truck":
-        return "Maximize2";
-      default:
-        return "Truck";
+      case "fire tender": return "Truck";
+      case "ambulance": return "AlertTriangle";
+      case "hydrant vehicle": return "Droplet";
+      case "quick response vehicle": return "Zap";
+      case "drone": return "Plane";
+      case "support vehicle": return "Package";
+      case "foam truck": return "Wind";
+      case "ladder truck": return "Maximize2";
+      default: return "Truck";
     }
   };
 
-  // 🔥 UPDATE VEHICLE → DB + UI + REFRESH PARENT
+  // 🔥 UPDATE VEHICLE
   const handleEditSave = async (updated) => {
     try {
       const res = await fetch(`${API}/updateVehicle.php`, {
@@ -57,16 +48,17 @@ export default function VehicleList({
       const data = await res.json();
 
       if (data?.success) {
-        // ✅ Update local list
+        // Update UI immediately
         setVehicles((prev) =>
-          prev.map((v) => (v.id === updated.id ? updated : v))
+          prev.map((v) =>
+            v.id === updated.id ? { ...v, ...updated } : v
+          )
         );
 
         onUpdated && onUpdated();
         setEditVehicle(null);
       }
 
-      // 🔥 IMPORTANT
       return data;
     } catch (e) {
       console.error(e);
@@ -80,7 +72,7 @@ export default function VehicleList({
   if (!vehicles.length) {
     return (
       <Card>
-        <CardContent className="p-12 text-center">No Data</CardContent>
+        <CardContent className="p-12 text-center">No Vehicles Found</CardContent>
       </Card>
     );
   }
@@ -133,7 +125,7 @@ export default function VehicleList({
 
                   <p className="text-xs text-muted-foreground mt-2">Station</p>
                   <Badge variant="outline" className="text-xs">
-                    {vehicle.station}
+                    {vehicle.station || "—"}
                   </Badge>
                 </div>
 
@@ -175,7 +167,7 @@ export default function VehicleList({
           vehicle={editVehicle}
           onClose={() => setEditVehicle(null)}
           onUpdate={handleEditSave}
-          stations={stations}   // ✅ PASS DOWN
+          stations={stations}
         />
       )}
     </>

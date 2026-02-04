@@ -13,8 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     exit;
 }
 
-require_once("../config/db.php");
-require_once("../helpers/logActivity.php");
+require_once("../../../config/db.php");
+require_once("../../../helpers/logActivity.php");
 
 /* ================= READ INPUT ================= */
 $data = json_decode(file_get_contents("php://input"), true);
