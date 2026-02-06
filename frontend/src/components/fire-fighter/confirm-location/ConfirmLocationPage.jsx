@@ -62,7 +62,7 @@ export default function ConfirmLocationPage() {
         const inc = data.find((i) => i.id === id);
         if (!inc) {
           alert("Incident not found");
-          navigate("/firefighter-dashboard");
+          navigate("/fire-fighter-dashboard");
           return;
         }
         setIncident(inc);
@@ -70,7 +70,7 @@ export default function ConfirmLocationPage() {
       })
       .catch(() => {
         alert("Failed to load incident");
-        navigate("/firefighter-dashboard");
+        navigate("/fire-fighter-dashboard");
       });
   }, [id, incident, navigate]);
 

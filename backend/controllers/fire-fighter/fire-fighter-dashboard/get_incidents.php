@@ -2,23 +2,43 @@
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
-$file = "incidents.json";
-$incidents = file_exists($file)
-    ? json_decode(file_get_contents($file), true)
-    : [];
+require "../../../config/db.php";
 
-/* 🔥 Get station from query */
 $station = $_GET['station'] ?? null;
 
 if ($station) {
-    $station = strtolower(trim($station));
-
-    // 🔒 filter incidents by stationName
-    $incidents = array_values(array_filter($incidents, function ($inc) use ($station) {
-        return isset($inc['coordinates']['stationName']) &&
-               strtolower(trim($inc['coordinates']['stationName'])) === $station;
-    }));
+    $sql = "SELECT * FROM incidents
+            WHERE LOWER(stationName) = LOWER(?)
+              AND status = 'new'
+              AND isNewAlert = 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $station);
+} else {
+    $sql = "SELECT * FROM incidents
+            WHERE status = 'new'
+              AND isNewAlert = 1";
+    $stmt = $conn->prepare($sql);
 }
 
-echo json_encode($incidents);
-?>
+$stmt->execute();
+$result = $stmt->get_result();
+
+$data = [];
+
+while ($row = $result->fetch_assoc()) {
+    $data[] = [
+        "id" => $row["id"],
+        "name" => $row["name"],
+        "location" => $row["location"],
+        "status" => $row["status"],
+        "timeReported" => $row["timeReported"],
+        "isNewAlert" => (int)$row["isNewAlert"],
+        "coordinates" => [
+            "lat" => (float)$row["latitude"],
+            "lng" => (float)$row["longitude"],
+            "stationName" => $row["stationName"]
+        ]
+    ];
+}
+
+echo json_encode($data);

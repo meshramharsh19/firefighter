@@ -37,24 +37,34 @@ export default function SuggestedStationsPanel({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
+  async function loadData() {
+    try {
       const incidentRes = await fetch(
         `${API_BASE}/fire-fighter/fire-fighter-dashboard/get_incidents.php`
       );
       const incidents = await incidentRes.json();
+
+      if (!incidents?.length) {
+        setLoading(false);
+        return;
+      }
 
       const stationRes = await fetch(
         `${API_BASE}/admin/station/get_stations.php`
       );
       const stationData = await stationRes.json();
 
-      const lat = incidents[0].coordinates.lat;
-      const lng = incidents[0].coordinates.lng;
+      const { lat, lng } = incidents[0].coordinates;
 
-      const result = stationData.data
+      const result = stationData.stations
         .map((s) => ({
-          name: s.station_name,
-          distance: calculateDistanceKm(lat, lng, s.lat, s.lng),
+          name: s.name, // ✅ API uses "name", not "station_name"
+          distance: calculateDistanceKm(
+            lat,
+            lng,
+            Number(s.lat), // ✅ strings → numbers
+            Number(s.lng)
+          ),
           vehicles: Math.floor(Math.random() * 20) + 1,
           drones: Math.floor(Math.random() * 10) + 1,
         }))
@@ -62,11 +72,16 @@ export default function SuggestedStationsPanel({
         .slice(0, 3);
 
       setStations(result);
+    } catch (err) {
+      console.error("Failed to load stations", err);
+    } finally {
       setLoading(false);
     }
+  }
 
-    loadData();
-  }, []);
+  loadData();
+}, []);
+
 
   const handleSelect = (name) => {
     onSelectStation(selectedStationName === name ? null : name);
@@ -124,11 +139,10 @@ export default function SuggestedStationsPanel({
               </Box>
 
               <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <LocalShippingIcon fontSize="small" />{" "}
-                  {station.vehicles} vehicles
+                <Grid size={{ xs: 6 }}>
+                  <LocalShippingIcon fontSize="small" /> {station.vehicles} vehicles
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <FlightIcon fontSize="small" /> {station.drones} drones
                 </Grid>
               </Grid>

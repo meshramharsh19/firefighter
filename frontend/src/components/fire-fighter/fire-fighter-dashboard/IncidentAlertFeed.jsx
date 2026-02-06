@@ -100,8 +100,9 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
 
   /** 🟢 Acknowledge API */
   const acknowledge = (id) => {
-    navigate(`/confirm-location/${id}`); // redirect to confirm-location screen
+    navigate(`/confirm-location/${id}`);
   };
+
 
   /** 🟦 View Details click */
   // const viewDetails = (id) => {

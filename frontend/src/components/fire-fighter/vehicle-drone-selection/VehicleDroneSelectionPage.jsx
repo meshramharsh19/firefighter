@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -63,10 +63,7 @@ const normalizeVehicleRow = (v = {}) => ({
   type: v.type ?? "—",
   station: v.station,
   vehicle_status:
-    v.vehicle_status ??
-    v.vehicle_availability_status ??
-    v.status ??
-    "unknown",
+    v.vehicle_status ?? v.vehicle_availability_status ?? v.status ?? "unknown",
   distanceKm: safeNumber(v.distanceKm),
   etaMinutes: safeNumber(v.etaMinutes),
 });
@@ -82,30 +79,34 @@ const normalizeDroneRow = (row = {}) => ({
   pilot_name: row.pilot_name,
   pilot_number: row.pilot_number,
   is_ready: Boolean(row.is_ready),
-  _raw: row,
 });
 
 export default function VehicleDroneSelectionPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { id } = useParams();
 
-  // 🔥 Incident from ConfirmLocationPage
+  // 🔥 Incident from previous page
   const incident = state?.incident;
 
-  // 🔐 Station still from session
+  // 🧠 SAFELY derive incidentId (handles different backend field names)
+  const incidentId =
+    incident?.id ??
+    incident?.incident_id ??
+    incident?.incidentId ??
+    null;
+
+  // 🔐 Station from session
   const session = JSON.parse(sessionStorage.getItem("fireOpsSession") || "{}");
   const userStation = session.station;
 
   useEffect(() => {
-    if (!incident) {
-      navigate("/firefighter-dashboard");
-    }
-  }, [incident, navigate]);
+    console.log("📦 Incident object received:", incident);
+    console.log("🆔 Derived Incident ID:", incidentId);
+
+    if (!incident) navigate("/fire-fighter-dashboard");
+  }, [incident, incidentId, navigate]);
 
   if (!incident) return null;
-
-  const incidentId = incident.id;
 
   const [vehicles, setVehicles] = useState([]);
   const [drones, setDrones] = useState([]);
@@ -144,16 +145,18 @@ export default function VehicleDroneSelectionPage() {
 
         if (!mounted) return;
 
-        const normalizedVehicles = (vehJson || [])
-          .map(normalizeVehicleRow)
-          .filter((v) => v.station === userStation);
+        setVehicles(
+          (vehJson || [])
+            .map(normalizeVehicleRow)
+            .filter((v) => v.station === userStation)
+        );
 
-        const normalizedDrones = (droneJson?.drones || [])
-          .map(normalizeDroneRow)
-          .filter((d) => d.station === userStation);
+        setDrones(
+          (droneJson?.drones || [])
+            .map(normalizeDroneRow)
+            .filter((d) => d.station === userStation)
+        );
 
-        setVehicles(normalizedVehicles);
-        setDrones(normalizedDrones);
         setLoading(false);
       } catch (e) {
         console.error(e);
@@ -180,16 +183,15 @@ export default function VehicleDroneSelectionPage() {
     [drones, selectedAssets]
   );
 
-  const canActivate = selectedDroneObjects.length > 0;
+  const canActivate =
+    selectedDroneObjects.length > 0 && selectedVehicleObjects.length > 0;
 
   return (
     <ThemeProvider theme={darkIncidentTheme}>
       <CssBaseline />
-
       <Box sx={{ minHeight: "100vh", p: 4 }}>
         <Box maxWidth="1280px" mx="auto">
 
-          {/* HEADER */}
           <Stack spacing={1} mb={3}>
             <Stack direction="row" spacing={2} alignItems="center">
               <FlightIcon color="primary" />
@@ -197,9 +199,6 @@ export default function VehicleDroneSelectionPage() {
                 <Typography variant="h4" fontWeight={800}>
                   Vehicle & Drone Selection
                 </Typography>
-                {/* <Typography variant="body2" color="text.secondary">
-                  Incident: {incident.name}
-                </Typography> */}
                 <Typography variant="body2" color="text.secondary">
                   Station: {userStation}
                 </Typography>
@@ -219,62 +218,46 @@ export default function VehicleDroneSelectionPage() {
           <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 4 }}>
             <Stack spacing={4}>
 
-              <AssetSection
-                icon={<LocalShippingIcon color="primary" />}
-                title="Available Vehicles"
-                count={selectedAssets.vehicleIds.length}
-                total={vehicles.length}
-              >
-                {loading ? (
-                  <CircularProgress />
-                ) : vehicles.length === 0 ? (
-                  <NoAssetPlaceholder message="No vehicles for this station" />
-                ) : (
-                  vehicles.map((v) => (
-                    <VehicleSelectionCard
-                      key={v.id}
-                      vehicle={v}
-                      isSelected={selectedAssets.vehicleIds.includes(v.id)}
-                      onToggle={() =>
-                        setSelectedAssets((p) => ({
-                          ...p,
-                          vehicleIds: p.vehicleIds.includes(v.id)
-                            ? p.vehicleIds.filter((id) => id !== v.id)
-                            : [...p.vehicleIds, v.id],
-                        }))
-                      }
-                    />
-                  ))
-                )}
+              <AssetSection icon={<LocalShippingIcon color="primary" />} title="Available Vehicles"
+                count={selectedAssets.vehicleIds.length} total={vehicles.length}>
+                {loading ? <CircularProgress /> :
+                  vehicles.length === 0 ? <NoAssetPlaceholder message="No vehicles for this station" /> :
+                    vehicles.map((v) => (
+                      <VehicleSelectionCard
+                        key={v.id}
+                        vehicle={v}
+                        isSelected={selectedAssets.vehicleIds.includes(v.id)}
+                        onToggle={() =>
+                          setSelectedAssets((p) => ({
+                            ...p,
+                            vehicleIds: p.vehicleIds.includes(v.id)
+                              ? p.vehicleIds.filter((id) => id !== v.id)
+                              : [...p.vehicleIds, v.id],
+                          }))
+                        }
+                      />
+                    ))}
               </AssetSection>
 
-              <AssetSection
-                icon={<FlightIcon color="primary" />}
-                title="Available Drones"
-                count={selectedAssets.droneIds.length}
-                total={drones.length}
-              >
-                {loading ? (
-                  <CircularProgress />
-                ) : drones.length === 0 ? (
-                  <NoAssetPlaceholder message="No drones for this station" />
-                ) : (
-                  drones.map((d) => (
-                    <DroneSelectionCard
-                      key={d.id}
-                      drone={d}
-                      isSelected={selectedAssets.droneIds.includes(d.id)}
-                      onToggle={() =>
-                        setSelectedAssets((p) => ({
-                          ...p,
-                          droneIds: p.droneIds.includes(d.id)
-                            ? p.droneIds.filter((id) => id !== d.id)
-                            : [...p.droneIds, d.id],
-                        }))
-                      }
-                    />
-                  ))
-                )}
+              <AssetSection icon={<FlightIcon color="primary" />} title="Available Drones"
+                count={selectedAssets.droneIds.length} total={drones.length}>
+                {loading ? <CircularProgress /> :
+                  drones.length === 0 ? <NoAssetPlaceholder message="No drones for this station" /> :
+                    drones.map((d) => (
+                      <DroneSelectionCard
+                        key={d.id}
+                        drone={d}
+                        isSelected={selectedAssets.droneIds.includes(d.id)}
+                        onToggle={() =>
+                          setSelectedAssets((p) => ({
+                            ...p,
+                            droneIds: p.droneIds.includes(d.id)
+                              ? p.droneIds.filter((id) => id !== d.id)
+                              : [...p.droneIds, d.id],
+                          }))
+                        }
+                      />
+                    ))}
               </AssetSection>
             </Stack>
 
@@ -282,28 +265,46 @@ export default function VehicleDroneSelectionPage() {
               selectedVehicles={selectedVehicleObjects}
               selectedDrones={selectedDroneObjects}
               canActivate={canActivate}
-              onActivate={() =>
-                navigate(
-                  `/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`,
-                  {
+              onActivate={async () => {
+                console.log("🚀 Activate clicked. IncidentId:", incidentId);
+
+                if (!incidentId) {
+                  setSnack({ open: true, severity: "error", message: "Invalid Incident ID" });
+                  return;
+                }
+
+                try {
+                  const res = await fetch(`${API}/update_incident_status.php`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ incidentId }),
+                  });
+
+                  const data = await res.json();
+                  console.log("📥 API Response:", data);
+
+                  if (!data.success) throw new Error(data.message);
+
+                  navigate(`/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`, {
                     state: {
-                      incident,
+                      incident: { ...incident, status: "in_progress", isNewAlert: 0 },
                       selectedVehicles: selectedVehicleObjects,
                       selectedDrones: selectedDroneObjects,
                     },
-                  }
-                )
-              }
+                  });
+
+                } catch (err) {
+                  console.error(err);
+                  setSnack({ open: true, severity: "error", message: "Activation failed" });
+                }
+              }}
               onBack={() => navigate(-1)}
             />
           </Box>
         </Box>
 
-        <Snackbar
-          open={snack.open}
-          autoHideDuration={4000}
-          onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        >
+        <Snackbar open={snack.open} autoHideDuration={4000}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}>
           <Alert severity={snack.severity}>{snack.message}</Alert>
         </Snackbar>
       </Box>
@@ -311,7 +312,6 @@ export default function VehicleDroneSelectionPage() {
   );
 }
 
-// ---------------- HELPERS ----------------
 function AssetSection({ icon, title, count, total, children }) {
   return (
     <Card>
