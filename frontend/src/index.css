@@ -16,3 +16,47 @@
 .dark .card:hover {
   --card-border: #ef4444; /* Red on hover */
 }
+
+/* Target react-select menu list */
+.react-select__menu-list {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #000 #141414; /* thumb color #000, track color #141414 */
+}
+
+/* Chrome, Edge, Safari */
+.react-select__menu-list::-webkit-scrollbar {
+  width: 6px; /* thickness of scrollbar */
+}
+
+.react-select__menu-list::-webkit-scrollbar-track {
+  background: #141414; /* dropdown background */
+  border-radius: 4px;
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb {
+  background-color: #000; /* fully black */
+  border-radius: 4px;
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb:hover {
+  background-color: #222; /* slightly lighter black on hover */
+}
+
+/* Target react-select dropdown list */
+.react-select__menu-list::-webkit-scrollbar {
+  width: 6px;               /* scrollbar thickness */
+}
+
+.react-select__menu-list::-webkit-scrollbar-track {
+  background: #141414;      /* dropdown background (dark) */
+  border-radius: 4px;       /* optional rounded track */
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb {
+  background-color: #000;   /* fully black scrollbar thumb */
+  border-radius: 4px;       /* rounded thumb */
+}
+
+.react-select__menu-list::-webkit-scrollbar-thumb:hover {
+  background-color: #222;   /* slightly lighter on hover for feedback */
+}

@@ -13,8 +13,8 @@ require "../../../config/db.php";
 $sql = "
   SELECT
     COUNT(*) AS total_drones,
-    SUM(status = 'offline') AS inactive_drones,
-    SUM(status != 'offline') AS ready_drones
+    SUM(status = 'maintenance') AS inactive_drones,
+    SUM(status != 'maintenance') AS ready_drones
   FROM drones
 ";
 

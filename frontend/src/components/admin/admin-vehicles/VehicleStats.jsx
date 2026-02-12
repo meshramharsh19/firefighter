@@ -4,8 +4,8 @@ import SafeIcon from "@/components/common/SafeIcon"
 export default function VehicleStats({ vehicles = [] }) {
 
   const total = vehicles.length
-  const available = vehicles.filter(v => v.status === "available").length
-  const busy = vehicles.filter(v => ["busy","en-route"].includes(v.status)).length
+  const active = vehicles.filter(v => v.status === "active").length
+  const busy = vehicles.filter(v => ["busy","on-mission"].includes(v.status)).length
   const maintenance = vehicles.filter(v => v.status === "maintenance").length
 
   const stats = [
@@ -17,14 +17,14 @@ export default function VehicleStats({ vehicles = [] }) {
       bg:"bg-blue-500/10 border-blue-500/40",
     },
     {
-      label:"Available",
-      value:available,
+      label:"Active",
+      value:active,
       icon:"CheckCircle",
       color:"text-green-400",
       bg:"bg-green-500/10 border-green-500/40",
     },
     {
-      label:"In Operation",
+      label:"On Mission",
       value:busy,
       icon:"Navigation",
       color:"text-amber-400",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Card from "@mui/material/Card";
@@ -10,7 +10,7 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import SafeIcon from "@/components/common/SafeIcon";
-import Dialog from "@mui/material/Dialog";
+import Dialog from  "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
@@ -33,6 +33,9 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
 
   const navigate = useNavigate();
 
+  const audioRef = useRef(null);
+  const playedRef = useRef(new Set());
+
   /** 🔥 Fetch Incidents Every 5 Seconds */
   useEffect(() => {
     const fetchIncidents = async () => {
@@ -54,18 +57,37 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
 
   /** 🔔 Alert Sound for NEW incident (only once) */
   useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/sounds/alert.mp3");
+      audioRef.current.volume = 1;
+    }
+
     const newAlerts = incidents.filter(
-      (i) => i.isNewAlert && !playedAlerts.has(i.id),
+      (i) => i.isNewAlert && !playedRef.current.has(i.id)
     );
 
-    newAlerts.forEach((incident) => {
-      const audio = new Audio(
-        "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==",
-      );
-      audio.play().catch(() => {});
-      setPlayedAlerts((prev) => new Set([...prev, incident.id]));
-    });
-  }, [incidents, playedAlerts]);
+    if (newAlerts.length > 0) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((err) => {
+        console.log("Audio blocked by browser:", err);
+      });
+
+      newAlerts.forEach((incident) => {
+        playedRef.current.add(incident.id);
+      });
+    }
+
+  }, [incidents]);
+
+  useEffect(() => {
+    const unlock = () => {
+      audioRef.current?.play().catch(() => {});
+      document.removeEventListener("click", unlock);
+    };
+    document.addEventListener("click", unlock);
+  }, []);
+
+
 
   const StatusTag = ({ status }) => {
     const palette = {
@@ -189,7 +211,34 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     );
 
   return (
-    <Box sx={{ background: DARK.base }} className="space-y-3 pr-1">
+    <Box
+      sx={{
+        background: DARK.base,
+        maxHeight: "300px",
+        overflowY: "auto",
+        pr: 1,
+
+        /* 🔥 THEMED SCROLLBAR */
+        "&::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "&::-webkit-scrollbar-track": {
+          background: "#0f1011",   // dark track
+        },
+        "&::-webkit-scrollbar-thumb": {
+          background: "#1c1d1f",   // dark thumb
+          borderRadius: "8px",
+          border: "2px solid #0f1011",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          background: "#2a2c30",   // slightly lighter on hover
+        },
+
+        /* Firefox Support */
+        scrollbarWidth: "thin",
+        scrollbarColor: "#1c1d1f #0f1011",
+      }}
+>
       {incidents.map((inc) => {
         const isNew = inc.isNewAlert;
 
@@ -201,6 +250,7 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
               border: `1px solid ${isNew ? "#ff4d4d80" : DARK.border}`,
               boxShadow: isNew ? "0 0 12px 2px rgba(255,60,60,0.30)" : "none",
               transition: "0.2s",
+              margin: "10px",
               "&:hover": { background: DARK.hover },
             }}
             className={isNew ? "animate-pulse-slow" : ""}

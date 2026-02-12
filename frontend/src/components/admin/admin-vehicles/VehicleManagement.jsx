@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SafeIcon from "@/components/common/SafeIcon";
+import Select from "react-select";
+
 
 // Components
 import VehicleStats from "./VehicleStats";
@@ -102,7 +104,7 @@ export default function VehicleManagement() {
     return matchSearch && matchStatus && matchStation;
   });
 
-  const statuses = ["all", "available", "busy", "en-route", "maintenance"];
+  const statuses = ["all", "active", "on-mission", "maintenance"];
 
   return (
     <div className="space-y-6 p-6">
@@ -168,18 +170,63 @@ export default function VehicleManagement() {
           {/* Station Filter */}
           <div>
             <label className="text-sm font-medium">Station</label>
-            <select
-              value={selectedStation}
-              onChange={(e) => setSelectedStation(e.target.value)}
-              className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E]"
-            >
-              <option value="all">All</option>
-              {stations.map((st) => (
-                <option key={st.id} value={st.name}>
-                  {st.name}
-                </option>
-              ))}
-            </select>
+            <Select
+              classNamePrefix="react-select"
+              options={[
+                { value: "all", label: "All" },
+                ...stations.map((st) => ({ value: st.name, label: st.name })),
+              ]}
+              value={
+                selectedStation === "all"
+                  ? { value: "all", label: "Search station..." }
+                  : { value: selectedStation, label: selectedStation }
+              }
+              onChange={(selected) => setSelectedStation(selected.value)}
+              isSearchable={true}
+              placeholder="Search station..."
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              components={{ DropdownIndicator: () => null }} // <-- remove arrow
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: "#141414",
+                  borderColor: "#2E2E2E",
+                  boxShadow: "none",
+                  "&:hover": { borderColor: "#2E2E2E" }, // no blue hover
+                  color: "white",
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: "#141414",
+                  maxHeight: 120,
+                  overflowY: "auto",
+                }),
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999,
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isFocused ? "#2E2E2E" : "#141414", // dark hover
+                  color: "white",
+                  cursor: "pointer",
+                }),
+                singleValue: (base) => ({
+                  ...base,
+                  color: "white",
+                }),
+                input: (base) => ({
+                  ...base,
+                  color: "white",
+                }),
+                placeholder: (base) => ({
+                  ...base,
+                  color: "#888",
+                }),
+              }}
+            />
+
           </div>
         </CardContent>
       </Card>

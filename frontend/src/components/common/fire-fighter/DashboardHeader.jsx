@@ -28,15 +28,18 @@ import { useTheme } from "@/Context/ThemeContext";
 import SafeIcon from "@/components/common/SafeIcon";
 import { toast } from "react-hot-toast";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/fire-fighter/vehicle-drone-selection`;
+
 export default function DashboardHeader() {
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [notificationCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState(null);
-
   const { isDark, toggleTheme } = useTheme();
   const { name, role, initials } = useUserInfo();
 
   const warningShownRef = useRef(false);
+
 
   // 🔥 DEV FLAG (ENV BASED)
   const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS_SHIFT === "true";
@@ -131,6 +134,46 @@ export default function DashboardHeader() {
     }
   };
 
+
+  // ✅ UPDATED LONG POLLING LOGIC
+  useEffect(() => {
+    let isActive = true;   // 🔵 NEW
+
+    const poll = async (lastCount = 0) => {   // 🔵 NEW (recursive function with parameter)
+      try {
+        const res = await fetch(
+          `${API}/get_incident_alert_count.php?lastCount=${lastCount}`,  // 🔵 CHANGED (added lastCount)
+          { cache: "no-store" }
+        );
+
+        const data = await res.json();
+
+        if (!isActive) return;  // 🔵 NEW safety check
+
+        setNotificationCount(data.count);
+
+        // 🔵 IMPORTANT: Immediately start next poll with updated count
+        poll(data.count);
+
+      } catch (err) {
+        console.error("Polling error:", err);
+
+        // 🔵 Retry after delay if error
+        setTimeout(() => poll(lastCount), 2000);
+      }
+    };
+
+    poll(0);  // 🔵 START with 0
+
+    return () => {
+      isActive = false;  // 🔵 CLEAN STOP
+    };
+  }, []);
+
+
+
+
+
   return (
     <AppBar
       position="sticky"
@@ -181,7 +224,11 @@ export default function DashboardHeader() {
           />
 
           <IconButton sx={{ color: "white" }}>
-            <Badge badgeContent={notificationCount} color="error">
+            <Badge
+              badgeContent={notificationCount}
+              color="error"
+              invisible={notificationCount === 0}
+            >
               <NotificationsIcon />
             </Badge>
           </IconButton>

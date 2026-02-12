@@ -107,14 +107,14 @@ export default function DashboardContent() {
       },
       {
         id: "inactive",
-        title: "Not Active Drones",
+        title: "Maintenance ",
         value: stats.inactive_drones,
         description: "Need attention",
         color: "red",
       },
       {
         id: "ready",
-        title: "Ready to Fly",
+        title: "Active",
         value: stats.ready_drones,
         description: "Ready for deployment",
         color: "green",
