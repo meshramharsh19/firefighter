@@ -39,6 +39,7 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
 
     fetch(`${API}/updateDroneDetails.php`, {
       method: "POST",
+      credentials: "include", 
       body: formData,
     })
       .then((res) => res.json())

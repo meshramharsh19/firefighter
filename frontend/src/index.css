@@ -60,3 +60,28 @@
 .react-select__menu-list::-webkit-scrollbar-thumb:hover {
   background-color: #222;   /* slightly lighter on hover for feedback */
 }
+
+/* Dark scrollbar */
+.dark-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #0d0f12; /* same as dropdown bg */
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #2e2e2e; /* dark gray */
+  border-radius: 6px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #444;
+}
+
+/* Firefox support */
+.dark-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2e2e2e #0d0f12;
+}
+

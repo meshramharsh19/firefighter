@@ -56,6 +56,9 @@ const getStatusVariant = (status) => {
 export default function OverviewTab({ selectedDrone, refreshDrone }) {
   const [gpsLocation, setGpsLocation] = useState(null);
   const [selectedPilot, setSelectedPilot] = useState(null);
+  const [reassignOpen, setReassignOpen] = useState(false);
+
+
   const defaultPune = { lat: 18.5204, lng: 73.8567 };
 
   const fetchDroneDetails = (code) => {
@@ -118,8 +121,8 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
 
     const formData = new FormData();
     formData.append("drone_code", selectedDrone.drone_code);
-    formData.append("pilot_id", selectedPilot.id);          // ✅ FIX
-    formData.append("pilot_name", selectedPilot.fullName);  // ✅ FIX
+    formData.append("pilot_id", selectedPilot.id);
+    formData.append("pilot_name", selectedPilot.fullName);
     formData.append("pilot_email", selectedPilot.email);
     formData.append("pilot_phone", selectedPilot.phone);
     formData.append("pilot_role", selectedPilot.designation);
@@ -134,6 +137,9 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
       .then((data) => {
         if (data.success) {
           toast.success("Pilot reassigned successfully");
+
+          setReassignOpen(false); // ✅ CLOSE DIALOG
+          setSelectedPilot(null); // optional reset
           refreshDrone();
         } else {
           toast.error(data.error || "Failed to reassign pilot");
@@ -238,12 +244,13 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
                 </div>
 
                 <div className="flex gap-3">
-                  <Dialog>
+                  <Dialog open={reassignOpen} onOpenChange={setReassignOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full"> 
                         Reassign Pilot
                       </Button>
                     </DialogTrigger>
+
                     <DialogContent className="max-w-md bg-[#0D0F12] border border-[#2E2E2E] text-[#FAFAFA]">
                       <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">
@@ -251,21 +258,17 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
                         </DialogTitle>
                       </DialogHeader>
 
-                      {/* Pilot List */}
-                      <div className="mt-2">
-                        <PilotList
-                          station={selectedDrone?.station}
-                          selectedPilot={selectedPilot}
-                          setSelectedPilot={setSelectedPilot}
-                        />
-                      </div>
+                      <PilotList
+                        station={selectedDrone?.station}
+                        selectedPilot={selectedPilot}
+                        setSelectedPilot={setSelectedPilot}
+                      />
 
-                      {/* Assign Button */}
                       <Button
                         variant="outline"
                         disabled={!selectedPilot}
                         onClick={reassignPilot}
-                        className="w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed "
+                        className="w-full mt-4"
                       >
                         Assign Pilot
                       </Button>

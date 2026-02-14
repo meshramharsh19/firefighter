@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ueRef} from "react";
 import { toast } from "react-hot-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -11,6 +11,10 @@ import HistoryTab from "./HistoryTab";
 import MaintenanceTab from "./MaintenanceTab";
 import AddDroneDialog from "./AddDroneDialog";
 import EditDroneDialog from "./EditDroneDialog";
+import { FiSearch } from "react-icons/fi";   // clean & minimal
+
+import { IoSearchOutline } from "react-icons/io5"; // modern
+
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/admin/admin-drone-details`;
@@ -24,6 +28,17 @@ export default function DroneDetailsContent() {
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [stationOpen, setStationOpen] = useState(false);
+  const [searchMode, setSearchMode] = useState(false);
+  const [stationSearch, setStationSearch] = useState("");
+
+
+  const filteredStations = searchMode
+  ? stations.filter((s) =>
+      s.name.toLowerCase().includes(stationSearch.toLowerCase())
+    )
+  : stations;
+
 
   // 🔥 FETCH STATIONS
   useEffect(() => {
@@ -53,7 +68,7 @@ export default function DroneDetailsContent() {
         }
       });
   };
-
+    
   // 🔥 FETCH DRONE DETAILS
   const fetchDroneDetails = (code) => {
     fetch(`${API}/getDroneDetails.php?drone_code=${code}`)
@@ -63,31 +78,104 @@ export default function DroneDetailsContent() {
       });
   };
 
+  useEffect(() => {
+    const close = () => {
+      setStationOpen(false);
+      setSearchMode(false);
+      setStationSearch("");
+    };
+
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
+
+
   return (
     <div className="space-y-6 p-6">
 
       {/* Station & Drone Selectors */}
-      <div className="flex gap-6 items-end">
+      <div className="flex gap-6 items-end" onClick={(e) => e.stopPropagation()}>
         {/* STATION SELECT */}
-        <div className="flex flex-col">
-          <label className="text-md font-medium text-muted-foreground mb-2">
+        <div
+          className="relative w-60"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <label className="text-md font-medium text-muted-foreground mb-2 block">
             Select Station:
           </label>
-          <select
-            className="h-9 w-50 text-sm text-[#FAFAFA] px-3 rounded-md bg-[#0D0F12] border border-[#2E2E2E]"
-            value={selectedStation}
-            onChange={(e) => {
-              setSelectedStation(e.target.value);
-              fetchDronesByStation(e.target.value);
-            }}
+
+          {/* Trigger */}
+          <div
+            onClick={() => setStationOpen((p) => !p)}
+            className="h-9 w-full flex items-center px-3 rounded-md
+                      bg-[#0D0F12] border border-[#2E2E2E]
+                      cursor-pointer"
           >
-            {stations.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            {/* Value / Search Input */}
+            <div className="flex-1">
+              {searchMode ? (
+                <input
+                  autoFocus
+                  value={stationSearch}
+                  onChange={(e) => setStationSearch(e.target.value)}
+                  placeholder="Search station..."
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-transparent text-sm text-[#FAFAFA]
+                            outline-none w-full"
+                />
+              ) : (
+                <span className="text-sm text-[#FAFAFA] truncate">
+                  {selectedStation || "Select station"}
+                </span>
+              )}
+            </div>
+
+            {/* Search Icon */}
+            <FiSearch
+              size={16}
+              className="text-muted-foreground hover:text-white ml-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSearchMode(true);
+                setStationOpen(true);
+              }}
+            />
+          </div>
+
+          {/* Dropdown */}
+          {stationOpen && (
+            <div
+              className="absolute z-50 mt-1 w-full rounded-md
+                        bg-[#0D0F12] border border-[#2E2E2E]
+                        shadow-lg max-h-[100px] overflow-y-auto dark-scrollbar"
+            >
+              {filteredStations.length ? (
+                filteredStations.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => {
+                      setSelectedStation(s.name);
+                      fetchDronesByStation(s.name);
+                      setStationOpen(false);
+                      setSearchMode(false);
+                      setStationSearch("");
+                    }}
+                    className={`px-3 py-2 text-sm cursor-pointer
+                      hover:bg-[#1A1D23]
+                      ${selectedStation === s.name ? "bg-[#1A1D23]" : ""}`}
+                  >
+                    {s.name}
+                  </div>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  No stations found
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
 
         {/* DRONE SELECT */}
         <div className="flex flex-col">
