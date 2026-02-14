@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 export default function RegistrationForm({
@@ -14,17 +14,21 @@ export default function RegistrationForm({
   const [loading, setLoading] = useState(false);
   const [stations, setStations] = useState([]);
 
+  /* 🔥 NEW STATE FOR SEARCHABLE DROPDOWN */
+  const [stationOpen, setStationOpen] = useState(false);
+  const [stationSearch, setStationSearch] = useState("");
+  const dropdownRef = useRef(null);
+
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const API = `${API_BASE}/admin/admin-user-roles`;
 
   const inputClass = `
-    w-full px-4 py-3 pr-10 rounded-lg outline-none transition-all duration-200
-    border appearance-none
+    w-full px-4 py-3 rounded-lg outline-none transition-all duration-200
+    border
     focus:ring-2 focus:ring-red-500/40
-    ${
-      isDark
-        ? `bg-[#0f1114] text-white border-[#ffffff40] hover:border-white focus:border-white`
-        : `bg-white text-black border-gray-400 hover:border-black focus:border-black`
+    ${isDark
+      ? `bg-[#0f1114] text-white border-[#ffffff40] hover:border-white focus:border-white`
+      : `bg-white text-black border-gray-400 hover:border-black focus:border-black`
     }
   `;
 
@@ -41,6 +45,22 @@ export default function RegistrationForm({
       })
       .catch(() => setStations([]));
   }, []);
+
+  /* ---------------- CLOSE DROPDOWN OUTSIDE ---------------- */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setStationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ---------------- FILTER STATIONS ---------------- */
+  const filteredStations = stations.filter((s) =>
+    s.name.toLowerCase().includes(stationSearch.toLowerCase())
+  );
 
   /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
@@ -63,7 +83,11 @@ export default function RegistrationForm({
       const data = await res.json();
 
       if (data.success) {
-        toast.success(isEdit ? " User Updated Successfully" : " User Registered Successfully");
+        toast.success(
+          isEdit
+            ? "User Updated Successfully"
+            : "User Registered Successfully"
+        );
 
         setForm({
           fullName: "",
@@ -74,6 +98,7 @@ export default function RegistrationForm({
           role: "",
           station: "",
         });
+
         setEditUserId(null);
         onSubmit();
       } else {
@@ -105,29 +130,15 @@ export default function RegistrationForm({
           onClick={onCancel}
           className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          ✕
         </button>
 
-        {/* Header */}
         <h2 className="text-xl font-bold mb-3">
           {editUserId ? "Update User" : "User Registration"}
         </h2>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+
           <input
             className={inputClass}
             name="fullName"
@@ -136,6 +147,7 @@ export default function RegistrationForm({
             onChange={handleChange}
             required
           />
+
           <input
             className={inputClass}
             name="address"
@@ -143,6 +155,7 @@ export default function RegistrationForm({
             value={form.address}
             onChange={handleChange}
           />
+
           <input
             className={inputClass}
             name="email"
@@ -151,6 +164,7 @@ export default function RegistrationForm({
             value={form.email}
             onChange={handleChange}
           />
+
           <input
             className={inputClass}
             name="phone"
@@ -159,6 +173,7 @@ export default function RegistrationForm({
             onChange={handleChange}
             required
           />
+
           <input
             className={inputClass}
             name="designation"
@@ -167,6 +182,7 @@ export default function RegistrationForm({
             onChange={handleChange}
             required
           />
+
           <select
             className={inputClass}
             name="role"
@@ -181,20 +197,63 @@ export default function RegistrationForm({
               </option>
             ))}
           </select>
-          <select
-            className={inputClass}
-            name="station"
-            value={form.station}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Fire Station</option>
-            {stations.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+
+          {/* 🔥 SEARCHABLE STATION DROPDOWN */}
+          <div className="relative col-span-2" ref={dropdownRef}>
+            <div
+              onClick={() => setStationOpen(!stationOpen)}
+              className={`${inputClass} cursor-pointer flex justify-between items-center`}
+            >
+              <span>
+                {form.station || "Select Fire Station"}
+              </span>
+              <span>▼</span>
+            </div>
+
+            {stationOpen && (
+              <div
+                className={`absolute z-50 mt-1 w-full rounded-lg border shadow-lg ${isDark
+                    ? "bg-[#0f1114] border-gray-700"
+                    : "bg-white border-gray-300"
+                  }`}
+              >
+                <input
+                  type="text"
+                  placeholder="Search station..."
+                  className={`w-full px-3 py-2 border-b outline-none ${isDark
+                      ? "bg-[#0f1114] text-white border-gray-700"
+                      : "bg-white text-black border-gray-200"
+                    }`}
+                  value={stationSearch}
+                  onChange={(e) => setStationSearch(e.target.value)}
+                />
+
+                <div
+                  className="max-h-52 overflow-y-scroll"
+                  style={{ maxHeight: "200px" }}
+                >
+                  {filteredStations.length === 0 && (
+                    <div className="px-4 py-2 text-gray-400">
+                      No stations found
+                    </div>
+                  )}
+
+                  {filteredStations.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => {
+                        setForm({ ...form, station: s.name });
+                        setStationOpen(false);
+                      }}
+                      className="px-4 py-2 hover:bg-red-500 hover:text-white cursor-pointer"
+                    >
+                      {s.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"
@@ -206,9 +265,10 @@ export default function RegistrationForm({
                 ? "Updating..."
                 : "Registering..."
               : editUserId
-              ? "Update User"
-              : "Register User"}
+                ? "Update User"
+                : "Register User"}
           </button>
+
         </form>
       </div>
     </div>

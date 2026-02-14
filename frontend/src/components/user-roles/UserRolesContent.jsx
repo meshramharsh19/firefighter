@@ -14,6 +14,7 @@ export default function UserRoleManagementPage() {
 
   /* ---------------- CONSTANTS ---------------- */
   const ROLES = ["Pilot", "Fire Station Command Control", "Vehicle Driver"];
+  const USERS_PER_PAGE = 10;
 
   /* ---------------- STATE ---------------- */
   const [users, setUsers] = useState([]);
@@ -41,6 +42,8 @@ export default function UserRoleManagementPage() {
   });
 
   const [otpModal, setOtpModal] = useState({ open: false, user: null });
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   /* ---------------- FETCH USERS ---------------- */
   const fetchUsers = useCallback(async () => {
@@ -183,34 +186,46 @@ export default function UserRoleManagementPage() {
       });
   }, [users, filters]);
 
+  /* ---------------- PAGINATION ---------------- */
+  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+    return filteredUsers.slice(startIndex, startIndex + USERS_PER_PAGE);
+  }, [filteredUsers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, users]);
+
   /* ---------------- UI ---------------- */
   return (
     <div
-      className={`min-h-screen p-6 space-y-6 ${isDark ? "bg-gray-950" : "bg-gray-50"
-        }`}
+      className={`min-h-screen p-6 space-y-6 ${
+        isDark ? "bg-gray-950" : "bg-gray-50"
+      }`}
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1
-          className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"
-            }`}
+          className={`text-2xl font-bold ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}
         >
           User Management
         </h1>
 
         <button
           onClick={handleAddUser}
-          className={`
-          px-8 py-2 text-white rounded-md transition duration-200 border border-gray-700
-          ${isDark ? "bg-black-800 hover:bg-red-600" : "bg-black hover:bg-red-600"}
-        `}
+          className={`px-8 py-2 text-white rounded-md border border-gray-700 ${
+            isDark
+              ? "bg-black-800 hover:bg-red-600"
+              : "bg-black hover:bg-red-600"
+          }`}
         >
           Add User
         </button>
-
       </div>
 
-      {/* Filters */}
       <UserFilters
         isDark={isDark}
         roles={ROLES}
@@ -218,16 +233,52 @@ export default function UserRoleManagementPage() {
         setFilters={setFilters}
       />
 
-      {/* User Table */}
       <UsersTable
         isDark={isDark}
-        users={filteredUsers}
+        users={paginatedUsers}
         loading={loading}
         toggleUserStatus={toggleUserStatus}
         onEdit={handleEditUser}
       />
 
-      {/* ✅ Registration Form (NO extra wrapper now) */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 rounded text-sm border ${
+                  currentPage === page
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-black"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       {formVisible && (
         <RegistrationForm
           isDark={isDark}
@@ -244,7 +295,6 @@ export default function UserRoleManagementPage() {
         />
       )}
 
-      {/* OTP Modal */}
       {otpModal.open && (
         <OtpModal
           isDark={isDark}
