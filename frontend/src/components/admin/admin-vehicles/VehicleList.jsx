@@ -118,13 +118,13 @@ export default function VehicleList({
 
                 {/* Location + Station */}
                 <div>
-                  <p className="text-xs text-muted-foreground">Location</p>
+                  {/* <p className="text-xs text-muted-foreground">Location</p>
                   <p className="flex items-center gap-1">
                     <SafeIcon name="MapPin" size={14} /> {vehicle.location}
-                  </p>
+                  </p> */}
 
                   <p className="text-xs text-muted-foreground mt-2">Station</p>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge  className="text-xs">
                     {vehicle.station || "—"}
                   </Badge>
                 </div>

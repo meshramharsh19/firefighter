@@ -55,25 +55,33 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Network error");
-
       const result = await res.json();
 
-      if (!result.success) {
-        toast.error("Failed to add drone");
+      // 🔴 Handle conflict explicitly
+      if (res.status === 409) {
+        toast.error(result.message || "Drone code already exists");
         return;
       }
 
+      // 🔴 Handle other API failures
+      if (!res.ok || !result.success) {
+        toast.error(result.message || "Failed to add drone");
+        return;
+      }
+
+      // ✅ Success
       toast.success("Drone added successfully");
       setDrone(INITIAL_DRONE);
       onOpenChange(false);
       onSuccess();
-    } catch {
+
+    } catch (error) {
       toast.error("Server error");
     } finally {
       setIsSubmitting(false);
     }
   }, [drone, isFormValid, onOpenChange, onSuccess]);
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,10 +110,17 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
             type="number"
             value={drone.flight_hours}
             onChange={(v) => {
-              const value = Math.max(0, Number(v) || 0);
-              updateField("flight_hours", value);
+            const num = Number(v);
+            
+            if (num > 100) {
+            toast.error("Flight hours cannot exceed 100");
+            return;
+            }
+
+            updateField("flight_hours", num);
             }}
-          />
+            />
+
 
           <InputField
             label="Firmware"
@@ -139,8 +154,11 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
             label="Station"
             value={drone.station}
             options={stations}
+            getOptionValue={(s) => s.name}
+            getOptionLabel={(s) => s.name}
             onChange={(v) => updateField("station", v)}
           />
+
         </div>
 
         <Button
@@ -172,7 +190,14 @@ function InputField({ label, value, onChange, type = "text", placeholder }) {
   );
 }
 
-function SelectField({ label, value, options, onChange }) {
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+  getOptionValue,
+  getOptionLabel,
+}) {
   return (
     <div>
       <label className="text-sm text-muted-foreground">{label}</label>
@@ -182,12 +207,25 @@ function SelectField({ label, value, options, onChange }) {
         className="w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E] px-3"
       >
         <option value="">Select {label}</option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
+
+        {options.map((option) => {
+          const optionValue = getOptionValue
+            ? getOptionValue(option)
+            : option;
+
+          const optionLabel = getOptionLabel
+            ? getOptionLabel(option)
+            : option;
+
+          return (
+            <option key={optionValue} value={optionValue}>
+              {optionLabel}
+            </option>
+          );
+        })}
       </select>
     </div>
   );
 }
+
+

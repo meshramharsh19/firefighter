@@ -15,7 +15,7 @@ if ($station) {
 
     // Fetch only vehicles from this station
     $sql = "
-        SELECT id, name, type, registration, device_id, location, status, station
+        SELECT id, name, type, registration, device_id, location, status, station, created_at
         FROM vehicles
         WHERE LOWER(TRIM(station)) = LOWER(TRIM('$stationSafe'))
         ORDER BY id DESC
@@ -23,7 +23,7 @@ if ($station) {
 } else {
     // If station not passed, return all vehicles
     $sql = "
-        SELECT id, name, type, registration, device_id, location, status, station
+        SELECT id, name, type, registration, device_id, location, status, station, created_at
         FROM vehicles
         ORDER BY id DESC
     ";
@@ -42,7 +42,9 @@ while ($row = mysqli_fetch_assoc($result)) {
         "device_id"    => $row["device_id"],
         "location"     => $row["location"],
         "status"       => $row["status"],
-        "station"      => $row["station"]
+        "station"      => $row["station"],
+        "created_at"   => $row["created_at"]
+        
     ];
 }
 

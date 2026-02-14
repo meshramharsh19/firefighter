@@ -319,44 +319,29 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
       </div>
 
       {/* Live Map */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {/* 2D Live Map */}
-            <div className="aspect-video overflow-hidden rounded-lg border border-neutral-700">
-              <MapContainer 
-                center={[defaultPune.lat, defaultPune.lng]} 
-                zoom={13} 
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <FlyToLocation gpsLocation={gpsLocation} />
-                {gpsLocation && (
-                  <Marker position={[gpsLocation.lat, gpsLocation.lng]} icon={droneIcon}>
-                    <Popup>
-                      <b>{selectedDrone?.drone_name}</b><br />
-                      Lat: {gpsLocation.lat.toFixed(5)}<br />
-                      Lng: {gpsLocation.lng.toFixed(5)}
-                    </Popup>
-                  </Marker>
-                )}
-              </MapContainer>
-            </div>
+      <div className="aspect-video rounded-lg border border-neutral-700 relative z-10">
+        <MapContainer 
+          center={[defaultPune.lat, defaultPune.lng]} 
+          zoom={13} 
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <FlyToLocation gpsLocation={gpsLocation} />
+          {gpsLocation && (
+            <Marker
+              position={[gpsLocation.lat, gpsLocation.lng]}
+              icon={droneIcon}
+            >
+              <Popup>
+                <b>{selectedDrone?.drone_name}</b><br />
+                Lat: {gpsLocation.lat.toFixed(5)}<br />
+                Lng: {gpsLocation.lng.toFixed(5)}
+              </Popup>
+            </Marker>
+          )}
+        </MapContainer>
+      </div>
 
-            {/* Coordinates */}
-            <div className="grid grid-cols-2 gap-10">
-              <Info
-                label="Latitude:"
-                value={gpsLocation ? gpsLocation.lat.toFixed(6) : "–"}
-              />
-              <Info
-                label="Longitude:"
-                value={gpsLocation ? gpsLocation.lng.toFixed(6) : "–"}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );  
 

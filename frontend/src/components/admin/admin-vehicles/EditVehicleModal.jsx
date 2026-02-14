@@ -7,7 +7,10 @@ import {
   TextField,
   MenuItem,
   Button,
+  Autocomplete
+  
 } from "@mui/material";
+
 
 export default function EditVehicleModal({
   open,
@@ -84,6 +87,8 @@ export default function EditVehicleModal({
     "& label.Mui-focused": { color: "#ef4444" },
   };
 
+  const stationOptions = Array.isArray(stations) ? stations : [];
+
   return (
     <Dialog
       open={open}
@@ -126,35 +131,83 @@ export default function EditVehicleModal({
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-          <TextField label="Vehicle Name" name="name" value={formData.name} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Type" name="type" value={formData.type} onChange={handleChange} sx={inputStyle} fullWidth />
-
-          <TextField label="Registration No" name="registration" value={formData.registration} sx={inputStyle} fullWidth disabled />
-
-          <TextField label="Device ID" name="device_id" value={formData.device_id} onChange={handleChange} sx={inputStyle} fullWidth />
-          <TextField label="Location" name="location" value={formData.location} onChange={handleChange} sx={inputStyle} fullWidth />
-
-          {/* 🔥 STATION DROPDOWN FIXED */}
           <TextField
-            select
-            label="Station"
-            name="station"
-            value={formData.station}
+            label="Vehicle Name"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             sx={inputStyle}
             fullWidth
-          >
-            {(Array.isArray(stations) ? stations : []).map((st, i) => {
-              const name = typeof st === "string" ? st : st.name;
-              const key = typeof st === "string" ? i : st.id;
+          />
 
-              return (
-                <MenuItem key={key} value={name}>
-                  {name}
-                </MenuItem>
-              );
-            })}
-          </TextField>
+          <TextField
+            label="Type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+
+          <TextField
+            label="Registration No"
+            name="registration"
+            value={formData.registration}
+            sx={inputStyle}
+            fullWidth
+            disabled
+          />
+
+          <TextField
+            label="Device ID"
+            name="device_id"
+            value={formData.device_id}
+            onChange={handleChange}
+            sx={inputStyle}
+            fullWidth
+          />
+
+          {/* ✅ Searchable Station Dropdown */}
+          <Autocomplete
+            options={stationOptions}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.name
+            }
+            value={
+              stationOptions.find(
+                (st) =>
+                  (typeof st === "string" ? st : st.name) === formData.station
+              ) || null
+            }
+            onChange={(event, newValue) => {
+              const selected =
+                typeof newValue === "string"
+                  ? newValue
+                  : newValue?.name || "";
+
+              const updated = { ...formData, station: selected };
+
+              setFormData(updated);
+              setIsDirty(JSON.stringify(updated) !== originalRef.current);
+            }}
+            ListboxProps={{
+              sx: {
+                maxHeight: 48 * 3, // only 3 visible
+                background: "#1a1b1f",
+                color: "#fff",
+              },
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Search Station"
+                placeholder="Type to search..."
+                sx={inputStyle}
+                fullWidth
+              />
+            )}
+          />
+
 
           <TextField
             select
@@ -163,19 +216,19 @@ export default function EditVehicleModal({
             value={formData.status}
             onChange={handleChange}
             sx={inputStyle}
-            fullWidth
-            className="sm:col-span-2"
           >
-            <MenuItem value="available">Available</MenuItem>
+            <MenuItem value="active">Active</MenuItem>
             <MenuItem value="busy">Busy</MenuItem>
-            <MenuItem value="en-route">En Route</MenuItem>
+            <MenuItem value="on-mission">On Mission</MenuItem>
             <MenuItem value="maintenance">Maintenance</MenuItem>
           </TextField>
         </div>
       </DialogContent>
 
       <DialogActions sx={{ borderTop: "1px solid #25262a", p: 2 }}>
-        <Button onClick={onClose} sx={{ color: "#a1a1a1" }}>Cancel</Button>
+        <Button onClick={onClose} sx={{ color: "#a1a1a1" }}>
+          Cancel
+        </Button>
 
         <Button
           variant="contained"

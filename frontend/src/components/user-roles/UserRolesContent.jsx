@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTheme } from "@/Context/ThemeContext";
 import RegistrationForm from "./RegistrationForm";
 import UserFilters from "./UserFilters";
@@ -8,11 +8,19 @@ import toast from "react-hot-toast";
 
 export default function UserRoleManagementPage() {
   const { isDark } = useTheme();
+
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const API = `${API_BASE}/admin/admin-user-roles`;
 
+  /* ---------------- CONSTANTS ---------------- */
+  const ROLES = ["Pilot", "Fire Station Command Control", "Vehicle Driver"];
 
-  const roles = ["Pilot", "Fire Station Command Control", "Vehicle Driver"];
+  /* ---------------- STATE ---------------- */
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [formVisible, setFormVisible] = useState(false);
+  const [editUserId, setEditUserId] = useState(null);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -24,9 +32,6 @@ export default function UserRoleManagementPage() {
     station: "",
   });
 
-  const [editUserId, setEditUserId] = useState(null);
-  const [users, setUsers] = useState([]);
-
   const [filters, setFilters] = useState({
     name: "",
     station: "",
@@ -37,159 +42,215 @@ export default function UserRoleManagementPage() {
 
   const [otpModal, setOtpModal] = useState({ open: false, user: null });
 
-
-  const fetchUsers = async () => {
+  /* ---------------- FETCH USERS ---------------- */
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch(
-        `${API}/get_all_users.php`
-      );
+      const res = await fetch(`${API}/get_all_users.php`);
       const data = await res.json();
 
-      setUsers(
-        data.success
-          ? data.users.map((u) => ({
-              ...u,
-              active: Number(u.active) === 1,
-            }))
-          : []
-      );
-    } catch {
-      toast.error("Failed to load users");
+      if (!data.success) {
+        toast.error("Failed to load users");
+        setUsers([]);
+        return;
+      }
+
+      const normalizedUsers = data.users.map((u) => ({
+        ...u,
+        active: Number(u.active) === 1,
+      }));
+
+      setUsers(normalizedUsers);
+    } catch (error) {
+      console.error(error);
+      toast.error("Server error while fetching users");
       setUsers([]);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [API]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const handleEdit = async (userId) => {
+  /* ---------------- HANDLE ADD / EDIT ---------------- */
+  const handleAddUser = () => {
+    setForm({
+      fullName: "",
+      address: "",
+      email: "",
+      phone: "",
+      designation: "",
+      role: "",
+      station: "",
+    });
+    setEditUserId(null);
+    setFormVisible(true);
+  };
+
+  const handleEditUser = async (userId) => {
     try {
-      const res = await fetch(
-        `${API}/get_user_by_id.php`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: userId }),
-        }
-      );
+      const res = await fetch(`${API}/get_user_by_id.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId }),
+      });
 
       const data = await res.json();
 
-      if (data.success) {
-        setForm({
-          fullName: data.user.fullName || "",
-          address: data.user.address || "",
-          email: data.user.email || "",
-          phone: data.user.phone || "",
-          designation: data.user.designation || "",
-          role: data.user.role || "",
-          station: data.user.station || "",
-        });
-        setEditUserId(userId);
+      if (!data.success) {
+        toast.error("Failed to fetch user");
+        return;
       }
-    } catch {
-      toast.error("Failed to fetch user");
+
+      const user = data.user;
+
+      setForm({
+        fullName: user.fullName || "",
+        address: user.address || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        designation: user.designation || "",
+        role: user.role || "",
+        station: user.station || "",
+      });
+
+      setEditUserId(userId);
+      setFormVisible(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Server error while fetching user");
     }
   };
 
-  // ✅ STATE UPDATER (already correct)
-  const updateStatus = (userId, isActive) => {
+  /* ---------------- STATUS ---------------- */
+  const updateLocalStatus = (userId, isActive) => {
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId ? { ...u, active: isActive } : u
-      )
+      prev.map((u) => (u.id === userId ? { ...u, active: isActive } : u))
     );
   };
 
   const toggleUserStatus = async (user) => {
-    if (user.active === true) {
+    if (user.active) {
       setOtpModal({ open: true, user });
       return;
     }
 
-    updateStatus(user.id, true);
+    updateLocalStatus(user.id, true);
 
     try {
-      const response = await fetch(
-        `${API}/update_user_status.php`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: user.id,
-            status: 1,
-            reason: "",
-          }),
-        }
-      );
+      const response = await fetch(`${API}/update_user_status.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, status: 1, reason: "" }),
+      });
 
       const result = await response.json();
 
-      if (result.success) {
-        toast.success("User Activated Successfully!");
-      } else {
+      if (!result.success) {
         toast.error("Failed to activate user");
-        updateStatus(user.id, false);
+        updateLocalStatus(user.id, false);
+        return;
       }
+
+      toast.success("User Activated Successfully");
     } catch {
       toast.error("Server error");
-      updateStatus(user.id, false);
+      updateLocalStatus(user.id, false);
     }
   };
 
-  const filteredUsers = users
-    .filter((u) => {
-      if (
-        filters.name &&
-        !u.fullName?.toLowerCase().includes(filters.name.toLowerCase())
-      ) return false;
+  /* ---------------- FILTERED USERS ---------------- */
+  const filteredUsers = useMemo(() => {
+    return users
+      .filter((u) => {
+        if (
+          filters.name &&
+          !u.fullName?.toLowerCase().includes(filters.name.toLowerCase())
+        )
+          return false;
+        if (filters.station && u.station !== filters.station) return false;
+        if (filters.role && u.role !== filters.role) return false;
+        if (filters.status === "active" && !u.active) return false;
+        if (filters.status === "inactive" && u.active) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (filters.sortBy === "id_asc") return a.id - b.id;
+        if (filters.sortBy === "id_desc") return b.id - a.id;
+        return 0;
+      });
+  }, [users, filters]);
 
-      if (filters.station && u.station !== filters.station) return false;
-      if (filters.role && u.role !== filters.role) return false;
-      if (filters.status === "active" && !u.active) return false;
-      if (filters.status === "inactive" && u.active) return false;
-
-      return true;
-    })
-    .sort((a, b) => {
-      if (filters.sortBy === "id_asc") return a.id - b.id;
-      if (filters.sortBy === "id_desc") return b.id - a.id;
-      return 0;
-    });
-
+  /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen p-6">
-      <RegistrationForm
-        isDark={isDark}
-        form={form}
-        setForm={setForm}
-        roles={roles}
-        editUserId={editUserId}
-        setEditUserId={setEditUserId}
-        onSubmit={fetchUsers}
-      />
+    <div
+      className={`min-h-screen p-6 space-y-6 ${isDark ? "bg-gray-950" : "bg-gray-50"
+        }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1
+          className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"
+            }`}
+        >
+          User Management
+        </h1>
 
+        <button
+          onClick={handleAddUser}
+          className={`
+          px-8 py-2 text-white rounded-md transition duration-200 border border-gray-700
+          ${isDark ? "bg-black-800 hover:bg-red-600" : "bg-black hover:bg-red-600"}
+        `}
+        >
+          Add User
+        </button>
+
+      </div>
+
+      {/* Filters */}
       <UserFilters
         isDark={isDark}
-        roles={roles}
+        roles={ROLES}
         filters={filters}
         setFilters={setFilters}
       />
 
+      {/* User Table */}
       <UsersTable
         isDark={isDark}
         users={filteredUsers}
+        loading={loading}
         toggleUserStatus={toggleUserStatus}
-        onEdit={handleEdit}
+        onEdit={handleEditUser}
       />
 
+      {/* ✅ Registration Form (NO extra wrapper now) */}
+      {formVisible && (
+        <RegistrationForm
+          isDark={isDark}
+          form={form}
+          setForm={setForm}
+          roles={ROLES}
+          editUserId={editUserId}
+          setEditUserId={setEditUserId}
+          onSubmit={() => {
+            fetchUsers();
+            setFormVisible(false);
+          }}
+          onCancel={() => setFormVisible(false)}
+        />
+      )}
+
+      {/* OTP Modal */}
       {otpModal.open && (
         <OtpModal
           isDark={isDark}
           otpModal={otpModal}
           setOtpModal={setOtpModal}
-          updateStatus={updateStatus}
+          updateStatus={updateLocalStatus}
         />
       )}
     </div>

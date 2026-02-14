@@ -9,11 +9,11 @@ export default function StatusBadge({
 }) {
   const getStatusConfig = () => {
     switch (status) {
-      case "available":
+      case "active":
         return {
           color: "bg-emerald-600 text-white hover:bg-emerald-700",
           icon: "CheckCircle",
-          text: label || "Available"
+          text: label || "Active"
         }
       case "busy":
         return {
@@ -21,11 +21,11 @@ export default function StatusBadge({
           icon: "Clock",
           text: label || "Busy"
         }
-      case "en-route":
+      case "on-mission":
         return {
           color: "bg-blue-600 text-white hover:bg-blue-700",
           icon: "Navigation",
-          text: label || "En Route"
+          text: label || "On Mission"
         }
       case "maintenance":
         return {

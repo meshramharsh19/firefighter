@@ -7,7 +7,10 @@ import {
   Button,
   TextField,
   MenuItem,
+  Autocomplete,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
 
 /* ---------- VALIDATORS ---------- */
@@ -69,7 +72,7 @@ export default function AddVehicleModal({
     }
 
     setError("");
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   /* ---------- SAVE ---------- */
@@ -102,7 +105,7 @@ export default function AddVehicleModal({
     }
   };
 
-  /* ---------- INPUT STYLE (UNCHANGED) ---------- */
+  /* ---------- DARK INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -119,6 +122,8 @@ export default function AddVehicleModal({
     "& label.Mui-focused": { color: "#ef4444" },
     "& .MuiSvgIcon-root": { color: "#9ea2a7" },
   };
+
+  const stationOptions = Array.isArray(stations) ? stations : [];
 
   return (
     <Dialog
@@ -156,6 +161,7 @@ export default function AddVehicleModal({
             sx={inputStyle}
             fullWidth
           />
+
           <TextField
             label="Vehicle Type *"
             name="type"
@@ -164,6 +170,7 @@ export default function AddVehicleModal({
             sx={inputStyle}
             fullWidth
           />
+
           <TextField
             label="Registration No. *"
             name="registrationNumber"
@@ -172,6 +179,7 @@ export default function AddVehicleModal({
             sx={inputStyle}
             fullWidth
           />
+
           <TextField
             label="VTS Device ID *"
             name="deviceId"
@@ -180,34 +188,59 @@ export default function AddVehicleModal({
             sx={inputStyle}
             fullWidth
           />
-          <TextField
-            label="Location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            sx={inputStyle}
-            fullWidth
+
+          {/* ✅ Search Station Dropdown */}
+          <Autocomplete
+            options={stationOptions}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.name
+            }
+            value={
+              stationOptions.find(
+                (st) =>
+                  (typeof st === "string" ? st : st.name) ===
+                  formData.station
+              ) || null
+            }
+            onChange={(event, newValue) => {
+              const selected =
+                typeof newValue === "string"
+                  ? newValue
+                  : newValue?.name || "";
+
+              setFormData((prev) => ({
+                ...prev,
+                station: selected,
+              }));
+            }}
+            ListboxProps={{
+              sx: {
+                maxHeight: 48 * 3,
+                background: "#1a1b1f",
+                color: "#fff",
+              },
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Station *"
+                placeholder="Type to search..."
+                sx={inputStyle}
+                fullWidth
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "#9ea2a7" }} />
+                      </InputAdornment>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
           />
-
-          <TextField
-            select
-            label="Station"
-            name="station"
-            value={formData.station || ""}
-            onChange={handleChange}
-            fullWidth
-          >
-            {(Array.isArray(stations) ? stations : []).map((st, i) => {
-              const name = typeof st === "string" ? st : st.name;
-              const key = typeof st === "string" ? i : st.id;
-
-              return (
-                <MenuItem key={key} value={name}>
-                  {name}
-                </MenuItem>
-              );
-            })}
-          </TextField>
 
           <TextField
             select
@@ -217,11 +250,10 @@ export default function AddVehicleModal({
             onChange={handleChange}
             sx={inputStyle}
             fullWidth
-            className="sm:col-span-2"
           >
-            <MenuItem value="available">Available</MenuItem>
+            <MenuItem value="active">Active</MenuItem>
             <MenuItem value="busy">Busy</MenuItem>
-            <MenuItem value="en-route">En Route</MenuItem>
+            <MenuItem value="on-mission">On Mission</MenuItem>
             <MenuItem value="maintenance">Maintenance</MenuItem>
           </TextField>
         </div>
