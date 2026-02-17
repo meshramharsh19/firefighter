@@ -322,7 +322,7 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
       </div>
 
       {/* Live Map */}
-      <div className="aspect-video rounded-lg border border-neutral-700 relative z-10">
+      <Card className="aspect-video rounded-lg border border-neutral-700 relative z-10">
         <MapContainer 
           center={[defaultPune.lat, defaultPune.lng]} 
           zoom={13} 
@@ -343,7 +343,7 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
             </Marker>
           )}
         </MapContainer>
-      </div>
+      </Card>
 
     </div>
   );  
