@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
+import { FiSearch } from "react-icons/fi";
 
 const API_ENDPOINT = `${import.meta.env.VITE_API_BASE_URL}/admin/admin-drone-details/addDrone.php`;
 
@@ -24,6 +25,27 @@ const INITIAL_DRONE = {
 export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess }) {
   const [drone, setDrone] = useState(INITIAL_DRONE);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [stationOpen, setStationOpen] = useState(false);
+  const [stationSearch, setStationSearch] = useState("");
+  const [stationSearchMode, setStationSearchMode] = useState(false);
+
+  useEffect(() => {
+    const close = () => {
+      setStationOpen(false);
+      setStationSearch("");
+      setStationSearchMode(false);
+    };
+
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
+
+  const filteredStations = stationSearchMode
+  ? stations.filter((s) =>
+      s.name.toLowerCase().includes(stationSearch.toLowerCase())
+    )
+  : stations;
 
   const isFormValid =
     drone.drone_code &&
@@ -147,14 +169,86 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
             onChange={(v) => updateField("is_ready", v === "Yes" ? 1 : 0)}
           />
 
-          <SelectField
-            label="Station"
-            value={drone.station}
-            options={stations}
-            getOptionValue={(s) => s.name}
-            getOptionLabel={(s) => s.name}
-            onChange={(v) => updateField("station", v)}
-          />
+          {/* STATION FIELD (SEARCHABLE) */}
+          <div
+            className="relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <label className="text-sm text-muted-foreground">Station</label>
+
+            {/* Trigger */}
+            <div
+              onClick={() => setStationOpen((p) => !p)}
+              className="w-full mt-1 h-9 flex items-center px-3 rounded-md
+                        bg-[#0D0F12] border border-[#2E2E2E]
+                        cursor-pointer"
+            >
+              {/* Value / Search */}
+              <div className="flex-1">
+                {stationSearchMode ? (
+                  <input
+                    autoFocus
+                    value={stationSearch}
+                    onChange={(e) => setStationSearch(e.target.value)}
+                    placeholder="Search station..."
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-transparent text-sm text-[#FAFAFA]
+                              outline-none w-full"
+                  />
+                ) : (
+                  <span className="text-sm text-[#FAFAFA] truncate">
+                    {drone.station || "Select Station"}
+                  </span>
+                )}
+              </div>
+
+              {/* Search Icon */}
+              <FiSearch
+                size={16}
+                className="ml-2 text-muted-foreground hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setStationSearchMode(true);
+                  setStationOpen(true);
+                }}
+              />
+            </div>
+
+            {/* Dropdown */}
+            {stationOpen && (
+              <div
+                className="absolute z-50 mt-1 w-full rounded-md
+                          bg-[#0D0F12] border border-[#2E2E2E]
+                          shadow-lg
+                          max-h-[100px] overflow-y-auto
+                          dark-scrollbar"
+              >
+                {filteredStations.length ? (
+                  filteredStations.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => {
+                        updateField("station", s.name);
+                        setStationOpen(false);
+                        setStationSearch("");
+                        setStationSearchMode(false);
+                      }}
+                      className={`px-3 py-2 text-sm cursor-pointer
+                        hover:bg-[#1A1D23]
+                        ${drone.station === s.name ? "bg-[#1A1D23]" : ""}`}
+                    >
+                      {s.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    No stations found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
 
         </div>
 

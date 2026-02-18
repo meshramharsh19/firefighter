@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SafeIcon from "@/components/common/SafeIcon";
 
-// Components
+
 import VehicleStats from "./VehicleStats";
 import VehicleList from "./VehicleList";
 import VehicleMap from "./VehicleMap";
@@ -28,13 +28,10 @@ export default function VehicleManagement() {
 
   const [viewVehicle, setViewVehicle] = useState(null);
   const [viewOpen, setViewOpen] = useState(false);
-
-  /* 🔥 Station Dropdown State */
   const [stationOpen, setStationOpen] = useState(false);
   const [stationSearch, setStationSearch] = useState("");
   const dropdownRef = useRef(null);
 
-  // ================= FETCH VEHICLES =================
   const loadVehicles = async () => {
     try {
       const res = await fetch(`${API}/get_vehicles.php`);
@@ -46,7 +43,6 @@ export default function VehicleManagement() {
     }
   };
 
-  // ================= FETCH STATIONS =================
   const loadStations = async () => {
     try {
       const res = await fetch(`${API_BASE}/admin/station/get_stations.php`);
@@ -64,7 +60,6 @@ export default function VehicleManagement() {
     loadStations();
   }, []);
 
-  /* 🔥 Close dropdown on outside click */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -75,12 +70,10 @@ export default function VehicleManagement() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* 🔥 Filtered Stations */
   const filteredStations = stations.filter((st) =>
     st.name.toLowerCase().includes(stationSearch.toLowerCase())
   );
 
-  // ================= Add Vehicle =================
   const handleAddVehicle = async (vehicleData) => {
     try {
       const res = await fetch(`${API}/add_vehicle.php`, {
@@ -105,7 +98,6 @@ export default function VehicleManagement() {
     setViewOpen(true);
   };
 
-  // ================= Filter Logic =================
   const filteredVehicles = vehicles.filter((v) => {
     const s = searchQuery.toLowerCase();
 
@@ -127,7 +119,6 @@ export default function VehicleManagement() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Vehicle Management</h1>
@@ -145,17 +136,14 @@ export default function VehicleManagement() {
         </Button>
       </div>
 
-      {/* Stats */}
       <VehicleStats vehicles={vehicles} />
 
-      {/* Filters */}
       <Card className="bg-card shadow-sm hover:shadow-md transition">
         <CardHeader>
           <CardTitle>Filters & Search</CardTitle>
         </CardHeader>
 
         <CardContent className="grid gap-4 md:grid-cols-3">
-          {/* Search */}
           <div>
             <label className="text-sm font-medium">Search</label>
             <div className="relative border border-[#2E2E2E] rounded bg-[#141414]">
@@ -172,7 +160,6 @@ export default function VehicleManagement() {
             </div>
           </div>
 
-          {/* Status */}
           <div>
             <label className="text-sm font-medium">Status</label>
             <select
@@ -186,11 +173,9 @@ export default function VehicleManagement() {
             </select>
           </div>
 
-          {/* 🔥 Custom Station Filter */}
           <div className="relative" ref={dropdownRef}>
             <label className="text-sm font-medium">Station</label>
 
-            {/* Trigger */}
             <div
               onClick={() => setStationOpen(!stationOpen)}
               className="w-full p-2 rounded bg-[#141414] text-white border border-[#2E2E2E] cursor-pointer flex justify-between"
@@ -201,11 +186,9 @@ export default function VehicleManagement() {
               <span>▼</span>
             </div>
 
-            {/* Dropdown */}
             {stationOpen && (
               <div className="absolute z-50 mt-1 w-full bg-[#141414] border border-[#2E2E2E] rounded shadow-lg">
 
-                {/* Search */}
                 <input
                   type="text"
                   placeholder="Search station..."
@@ -214,7 +197,6 @@ export default function VehicleManagement() {
                   className="w-full px-3 py-2 bg-[#141414] text-white border-b border-[#2E2E2E] outline-none rounded-t"
                 />
 
-                {/* Options (scrollable, 3 items visible by default) */}
                 <div className="max-h-36 overflow-y-auto no-scrollbar">
                   <div
                     onClick={() => {
