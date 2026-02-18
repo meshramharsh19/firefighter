@@ -10,7 +10,6 @@ header("Content-Type: application/json");
 require "../../../config/db.php";
 require "../../../helpers/logActivity.php";
 
-/* ================= READ INPUT ================= */
 $drone_code      = $_POST['drone_code'] ?? null;
 $pilot_id        = $_POST['pilot_id'] ?? null;
 $pilot_name      = $_POST['pilot_name'] ?? null;
@@ -23,7 +22,6 @@ if (!$drone_code || !$pilot_id) {
     exit;
 }
 
-/* ================= CURRENT USER ================= */
 $logUser = $_SESSION["user"] ?? [
     "id"       => null,
     "fullName" => "SYSTEM",
@@ -33,10 +31,6 @@ $logUser = $_SESSION["user"] ?? [
 $conn->begin_transaction();
 
 try {
-
-    /* ------------------------------------------------
-       STEP 1: Check if pilot already assigned
-    --------------------------------------------------*/
     $check = $conn->prepare("
         SELECT COUNT(*) AS cnt
         FROM drones
@@ -55,9 +49,6 @@ try {
         exit;
     }
 
-    /* ------------------------------------------------
-       STEP 2: Assign pilot
-    --------------------------------------------------*/
     $stmt = $conn->prepare("
         UPDATE drones SET
             pilot_id = ?,
@@ -86,9 +77,6 @@ try {
         throw new Exception("Drone already has a pilot");
     }
 
-    /* ------------------------------------------------
-       STEP 3: LOG
-    --------------------------------------------------*/
     logActivity(
         $conn,
         $logUser,

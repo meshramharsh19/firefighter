@@ -85,6 +85,7 @@ export default function VehicleManagement() {
     try {
       const res = await fetch(`${API}/add_vehicle.php`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(vehicleData),
       });
@@ -186,7 +187,6 @@ export default function VehicleManagement() {
           </div>
 
           {/* 🔥 Custom Station Filter */}
-          {/* 🔥 Custom Station Filter */}
           <div className="relative" ref={dropdownRef}>
             <label className="text-sm font-medium">Station</label>
 
@@ -215,7 +215,7 @@ export default function VehicleManagement() {
                 />
 
                 {/* Options (scrollable, 3 items visible by default) */}
-                <div className="max-h-36 overflow-y-auto">
+                <div className="max-h-36 overflow-y-auto no-scrollbar">
                   <div
                     onClick={() => {
                       setSelectedStation("all");

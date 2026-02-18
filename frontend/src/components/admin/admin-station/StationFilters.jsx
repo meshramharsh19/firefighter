@@ -6,7 +6,6 @@ export default function StationFilters({ filters, setFilters }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* SEARCH */}
         <div>
           <label className="block text-sm mb-1">Search</label>
           <div className="relative">
@@ -22,7 +21,6 @@ export default function StationFilters({ filters, setFilters }) {
           </div>
         </div>
 
-        {/* STATUS */}
         {/* <div>
           <label className="block text-sm mb-1">Status</label>
           <select
@@ -38,7 +36,6 @@ export default function StationFilters({ filters, setFilters }) {
           </select>
         </div> */}
 
-        {/* CITY */}
         {/* <div>
           <label className="block text-sm mb-1">City</label>
           <select

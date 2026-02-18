@@ -22,7 +22,6 @@ export default function StationManagement() {
   const handleViewOnMap = (station) => {
     setSelectedStation(station);
 
-    // Smooth scroll to map section
     setTimeout(() => {
       mapRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -34,7 +33,6 @@ export default function StationManagement() {
   return (
     <div className="p-6 bg-[#0b0e11] min-h-screen text-white">
 
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Station Management</h1>
@@ -49,30 +47,23 @@ export default function StationManagement() {
         </button>
       </div>
 
-      {/* STATS */}
-      {/* <StatsCards /> */}
-
-      {/* MAP */}
       <div ref={mapRef} className="mt-6">
         <StationsMap selectedStation={selectedStation} />
       </div>
 
-      {/* FILTERS */}
       <div className="mt-8">
         <StationFilters filters={filters} setFilters={setFilters} />
       </div>
 
-      {/* LIST */}
       <div className="mt-6">
         <StationList
           filters={filters}
-          onViewMap={handleViewOnMap}   // 🔥 scroll + center map
+          onViewMap={handleViewOnMap}  
           onEditStation={setEditStation}
           refreshTrigger={refreshTrigger}
         />
       </div>
 
-      {/* ADD MODAL */}
       {open && (
         <AddStationModal
           onClose={() => {
@@ -82,7 +73,6 @@ export default function StationManagement() {
         />
       )}
 
-      {/* EDIT MODAL */}
       {editStation && (
         <AddStationModal
           stationData={editStation}

@@ -9,9 +9,8 @@
   }
 }
 
-/* Admin Layout */
+
 .admin-layout {
-  /* Using Variables */
   background-color: var(--layout-bg);
   color: var(--layout-text);
   height: 100vh;
@@ -19,14 +18,12 @@
   flex-direction: column;
 }
 
-/* Admin Layout Body */
 .admin-layout__body {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* Admin Layout Main Content */
 .admin-layout__main-content {
   flex: 1;
   overflow-y: auto;

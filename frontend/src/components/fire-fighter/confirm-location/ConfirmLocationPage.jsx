@@ -49,7 +49,6 @@ export default function ConfirmLocationPage() {
   const [hasMarkerMoved, setHasMarkerMoved] = useState(false);
   const [selectedStationName, setSelectedStationName] = useState(null);
 
-  /** 🔥 Load incident if page opened directly */
   useEffect(() => {
     if (incident) {
       setLoading(false);
@@ -74,7 +73,6 @@ export default function ConfirmLocationPage() {
       });
   }, [id, incident, navigate]);
 
-  /** ✅ SAFE COORDINATE RESOLVE */
   useEffect(() => {
     if (!incident) return;
 
@@ -135,7 +133,6 @@ export default function ConfirmLocationPage() {
 
       <Box sx={{ minHeight: "100vh", p: 3 }}>
         <Stack spacing={4} maxWidth="1200px" mx="auto">
-          {/* Header */}
           <Stack direction="row" spacing={2} alignItems="center">
             <Box
               sx={{
@@ -162,7 +159,6 @@ export default function ConfirmLocationPage() {
             </Box>
           </Stack>
 
-          {/* Incident Info */}
           <Card>
             <CardHeader
               title={<Typography variant="h6">{incident.name}</Typography>}
@@ -196,7 +192,6 @@ export default function ConfirmLocationPage() {
           </Card>
 
           <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
-            {/* 🗺 SAFE MAP */}
             <Box flex={2}>
               {Number.isFinite(currentLat) && Number.isFinite(currentLng) ? (
                 <MapWithDraggableMarker
@@ -285,7 +280,6 @@ export default function ConfirmLocationPage() {
   );
 }
 
-/** ✅ Typography fix (no <p> nesting issue) */
 function InfoField({ label, value, mono }) {
   return (
     <Box>

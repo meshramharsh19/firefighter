@@ -21,14 +21,13 @@ export default function LogsPage() {
 
   const [totalPages, setTotalPages] = useState(1);
 
-  /* ================= FETCH LOGS ================= */
   const fetchLogs = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         search: filters.search,
         module: filters.module === "all" ? "" : filters.module,
-        date: filters.date, // ✅ DATE ADDED
+        date: filters.date, 
         page: filters.page,
         limit: filters.limit,
       });
@@ -53,14 +52,13 @@ export default function LogsPage() {
     }
   };
 
-  /* 🔁 AUTO FETCH (FIXED) */
   useEffect(() => {
     fetchLogs();
   }, [
     filters.page,
     filters.module,
     filters.search,
-    filters.date, // ✅ DATE DEPENDENCY
+    filters.date, 
   ]);
 
   return (

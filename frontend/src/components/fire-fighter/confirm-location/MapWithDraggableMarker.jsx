@@ -31,7 +31,6 @@ export default function MapWithDraggableMarkerMui({
   const [position, setPosition] = useState(null);
   const [originalPosition, setOriginalPosition] = useState(null);
 
-  // 🔥 Set original ONLY once when valid coords first arrive
   useEffect(() => {
     if (
       Number.isFinite(initialLat) &&
@@ -74,7 +73,7 @@ export default function MapWithDraggableMarkerMui({
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
           const newPos = [lat, lng];
           setPosition(newPos);
-          onMarkerMove(lat, lng, false); // normal movement
+          onMarkerMove(lat, lng, false); 
         }
       },
     };
@@ -143,8 +142,8 @@ export default function MapWithDraggableMarkerMui({
             sx={{ mt: 2 }}
             onClick={() => {
               const [resetLat, resetLng] = originalPosition;
-              setPosition(originalPosition);          // move marker
-              onMarkerMove(resetLat, resetLng, true); // tell parent reset
+              setPosition(originalPosition);          
+              onMarkerMove(resetLat, resetLng, true); 
             }}
           >
             Reset to Original Location

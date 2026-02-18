@@ -41,10 +41,8 @@ export default function StationsMap({ selectedStation }) {
       <MapContainer center={[18.5204, 73.8567]} zoom={12} className="h-[350px] rounded-lg">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {/* Recenter when View on Map clicked */}
         {selectedStation && <ChangeMapCenter station={selectedStation} />}
 
-        {/* Dynamic Station Markers */}
         {stations.map((s) => (
           <Marker key={s.id} position={[s.lat, s.lng]}>
             <Popup>

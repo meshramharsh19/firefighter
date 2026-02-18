@@ -58,11 +58,11 @@ export default function SuggestedStationsPanel({
 
       const result = stationData.stations
         .map((s) => ({
-          name: s.name, // ✅ API uses "name", not "station_name"
+          name: s.name, 
           distance: calculateDistanceKm(
             lat,
             lng,
-            Number(s.lat), // ✅ strings → numbers
+            Number(s.lat), 
             Number(s.lng)
           ),
           vehicles: Math.floor(Math.random() * 20) + 1,

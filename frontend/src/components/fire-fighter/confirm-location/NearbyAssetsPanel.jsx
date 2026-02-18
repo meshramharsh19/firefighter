@@ -9,7 +9,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 
-// --- MUI Icons ---
+
 import RadioIcon from '@mui/icons-material/Radio';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -22,7 +22,6 @@ import BuildIcon from '@mui/icons-material/Build';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NearMeIcon from '@mui/icons-material/NearMe';
 
-// Mock Data
 const mockAssets = [
   { id: 'a1', name: 'Engine 42', type: 'fire-truck', status: 'available', distance: 0.8, capacity: 1200 },
   { id: 'a2', name: 'Ambulance 19', type: 'ambulance', status: 'en-route', distance: 2.1, eta: 5 },
@@ -31,7 +30,6 @@ const mockAssets = [
   { id: 'a5', name: 'Engine 01', type: 'fire-truck', status: 'busy', distance: 1.5, capacity: 900 },
 ];
 
-// Icon Mapper
 const getAssetIcon = (type) => {
   switch (type) {
     case 'fire-truck': return LocalShippingIcon;
@@ -41,7 +39,6 @@ const getAssetIcon = (type) => {
   }
 };
 
-// Status Chip Config
 const getStatusConfig = (status) => {
   switch (status) {
     case 'available': return { label: 'Available', color: 'success', icon: <CheckCircleOutlineIcon sx={{ fontSize: 16 }} /> };
@@ -52,7 +49,6 @@ const getStatusConfig = (status) => {
   }
 };
 
-// Component Panel
 function NearbyAssetsPanelMui({ assets }) {
   const availableAssets = assets.filter(a => a.status === 'available').slice(0, 4);
 
@@ -82,7 +78,7 @@ function NearbyAssetsPanelMui({ assets }) {
     <Card sx={{
       borderRadius: 2,
       boxShadow: 3,
-      width: '100%',       // 🔥 Full Width
+      width: '100%',      
       bgcolor: 'background.paper'
     }}>
       <CardHeader
@@ -121,7 +117,6 @@ function NearbyAssetsPanelMui({ assets }) {
                       </Box>
 
                       <Box sx={{ typography: 'caption', mt: 1 }}>
-                        {/* Distance (Both Fire Truck & Drone) */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
                             <NearMeIcon sx={{ fontSize: 14 }} />
@@ -132,7 +127,6 @@ function NearbyAssetsPanelMui({ assets }) {
                           </Typography>
                         </Box>
 
-                        {/* Fire Truck → Capacity */}
                         {asset.type === 'fire-truck' && asset.capacity && (
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: .5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
@@ -145,7 +139,6 @@ function NearbyAssetsPanelMui({ assets }) {
                           </Box>
                         )}
 
-                        {/* Drone → ETA (as it is) */}
                         {asset.type === 'drone' && asset.eta !== undefined && (
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: .5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: .5, color: 'text.secondary' }}>
@@ -187,7 +180,6 @@ function NearbyAssetsPanelMui({ assets }) {
   );
 }
 
-// App Wrapper (NO WHITE SPACE)
 export default function App() {
   return (
     <>

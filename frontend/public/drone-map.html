@@ -50,9 +50,6 @@
           .forEach((e) => viewer.entities.remove(e));
       }
 
-      /* --------------------------------------------
-         ✅ SMOOTH CINEMATIC CAMERA FOLLOW FUNCTION
-      ---------------------------------------------*/
       function flyCameraToDrone(viewer, d) {
         const Cesium = window.Cesium;
 
@@ -83,7 +80,6 @@
         });
       }
 
-      // Receive data from React
       window.addEventListener("message", async (event) => {
         if (!event.data || event.data.type !== "DRONE_POSITIONS") return;
 
@@ -142,12 +138,10 @@
               },
             });
 
-            // ⭐ FIRST TIME → SMOOTH CINEMATIC FLY
             flyCameraToDrone(viewer, d);
           } else {
             entity.position = pos;
 
-            // ⭐ If drone is far → Fly camera again
             const cameraPos = viewer.camera.position;
             const dronePos = entity.position.getValue(Date.now());
             const distance = Cesium.Cartesian3.distance(cameraPos, dronePos);
@@ -165,7 +159,6 @@
       window.addEventListener("message", (event) => {
         if (!event.data) return;
 
-        // 🔥 INCIDENT FIRE HAZARD
         if (event.data.type === "FIRE_HAZARD_POINT") {
           const { lat, lng, height } = event.data.payload;
 

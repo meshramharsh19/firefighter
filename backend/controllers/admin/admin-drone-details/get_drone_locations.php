@@ -12,14 +12,6 @@ if (!$drone_code) {
   exit;
 }
 
-/*
-Assuming table: gps_location_data
-Columns:
-- drone_code
-- latitude
-- longitude
-- created_at
-*/
 
 $sql = "
   SELECT latitude, longitude

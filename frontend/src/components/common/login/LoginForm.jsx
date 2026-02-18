@@ -25,7 +25,6 @@ import {
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/common/login`;
 
-// ---------------- OTP INPUT ----------------
 const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   const inputRefs = useRef([]);
 
@@ -83,7 +82,6 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   );
 };
 
-// ---------------- MAIN LOGIN COMPONENT ----------------
 export default function LoginForm() {
   const [state, setState] = useState({
     step: "mobile",
@@ -95,7 +93,6 @@ export default function LoginForm() {
   const isMobileStep = state.step === "mobile";
   const isOTPStep = state.step === "otp";
 
-  // ---------------- Mobile Submit ----------------
   const handleMobileSubmit = async (e) => {
     e.preventDefault();
 
@@ -137,7 +134,6 @@ export default function LoginForm() {
     }
   };
 
-  // ---------------- Redirect by Role ----------------
   const redirectBasedOnRole = (role) => {
     switch (role) {
       case "Admin":
@@ -153,7 +149,6 @@ export default function LoginForm() {
     }
   };
 
-  // ---------------- OTP Submit ----------------
   const handleOTPSubmit = async () => {
     if (state.otp !== "123456") {
       toast.error("Invalid OTP");
@@ -214,7 +209,6 @@ export default function LoginForm() {
     }
   };
 
-  // ---------------- UI ----------------
   return (
     <Box
       sx={{
@@ -228,12 +222,25 @@ export default function LoginForm() {
         alignItems: "center",
       }}
     >
-      <Box sx={{ textAlign: "center", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          mb: 3,
+        }}
+      >
         <Flame size={60} color="#D32F2F" />
-        <Typography variant="h4" fontWeight="bold">
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{ mt: 1 }}
+        >
           FireOps Command
         </Typography>
       </Box>
+
 
       <Card sx={{ width: "100%", p: 1, boxShadow: 4 }}>
         <CardHeader
@@ -329,10 +336,21 @@ export default function LoginForm() {
         </CardContent>
       </Card>
 
-      <Box sx={{ mt: 2, textAlign: "center" }}>
+      <Box
+        sx={{
+          mt: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 0.5,
+        }}
+      >
         <Lock size={14} />
-        <Typography variant="caption">Secure Authentication</Typography>
+        <Typography variant="caption">
+          Secure Authentication
+        </Typography>
       </Box>
+
     </Box>
   );
 }

@@ -2,150 +2,196 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import SafeIcon from "@/components/common/SafeIcon";
-import { Chip } from "@mui/material";
+import { useParams } from "react-router-dom";
+import useUserInfo from "@/components/common/auth/useUserInfo";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const BASE_API = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API = `${API_BASE}/fire-fighter/live-incident-command`;
 
-const INCIDENT_API = `${BASE_API}/fire-fighter/fire-fighter-dashboard/get_incidents.php`;
-const DRONE_API = `${BASE_API}/drones/get_live_location.php`;
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 export default function VTSLivePanel({
+  incident,
   onMaximize,
   isMaximized = false,
   onExit,
 }) {
   const iframeRef = useRef(null);
-
-  // Leaflet refs
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
-  const droneMarkerRef = useRef(null);
+  const [mapMode, setMapMode] = useState("2d");
+  const [stationCoords, setStationCoords] = useState(null);
+  const [incidentMarker, setIncidentMarker] = useState(null);
+  const [stationMarker, setStationMarker] = useState(null);
 
-  const [incident, setIncident] = useState(null);
-  const [mapMode, setMapMode] = useState("2d"); 
+  const { incidentId, droneId, vehicleDeviceId } = useParams();
+  const { station, role, name } = useUserInfo();
 
-  /* ---------- Fetch Incident ---------- */
+  // ------------------ Fetch Station Coordinates ------------------
   useEffect(() => {
-    async function fetchIncident() {
-      try {
-        const res = await fetch(INCIDENT_API);
-        const data = await res.json();
-        setIncident(data?.[0] || null);
-      } catch (err) {
-        console.error("❌ Incident fetch error:", err);
-      }
-    }
-    fetchIncident();
-  }, []);
+    if (!station) return;
 
-  /* ---------- Init Leaflet Map ---------- */
+    const fetchStation = async () => {
+      try {
+        const res = await fetch(
+          `${API}/get_station_by_name.php?name=${encodeURIComponent(station)}`
+        );
+        const data = await res.json();
+
+        if (data.success && data.station && data.station.latitude && data.station.longitude) {
+          setStationCoords({
+            lat: parseFloat(data.station.latitude),
+            lng: parseFloat(data.station.longitude),
+          });
+
+          console.log("✅ Station Name:", data.station.name);
+          console.log("✅ Station Latitude:", data.station.latitude);
+          console.log("✅ Station Longitude:", data.station.longitude);
+        } else {
+          console.log("❌ Station coordinates not found");
+        }
+      } catch (err) {
+        console.error("Error fetching station:", err);
+      }
+    };
+
+    fetchStation();
+  }, [station]);
+
+  // ------------------ Log Incident Params ------------------
+  useEffect(() => {
+    console.log("Incident ID:", incidentId);
+    console.log("Drone ID:", droneId);
+    console.log("Vehicle Device ID:", vehicleDeviceId);
+  }, [incidentId, droneId, vehicleDeviceId]);
+
+  // ------------------ 2D Leaflet Map ------------------
   useEffect(() => {
     if (mapMode !== "2d") return;
     if (leafletMapRef.current) return;
 
+    // Initialize map
     leafletMapRef.current = L.map(mapContainerRef.current).setView(
       [20.5937, 78.9629],
       5
     );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap",
-    }).addTo(leafletMapRef.current);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+      leafletMapRef.current
+    );
 
     return () => {
       leafletMapRef.current?.remove();
       leafletMapRef.current = null;
-      droneMarkerRef.current = null;
     };
   }, [mapMode]);
 
-  /* ---------- Live Drone Tracking ---------- */
+  // ------------------ Update Leaflet Markers ------------------
   useEffect(() => {
-    if (mapMode !== "2d") return;
+    if (!leafletMapRef.current) return;
 
-    let interval;
+    // Incident Marker
+    if (incident && incident.latitude && incident.longitude) {
+      const lat = parseFloat(incident.latitude || incident.lat);
+      const lng = parseFloat(incident.longitude || incident.lng);
 
-    async function fetchDroneLocation() {
-      try {
-        const res = await fetch(DRONE_API);
-        const data = await res.json();
-        if (!data?.lat || !data?.lng) return;
-
-        const latLng = [parseFloat(data.lat), parseFloat(data.lng)];
-
-        if (!droneMarkerRef.current) {
-          droneMarkerRef.current = L.marker(latLng).addTo(leafletMapRef.current);
-          leafletMapRef.current.setView(latLng, 15);
-        } else {
-          droneMarkerRef.current.setLatLng(latLng);
-        }
-      } catch (err) {
-        console.error("❌ Drone location fetch error:", err);
+      if (!incidentMarker) {
+        const marker = L.marker([lat, lng]).addTo(leafletMapRef.current).bindPopup("Incident");
+        setIncidentMarker(marker);
+      } else {
+        incidentMarker.setLatLng([lat, lng]);
       }
+
+      leafletMapRef.current.setView([lat, lng], 14);
     }
 
-    fetchDroneLocation();
-    interval = setInterval(fetchDroneLocation, 5000);
+    // Station Marker
+    if (stationCoords) {
+      const { lat, lng } = stationCoords;
+
+      if (!stationMarker) {
+        const marker = L.marker([lat, lng], { icon: new L.Icon.Default() })
+          .addTo(leafletMapRef.current)
+          .bindPopup(station);
+        setStationMarker(marker);
+      } else {
+        stationMarker.setLatLng([lat, lng]);
+      }
+    }
+  }, [incident, stationCoords, leafletMapRef.current]);
+
+  // ------------------ Send Coordinates to 3D Iframe ------------------
+  useEffect(() => {
+    if (mapMode !== "3d") return;
+    if (!iframeRef.current) return;
+
+    const interval = setInterval(() => {
+      const iframeWindow = iframeRef.current?.contentWindow;
+      if (!iframeWindow) return;
+
+      // Incident
+      if (incident && incident.latitude && incident.longitude && iframeWindow.setIncidentLocation) {
+        const lat = parseFloat(incident.latitude || incident.lat);
+        const lng = parseFloat(incident.longitude || incident.lng);
+        iframeWindow.setIncidentLocation(lat, lng, vehicleDeviceId);
+      }
+
+      // Station
+      if (stationCoords && iframeWindow.setStationLocation) {
+        iframeWindow.setStationLocation(stationCoords.lat, stationCoords.lng);
+      }
+
+      clearInterval(interval);
+    }, 500);
 
     return () => clearInterval(interval);
-  }, [mapMode]);
+  }, [mapMode, incident, stationCoords, vehicleDeviceId]);
 
-  /* ---------- UI ---------- */
+  // ------------------ Render ------------------
   return (
-    <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
+    <div className="flex flex-col h-full p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <SafeIcon name="Navigation" className="h-5 w-5 text-[#dc2626]" />
-          <h3 className={`font-semibold ${isMaximized ? "text-xl" : "text-lg"}`}>
-            VTS Live Map
-          </h3>
-        </div>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-semibold text-lg text-white">VTS Map</h3>
 
         <div className="flex items-center gap-3">
-          <Chip
-            label="LIVE"
-            size="small"
-            color="error"
-            className="animate-pulse"
-          />
-
-          {/* 🧭 Capsule Toggle */}
+          {/* Map Mode Toggle */}
           <div className="relative flex items-center bg-black/70 border border-[#2E2E2E] rounded-full p-1 w-[110px] h-8">
-            {/* Sliding Active Background */}
             <div
-              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.7)] transition-all duration-300 ${
+              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${
                 mapMode === "3d" ? "left-[50%]" : "left-1"
               }`}
             />
-
             <button
               onClick={() => setMapMode("2d")}
-              className={`relative z-10 w-1/2 text-xs font-semibold transition-colors ${
-                mapMode === "2d" ? "text-white" : "text-gray-400"
-              }`}
+              className={`relative z-10 w-1/2 text-xs ${mapMode === "2d" ? "text-white" : "text-gray-400"}`}
             >
               2D
             </button>
-
             <button
               onClick={() => setMapMode("3d")}
-              className={`relative z-10 w-1/2 text-xs font-semibold transition-colors ${
-                mapMode === "3d" ? "text-white" : "text-gray-400"
-              }`}
+              className={`relative z-10 w-1/2 text-xs ${mapMode === "3d" ? "text-white" : "text-gray-400"}`}
             >
               3D
             </button>
           </div>
 
+          {/* Maximize / Exit */}
           {!isMaximized && (
             <button onClick={onMaximize} className="p-1 hover:bg-muted rounded">
               <SafeIcon name="Maximize2" className="h-4 w-4" />
             </button>
           )}
-
           {isMaximized && (
             <button onClick={onExit} className="p-1 hover:bg-muted rounded">
               <SafeIcon name="X" className="h-4 w-4" />
@@ -154,7 +200,7 @@ export default function VTSLivePanel({
         </div>
       </div>
 
-      {/* Map Area */}
+      {/* Map Container */}
       <div className="flex-1 border border-dashed border-[#2E2E2E] rounded-lg overflow-hidden">
         {mapMode === "3d" ? (
           <iframe

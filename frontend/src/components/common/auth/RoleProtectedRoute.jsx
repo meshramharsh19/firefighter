@@ -7,7 +7,6 @@ export default function RoleProtectedRoute({ children, allowedRoles }) {
 
   const user = JSON.parse(session);
 
-  // If user role is NOT allowed → redirect
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/not-access-to-you" />;
   }

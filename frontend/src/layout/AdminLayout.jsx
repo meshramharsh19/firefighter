@@ -10,7 +10,7 @@ const AdminLayout = () => {
       <div className="admin-layout__body">
         <Sidebar />
         <main className="admin-layout__main-content">
-          <Outlet />   {/* <-- page yaha render hoga */}
+          <Outlet />   
         </main>
       </div>
     </div>

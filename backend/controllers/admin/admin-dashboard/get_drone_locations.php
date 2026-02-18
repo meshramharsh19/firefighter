@@ -6,12 +6,6 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-/*
-|---------------------------------------------------------
-| FAST MAP QUERY – latest GPS per drone
-|---------------------------------------------------------
-*/
-
 $sql = "
 SELECT 
   d.drone_code,

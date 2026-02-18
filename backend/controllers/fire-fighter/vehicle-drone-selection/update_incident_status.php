@@ -22,8 +22,7 @@ $sql = "UPDATE incidents
         LIMIT 1";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $incidentId); // STRING binding
-
+$stmt->bind_param("s", $incidentId);
 if ($stmt->execute()) {
     echo json_encode([
         "success" => true,

@@ -14,7 +14,6 @@ export default function RegistrationForm({
   const [loading, setLoading] = useState(false);
   const [stations, setStations] = useState([]);
 
-  /* 🔥 NEW STATE FOR SEARCHABLE DROPDOWN */
   const [stationOpen, setStationOpen] = useState(false);
   const [stationSearch, setStationSearch] = useState("");
   const dropdownRef = useRef(null);
@@ -35,7 +34,6 @@ export default function RegistrationForm({
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  /* ---------------- FETCH STATIONS ---------------- */
   useEffect(() => {
     fetch(`${API_BASE}/admin/station/get_stations.php`)
       .then((res) => res.json())
@@ -46,7 +44,6 @@ export default function RegistrationForm({
       .catch(() => setStations([]));
   }, []);
 
-  /* ---------------- CLOSE DROPDOWN OUTSIDE ---------------- */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -57,12 +54,11 @@ export default function RegistrationForm({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* ---------------- FILTER STATIONS ---------------- */
+
   const filteredStations = stations.filter((s) =>
     s.name.toLowerCase().includes(stationSearch.toLowerCase())
   );
 
-  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -124,7 +120,6 @@ export default function RegistrationForm({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
         <button
           type="button"
           onClick={onCancel}
@@ -198,7 +193,6 @@ export default function RegistrationForm({
             ))}
           </select>
 
-          {/* 🔥 SEARCHABLE STATION DROPDOWN */}
           <div className="relative col-span-2" ref={dropdownRef}>
             <div
               onClick={() => setStationOpen(!stationOpen)}

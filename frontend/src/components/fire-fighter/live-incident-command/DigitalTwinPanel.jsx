@@ -5,7 +5,7 @@ import SafeIcon from "@/components/common/SafeIcon";
 import { Chip } from "@mui/material";
 
 const ALERT_API = "http://13.127.119.7/get_last_alert.php";
-const FETCH_INTERVAL = 1 * 1000; // 3 seconds
+const FETCH_INTERVAL = 1 * 1000; 
 
 export default function DigitalTwinPanel({
   onMaximize,
@@ -26,20 +26,16 @@ export default function DigitalTwinPanel({
 
         const data = res.data;
 
-        // Unique signature of alert
         const signature = `${data.timestamp}_${data.confidence}_${data.intensity_score}_${data.intensity_level}`;
 
-        // Same alert again
         if (lastSignatureRef.current === signature) {
           sameCountRef.current += 1;
 
-          // If same alert comes 3 times → ignore
           if (sameCountRef.current >= 3) {
-            setAlert(null); // No Fire Detected
+            setAlert(null);
             return;
           }
         } else {
-          // New alert
           lastSignatureRef.current = signature;
           sameCountRef.current = 1;
         }
@@ -51,14 +47,13 @@ export default function DigitalTwinPanel({
   };
 
   useEffect(() => {
-    fetchAlert(); // initial
+    fetchAlert(); 
     const interval = setInterval(fetchAlert, FETCH_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <SafeIcon name="Box" className="h-5 w-5 text-[#dc2626]" />
@@ -78,7 +73,6 @@ export default function DigitalTwinPanel({
         />
       </div>
 
-      {/* MAIN BOX */}
       <div className="flex-1 rounded-lg border border-dashed border-[#2E2E2E] bg-muted/20 flex items-center justify-center mb-4">
         {loading && <span className="text-sm">Loading…</span>}
 

@@ -2,8 +2,6 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import SafeIcon from '@/components/common/SafeIcon'
 
-// 🔥 Global card hover style (same as main page)
-
 export default function DroneMonitoringHeader({
   totalDrones,
   activeDrones,

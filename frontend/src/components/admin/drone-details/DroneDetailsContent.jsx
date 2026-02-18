@@ -11,9 +11,9 @@ import HistoryTab from "./HistoryTab";
 import MaintenanceTab from "./MaintenanceTab";
 import AddDroneDialog from "./AddDroneDialog";
 import EditDroneDialog from "./EditDroneDialog";
-import { FiSearch } from "react-icons/fi";   // clean & minimal
+import { FiSearch } from "react-icons/fi";   
 
-import { IoSearchOutline } from "react-icons/io5"; // modern
+import { IoSearchOutline } from "react-icons/io5"; 
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -39,8 +39,6 @@ export default function DroneDetailsContent() {
     )
   : stations;
 
-
-  // 🔥 FETCH STATIONS
   useEffect(() => {
     fetch(`${API_BASE}/admin/station/get_stations.php`)
       .then((res) => res.json())
@@ -55,7 +53,6 @@ export default function DroneDetailsContent() {
       });
   }, []);
 
-  // 🔥 FETCH DRONES BY STATION
   const fetchDronesByStation = (stationName) => {
     fetch(`${API}/getDronesByStation.php?station=${stationName}`)
       .then((res) => res.json())
@@ -69,7 +66,6 @@ export default function DroneDetailsContent() {
       });
   };
     
-  // 🔥 FETCH DRONE DETAILS
   const fetchDroneDetails = (code) => {
     fetch(`${API}/getDroneDetails.php?drone_code=${code}`)
       .then((res) => res.json())
@@ -93,9 +89,7 @@ export default function DroneDetailsContent() {
   return (
     <div className="space-y-6 p-6">
 
-      {/* Station & Drone Selectors */}
       <div className="flex gap-6 items-end" onClick={(e) => e.stopPropagation()}>
-        {/* STATION SELECT */}
         <div
           className="relative w-60"
           onClick={(e) => e.stopPropagation()}
@@ -104,14 +98,12 @@ export default function DroneDetailsContent() {
             Select Station:
           </label>
 
-          {/* Trigger */}
           <div
             onClick={() => setStationOpen((p) => !p)}
             className="h-9 w-full flex items-center px-3 rounded-md
                       bg-[#0D0F12] border border-[#2E2E2E]
                       cursor-pointer"
           >
-            {/* Value / Search Input */}
             <div className="flex-1">
               {searchMode ? (
                 <input
@@ -130,7 +122,6 @@ export default function DroneDetailsContent() {
               )}
             </div>
 
-            {/* Search Icon */}
             <FiSearch
               size={16}
               className="text-muted-foreground hover:text-white ml-2"
@@ -142,7 +133,6 @@ export default function DroneDetailsContent() {
             />
           </div>
 
-          {/* Dropdown */}
           {stationOpen && (
             <div
               className="absolute z-50 mt-1 w-full rounded-md
@@ -176,8 +166,6 @@ export default function DroneDetailsContent() {
           )}
         </div>
 
-
-        {/* DRONE SELECT */}
         <div className="flex flex-col">
           <label className="text-md font-medium text-muted-foreground mb-2">
             Select Drone:

@@ -22,7 +22,6 @@ export default function MapViewSelector({ currentMode, onModeChange, isLoading }
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        {/* Title */}
         <Box sx={{ mb: 3 }}>
           <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#EDEDED" }}>
             Select Map View Mode
@@ -32,10 +31,8 @@ export default function MapViewSelector({ currentMode, onModeChange, isLoading }
           </Typography>
         </Box>
 
-        {/* Selection Buttons */}
         <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
-          
-          {/* 2D BUTTON */}
+
           <ModeButton
             title="2D Map View"
             description="Aerial view with navigation & coordinates"
@@ -45,7 +42,6 @@ export default function MapViewSelector({ currentMode, onModeChange, isLoading }
             onClick={() => onModeChange("2d")}
           />
 
-          {/* 3D BUTTON */}
           <ModeButton
             title="3D Digital Twin"
             description="Immersive structural visualization"
@@ -56,7 +52,6 @@ export default function MapViewSelector({ currentMode, onModeChange, isLoading }
           />
         </Box>
 
-        {/* Loading Indicator */}
         {isLoading && (
           <Box
             sx={{

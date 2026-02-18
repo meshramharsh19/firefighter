@@ -6,7 +6,6 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-// ⛔ Fail-safe if station name not sent
 $station = isset($_GET['station']) ? mysqli_real_escape_string($conn, $_GET['station']) : null;
 
 if(!$station){
@@ -14,13 +13,11 @@ if(!$station){
   exit;
 }
 
-// -------- Today Count (filtered by station) --------
 $sql_today = "SELECT COUNT(*) AS total FROM incidents 
               WHERE DATE(timeReported) = CURDATE() 
               AND stationName = '$station'";
 $today_count = mysqli_fetch_assoc(mysqli_query($conn, $sql_today))['total'] ?? 0;
 
-// -------- Total Incidents This Month (station-wise) --------
 $sql_month = "SELECT COUNT(*) AS total FROM incidents 
               WHERE MONTH(timeReported)=MONTH(CURDATE()) 
               AND YEAR(timeReported)=YEAR(CURDATE())
@@ -39,8 +36,6 @@ $sql_critical = "SELECT COUNT(*) AS total FROM incidents
                  AND stationName = '$station'";
 $critical_count = mysqli_fetch_assoc(mysqli_query($conn, $sql_critical))['total'] ?? 0;
 
-
-// -------- Response --------
 echo json_encode([
   "status" => true,
   "station" => $station,

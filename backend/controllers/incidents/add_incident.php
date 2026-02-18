@@ -14,8 +14,8 @@ if(!$data || !isset($data['id'])) {
 $file = "incidents.json";
 $incidents = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
 
-// new incident add
-$data['isNewAlert'] = true;  // UI highlight + audio
+
+$data['isNewAlert'] = true;
 $incidents[] = $data;
 
 file_put_contents($file, json_encode($incidents, JSON_PRETTY_PRINT));

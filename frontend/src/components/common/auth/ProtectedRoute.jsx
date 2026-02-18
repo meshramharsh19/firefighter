@@ -11,7 +11,6 @@ export default function ProtectedRoute({ children }) {
   const now = new Date().getTime();
   const expiry = new Date(session.sessionExpiry).getTime();
 
-  // 🔥 Session Expired Check
   if (now > expiry) {
     sessionStorage.removeItem("fireOpsSession");
     return <Navigate to="/?expired=true" replace />;

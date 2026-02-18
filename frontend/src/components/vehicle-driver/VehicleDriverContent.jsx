@@ -19,24 +19,20 @@ export default function VehicleDriverContent() {
         color: isDark ? "white" : "black",
       }}
     >
-      {/* ICON */}
       <div className="p-6 rounded-full bg-red-600/20 mb-4">
         <SafeIcon name="Truck" size={60} className="text-red-500" />
       </div>
 
-      {/* TITLE */}
       <h1 className="text-3xl font-bold mb-2 text-center">
         Vehicle Driver Dashboard is Under Development
       </h1>
 
-      {/* SUBTEXT */}
       <p className="text-gray-400 text-center max-w-md mb-6">
         The driver operations dashboard is currently being developed. Soon you 
         will be able to view assigned routes, emergency dispatch requests, GPS 
         tracking features, and real-time communication tools.
       </p>
 
-      {/* BUTTON */}
       <Button
         onClick={handleGoToLogin}
         className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"

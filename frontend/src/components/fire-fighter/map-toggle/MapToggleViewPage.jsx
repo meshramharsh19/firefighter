@@ -62,7 +62,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         bgcolor: "rgb(13,15,18)",
       }}
     >
-      {/* Header */}
       <Box sx={{ width: "100%", mb: 1 }}>
         <Box
           sx={{
@@ -71,9 +70,7 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
             alignItems: "center",
           }}
         >
-          {/* 🔥 Icon + Heading group */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {/* 🔥 ICON CONTAINER */}
             <Box
               sx={{
                 width: 52,
@@ -81,7 +78,7 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: "#1A1A1A", // Dark base
+                bgcolor: "#1A1A1A", 
                 borderRadius: "10px",
               }}
             >
@@ -100,7 +97,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
             </Box>
           </Box>
 
-          {/* Right side SEVERITY chip */}
           <Chip
             label={data.severity.toUpperCase()}
             sx={{
@@ -116,7 +112,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         </Box>
       </Box>
 
-      {/* Incident Summary */}
       <Card
         sx={{
           bgcolor: "#1A1A1A",
@@ -168,14 +163,12 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         </CardContent>
       </Card>
 
-      {/* Selector */}
       <MapViewSelector
         currentMode={viewMode}
         onModeChange={handleViewChange}
         isLoading={isLoading}
       />
 
-      {/* Map */}
       <MapDisplay
         latitude={data.latitude}
         longitude={data.longitude}
@@ -184,7 +177,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         incidentName={data.name}
       />
 
-      {/* Info Cards */}
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={3}
@@ -215,7 +207,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         />
       </Stack>
 
-      {/* Actions */}
       <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
         <Button
           fullWidth
@@ -236,7 +227,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
         </Button>
       </Stack>
 
-      {/* Help */}
       <Card
         sx={{
           p: 2,
@@ -257,7 +247,6 @@ export default function MapToggleView({ incident, onConfirm, onBack }) {
   );
 }
 
-// Small Reusable
 function Info({ label, value, code }) {
   return (
     <Box>
@@ -291,7 +280,6 @@ function ModeInfo({ title, desc, points, active, icon }) {
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        {/* Title & Icon */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1 }}>
           {icon === "map" && (
             <MapIcon sx={{ color: "#EF5350", fontSize: 26 }} />
@@ -306,12 +294,10 @@ function ModeInfo({ title, desc, points, active, icon }) {
           </Typography>
         </Box>
 
-        {/* Description */}
         <Typography sx={{ fontSize: "0.85rem", color: "#B1B1B1", mb: 1.5 }}>
           {desc}
         </Typography>
 
-        {/* Benefit List */}
         <Stack spacing={0.6}>
           {points.map((p, i) => (
             <Typography

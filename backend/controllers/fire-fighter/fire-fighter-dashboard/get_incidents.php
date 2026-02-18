@@ -11,7 +11,7 @@ if ($station) {
             WHERE LOWER(stationName) = LOWER(?)
               AND status = 'new'
               AND isNewAlert = 1
-            ORDER BY timeReported DESC";   // 🔥 ADDED
+            ORDER BY timeReported DESC"; 
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $station);
@@ -19,7 +19,7 @@ if ($station) {
     $sql = "SELECT * FROM incidents
             WHERE status = 'new'
               AND isNewAlert = 1
-            ORDER BY timeReported DESC";   // 🔥 ADDED
+            ORDER BY timeReported DESC"; 
 
     $stmt = $conn->prepare($sql);
 }

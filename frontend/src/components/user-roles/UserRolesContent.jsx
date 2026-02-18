@@ -12,11 +12,9 @@ export default function UserRoleManagementPage() {
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const API = `${API_BASE}/admin/admin-user-roles`;
 
-  /* ---------------- CONSTANTS ---------------- */
   const ROLES = ["Pilot", "Fire Station Command Control", "Vehicle Driver"];
   const USERS_PER_PAGE = 10;
 
-  /* ---------------- STATE ---------------- */
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +43,6 @@ export default function UserRoleManagementPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  /* ---------------- FETCH USERS ---------------- */
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -77,7 +74,6 @@ export default function UserRoleManagementPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  /* ---------------- HANDLE ADD / EDIT ---------------- */
   const handleAddUser = () => {
     setForm({
       fullName: "",
@@ -127,7 +123,6 @@ export default function UserRoleManagementPage() {
     }
   };
 
-  /* ---------------- STATUS ---------------- */
   const updateLocalStatus = (userId, isActive) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, active: isActive } : u))
@@ -164,7 +159,6 @@ export default function UserRoleManagementPage() {
     }
   };
 
-  /* ---------------- FILTERED USERS ---------------- */
   const filteredUsers = useMemo(() => {
     return users
       .filter((u) => {
@@ -186,7 +180,6 @@ export default function UserRoleManagementPage() {
       });
   }, [users, filters]);
 
-  /* ---------------- PAGINATION ---------------- */
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
 
   const paginatedUsers = useMemo(() => {
@@ -198,7 +191,6 @@ export default function UserRoleManagementPage() {
     setCurrentPage(1);
   }, [filters, users]);
 
-  /* ---------------- UI ---------------- */
   return (
     <div
       className={`min-h-screen p-6 space-y-6 ${
@@ -241,7 +233,6 @@ export default function UserRoleManagementPage() {
         onEdit={handleEditUser}
       />
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-4">
           <button

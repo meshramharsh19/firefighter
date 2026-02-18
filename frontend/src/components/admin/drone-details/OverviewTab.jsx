@@ -9,22 +9,20 @@ import StatusBadge from "@/components/common/StatusBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css"; // CSS import top par honi chahiye
+import "leaflet/dist/leaflet.css"; 
 import { toast } from "react-hot-toast";
 
 import PilotList from "./PilotList"; 
 
 const API = `${import.meta.env.VITE_API_BASE_URL}/admin/admin-drone-details`;
 
-// Custom Drone Icon logic
 const droneIcon = new L.Icon({
-  iconUrl: "/assets/images/drone.png", // Path check kar lena bhai
+  iconUrl: "/assets/images/drone.png", 
   iconSize: [36, 36],
   iconAnchor: [18, 18],
   popupAnchor: [0, -18],
 });
 
-// Map Controller: GPS change hone par map move karega
 function FlyToLocation({ gpsLocation }) {
   const map = useMap();
   useEffect(() => {
@@ -94,7 +92,6 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
       });
   };
 
-  // Fetch GPS Coordinates every 5 seconds
   useEffect(() => {
     if (!selectedDrone?.drone_code) return;
 
@@ -138,8 +135,8 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
         if (data.success) {
           toast.success("Pilot reassigned successfully");
 
-          setReassignOpen(false); // ✅ CLOSE DIALOG
-          setSelectedPilot(null); // optional reset
+          setReassignOpen(false); 
+          setSelectedPilot(null); 
           refreshDrone();
         } else {
           toast.error(data.error || "Failed to reassign pilot");
@@ -165,7 +162,7 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
       .then((data) => {
         if (data.success) {
           toast.success("Pilot assigned successful!");
-          refreshDrone(); // UI Refresh
+          refreshDrone(); 
         } else {
           toast.error(data.error || "Failed to assign pilot");
         }
@@ -175,7 +172,6 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Drone Info */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Drone Information</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -204,7 +200,6 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
           </CardContent>
         </Card>
 
-        {/* Pilot Info / Assign */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Assigned Pilot</CardTitle></CardHeader>
           <CardContent>
@@ -230,7 +225,6 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
                   value={selectedDrone.pilot_phone}
                   isSmall
                 /> 
-                {/* Pilot Status UI */}
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-muted-foreground text-sm">
                     Pilot Status
@@ -321,7 +315,6 @@ export default function OverviewTab({ selectedDrone, refreshDrone }) {
         </Card>
       </div>
 
-      {/* Live Map */}
       <div className="aspect-video rounded-lg border border-neutral-700 relative z-10">
         <MapContainer 
           center={[defaultPune.lat, defaultPune.lng]} 

@@ -10,7 +10,6 @@ header("Content-Type: application/json");
 require "../../../config/db.php";
 require "../../../helpers/logActivity.php";
 
-/* ================= READ INPUT ================= */
 $drone_code = $_POST['drone_code'] ?? null;
 
 if (!$drone_code) {
@@ -18,7 +17,6 @@ if (!$drone_code) {
     exit;
 }
 
-/* ================= CURRENT USER (FOR LOG) ================= */
 $logUser = $_SESSION["user"] ?? [
     "id"       => null,
     "fullName" => "SYSTEM",
@@ -28,9 +26,6 @@ $logUser = $_SESSION["user"] ?? [
 try {
     $conn->begin_transaction();
 
-    /* --------------------------------------------
-       STEP 1: Fetch current pilot (before removal)
-    ---------------------------------------------*/
     $getPilot = $conn->prepare("
         SELECT pilot_id, pilot_name
         FROM drones
@@ -41,9 +36,7 @@ try {
     $pilotData = $getPilot->get_result()->fetch_assoc();
     $getPilot->close();
 
-    /* --------------------------------------------
-       STEP 2: Remove pilot from drone
-    ---------------------------------------------*/
+
     $stmt = $conn->prepare("
         UPDATE drones SET
             pilot_id = NULL,
@@ -58,9 +51,6 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    /* --------------------------------------------
-       STEP 3: AUDIT LOG
-    ---------------------------------------------*/
     if (!empty($pilotData['pilot_id'])) {
         logActivity(
             $conn,

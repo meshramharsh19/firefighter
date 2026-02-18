@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import SafeIcon from "@/components/common/SafeIcon"
-import { toast } from "react-hot-toast" // ⭐ Import toast
+import { toast } from "react-hot-toast"
 
 export default function FirefighterHeader({
   userName = "Firefighter",
@@ -12,12 +12,10 @@ export default function FirefighterHeader({
 }) {
   const [timeRemaining, setTimeRemaining] = useState("")
   const [mounted, setMounted] = useState(false)
-  
-  // Refs to prevent duplicate toasts
+
   const warningShownRef = useRef(false)
   const prevAlertStateRef = useRef(hasNewAlerts)
 
-  // ⭐ New Alert Toast Logic
   useEffect(() => {
     if (hasNewAlerts && !prevAlertStateRef.current) {
       toast.error("New Emergency Alert Detected!", {
@@ -47,13 +45,11 @@ export default function FirefighterHeader({
         return
       }
 
-      // ⭐ Session Warning Toast (5 minutes remaining)
-      // 300000ms = 5 minutes. Check a small window to ensure we catch it.
       if (diff <= 300000 && diff > 298000 && !warningShownRef.current) {
          toast("Session expiring in 5 minutes", {
            icon: "⚠️",
            style: {
-             border: '1px solid #f59e0b', // Amber
+             border: '1px solid #f59e0b',
              padding: '16px',
              color: '#713200',
            },
@@ -89,7 +85,6 @@ export default function FirefighterHeader({
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center justify-between px-4">
         
-        {/* Left Logo + Branding */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -106,7 +101,6 @@ export default function FirefighterHeader({
           )}
         </div>
 
-        {/* Right Side */}
         <div className="flex items-center gap-4">
           {sessionEndTime && (
             <div className="hidden sm:flex items-center gap-2 rounded-md bg-muted px-3 py-1.5">

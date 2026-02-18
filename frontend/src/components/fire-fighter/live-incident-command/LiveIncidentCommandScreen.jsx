@@ -3,27 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import SafeIcon from "@/components/common/SafeIcon";
-
-// Panels
 import CommandToolbar from "./CommandToolbar";
 import VTSLivePanel from "./VTSLivePanel";
 import DroneLivePanel from "./DroneLivePanel";
 import DroneCameraPanel from "./DroneCameraPanel";
 import DigitalTwinPanel from "./DigitalTwinPanel";
-
-// MUI
 import { Button } from "@mui/material";
 
 export default function LiveIncidentCommandScreen() {
   const { state } = useLocation();
-  const { incidentId, droneId } = useParams();
+  const { incidentId, droneId, vehicleDeviceId} = useParams();
   const navigate = useNavigate();
 
   const incident = state?.incident;
   const selectedVehicles = state?.selectedVehicles || [];
   const selectedDrones = state?.selectedDrones || [];
 
-  // 🚨 If opened directly without state
   useEffect(() => {
     if (!incident) {
       navigate("/firefighter-dashboard");
@@ -36,8 +31,6 @@ export default function LiveIncidentCommandScreen() {
   const [activePanel, setActivePanel] = useState(null);
   const [focusedPanel, setFocusedPanel] = useState("vts");
   const [isFullscreen, setIsFullscreen] = useState(false);
-
-  /* ---------------- Panel Controls ---------------- */
 
   const maximizePanel = (panelKey) => {
     setActivePanel(panelKey);
@@ -63,8 +56,6 @@ export default function LiveIncidentCommandScreen() {
     }
   };
 
-  /* ---------------- Fullscreen Controls ---------------- */
-
   const enterBrowserFullscreen = () => {
     document.documentElement.requestFullscreen?.();
   };
@@ -78,8 +69,6 @@ export default function LiveIncidentCommandScreen() {
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
-
-  /* ---------------- Reusable Panel Renderer ---------------- */
 
   const renderPanel = (key, Component, clickable = false) => (
     <div
@@ -112,7 +101,6 @@ export default function LiveIncidentCommandScreen() {
       />
 
       <div className="flex-1 min-h-[calc(160vh-168px)] overflow-visible p-4 bg-[#0A0A0A]">
-        {/* SPLIT MODE */}
         {layout === "split" && (
           <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
             {renderPanel("vts", VTSLivePanel)}
@@ -122,7 +110,6 @@ export default function LiveIncidentCommandScreen() {
           </div>
         )}
 
-        {/* FOCUS MODE */}
         {layout === "focus" && (
           <div className="flex flex-col gap-3 h-full">
             <div className="h-[50%] min-h-0">
@@ -147,7 +134,6 @@ export default function LiveIncidentCommandScreen() {
           </div>
         )}
 
-        {/* FULL MODE */}
         {layout === "full" && (
           <div className="flex flex-col gap-4 h-full">
             <div className="h-[75%] min-h-0">

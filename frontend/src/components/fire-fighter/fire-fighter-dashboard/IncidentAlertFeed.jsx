@@ -36,7 +36,6 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
   const audioRef = useRef(null);
   const playedRef = useRef(new Set());
 
-  /** 🔥 Fetch Incidents Every 5 Seconds */
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
@@ -55,7 +54,6 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     return () => clearInterval(interval);
   }, [IncidentAPI_BASE]);
 
-  /** 🔔 Alert Sound for NEW incident (only once) */
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio("/sounds/alert.mp3");
@@ -120,17 +118,11 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     return d.toLocaleDateString();
   };
 
-  /** 🟢 Acknowledge API */
   const acknowledge = (id) => {
     navigate(`/confirm-location/${id}`);
   };
 
 
-  /** 🟦 View Details click */
-  // const viewDetails = (id) => {
-  //   alert("View Incident : " + id);
-  //   // Modal/Drawer open logic add later
-  // };
 
   const viewDetails = (id) => {
     const incident = incidents.find((i) => i.id === id);

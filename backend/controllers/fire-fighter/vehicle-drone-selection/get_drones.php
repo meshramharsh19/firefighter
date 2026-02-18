@@ -1,5 +1,5 @@
 <?php
-// get_drones.php
+
 error_reporting(0);
 ini_set('display_errors', 0);
 header("Access-Control-Allow-Origin: *");
@@ -13,7 +13,6 @@ $raw = file_get_contents("php://input");
 $input = json_decode($raw, true);
 $stationFilter = isset($input["station"]) ? $input["station"] : null;
 
-// Base query (table name: drones)
 $sql = "SELECT * FROM drones";
 
 if ($stationFilter) {
@@ -40,10 +39,8 @@ while ($row = mysqli_fetch_assoc($result)) {
 
     $d = [
         "id" => $row["id"],
-
-        // 🔥 CORRECT MAPPING (MOST IMPORTANT)
-        "drone_code" => $row["drone_code"],     // DRN-001
-        "name" => $row["drone_name"],         // Falcon X1
+        "drone_code" => $row["drone_code"],     
+        "name" => $row["drone_name"],         
 
         "ward" => $row["ward"],
         "status" => $row["status"],
@@ -55,8 +52,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         "pilot_name" => $row["pilot_name"],
         "pilot_number" => $row["pilot_number"],
         "is_ready" => ((int)$row["is_ready"] === 1),
-
-        // optional
+        
         "_raw" => $row
     ];
 

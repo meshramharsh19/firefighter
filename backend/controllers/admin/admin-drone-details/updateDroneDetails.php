@@ -13,13 +13,12 @@ header("Content-Type: application/json");
 require "../../../config/db.php";
 require "../../../helpers/logActivity.php";
 
-/* ================= METHOD CHECK ================= */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(["success" => false, "message" => "Invalid request"]);
     exit;
 }
 
-/* ================= READ INPUT ================= */
+
 $drone_code       = $_POST['drone_code'] ?? '';
 $flight_hours     = $_POST['flight_hours'] ?? null;
 $health_status    = $_POST['health_status'] ?? '';
@@ -31,7 +30,6 @@ if (!$drone_code) {
     exit;
 }
 
-/* ================= CURRENT USER (FOR LOG) ================= */
 $logUser = $_SESSION["user"] ?? [
     "id"       => null,
     "fullName" => "SYSTEM",
@@ -41,9 +39,6 @@ $logUser = $_SESSION["user"] ?? [
 try {
     $conn->begin_transaction();
 
-    /* --------------------------------------------
-       STEP 1: Get OLD drone data (for log clarity)
-    ---------------------------------------------*/
     $oldStmt = $conn->prepare("
         SELECT flight_hours, health_status, firmware_version, status
         FROM drones
@@ -54,9 +49,6 @@ try {
     $oldData = $oldStmt->get_result()->fetch_assoc();
     $oldStmt->close();
 
-    /* --------------------------------------------
-       STEP 2: Update drone details
-    ---------------------------------------------*/
     $stmt = $conn->prepare("
         UPDATE drones 
         SET 
@@ -82,9 +74,6 @@ try {
 
     $stmt->close();
 
-    /* --------------------------------------------
-       STEP 3: AUDIT LOG
-    ---------------------------------------------*/
     $descParts = [];
 
     if ($oldData) {

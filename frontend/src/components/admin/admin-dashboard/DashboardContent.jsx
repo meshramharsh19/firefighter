@@ -7,7 +7,6 @@ import QuickAccessLinks from "./QuickAccessLinks";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/admin/admin-dashboard`;
 
-// 🔒 Memoized heavy component
 const MemoDashboardMap = memo(DashboardMapSection);
 
 export default function DashboardContent() {
@@ -22,7 +21,6 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [mapMode, setMapMode] = useState("2d");
 
-  /* ---------------- API CALLS ---------------- */
 
   const loadStats = useCallback(async (isAuto = false) => {
     try {
@@ -54,7 +52,6 @@ export default function DashboardContent() {
     }
   }, []);
 
-  /* ---------------- INITIAL LOAD ---------------- */
 
   useEffect(() => {
     const init = async () => {
@@ -70,7 +67,6 @@ export default function DashboardContent() {
     init();
   }, [loadStats, loadActiveDrones, loadDroneLocations]);
 
-  /* ---------------- SMART POLLING ---------------- */
 
   useEffect(() => {
     const statsInterval = setInterval(() => loadStats(true), 15000); // slow
@@ -89,7 +85,6 @@ export default function DashboardContent() {
     };
   }, [mapMode, loadStats, loadActiveDrones, loadDroneLocations]);
 
-  /* ---------------- MEMOIZED DATA ---------------- */
 
   const memoDroneLocations = useMemo(
     () => droneLocations,
@@ -123,7 +118,6 @@ export default function DashboardContent() {
     [stats]
   );
 
-  /* ---------------- UI ---------------- */
 
   return (
     <div className="w-full p-6">
@@ -136,7 +130,6 @@ export default function DashboardContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT: MAP */}
         <div className="lg:col-span-2 space-y-6 border border-[#2E2E2E] rounded-xl">
           <MemoDashboardMap
             mapMode={mapMode}
@@ -146,7 +139,6 @@ export default function DashboardContent() {
           />
         </div>
 
-        {/* RIGHT: QUICK ACCESS */}
         <div className="lg:col-span-1 rounded-xl p-6 border border-[#2E2E2E] h-fit">
           <QuickAccessLinks />
         </div>

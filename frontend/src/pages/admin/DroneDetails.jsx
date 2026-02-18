@@ -4,7 +4,6 @@ import DroneDetailsContent from "@/components/admin/drone-details/DroneDetailsCo
 export default function DroneDetailsPage() {
   return (
     <>
-
         <DroneDetailsContent />
     </>
   );

@@ -47,7 +47,6 @@ export default function OtpModal({ isDark, otpModal, setOtpModal, updateStatus }
       if (result.success) {
         toast.success("User Deactivated Successfully");
 
-        // Update UI
         updateStatus(otpModal.user.id, false);
 
         closeModal();
@@ -72,7 +71,6 @@ export default function OtpModal({ isDark, otpModal, setOtpModal, updateStatus }
     color: isDark ? "white" : "black",
   }}
 >
-  {/* ❌ CLOSE BUTTON — NO STYLE CHANGED */}
   <button
     onClick={closeModal}
     className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-600/30"

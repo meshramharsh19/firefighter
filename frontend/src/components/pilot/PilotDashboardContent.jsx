@@ -2,7 +2,7 @@ import React from "react";
 import { useTheme } from "@/Context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import SafeIcon from "@/components/common/SafeIcon";
-import pilotBg from "../../../public/assets/images/pilot-bg.jpg"; // 👈 JPG import
+import pilotBg from "../../../public/assets/images/pilot-bg.jpg"; 
 
 export default function PilotDashboardContent() {
   const { isDark } = useTheme();
@@ -27,23 +27,19 @@ export default function PilotDashboardContent() {
     color: "white",
   }}
 >
-      {/* ICON */}
       <div className="p-6 rounded-full bg-red-600/20 mb-4 backdrop-blur-sm">
         <SafeIcon name="Plane" size={60} className="text-red-500" />
       </div>
 
-      {/* TITLE */}
       <h1 className="text-3xl font-bold mb-2 text-center">
         Welcome to the Pilot Dashboard
       </h1>
 
-      {/* SUB-TEXT */}
       <p className="text-gray-200 text-center max-w-md mb-6">
         A next-generation control hub built to streamline flight operations, enhance situational awareness, and empower pilots with intelligent insights.
       
       </p>
 
-      {/* BUTTON */}
       <Button
         onClick={handleGoToPilot}
         className="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"

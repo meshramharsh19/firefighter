@@ -4,9 +4,6 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
-/* ===============================
-   Read JSON input
-================================ */
 $input = json_decode(file_get_contents("php://input"), true);
 
 $incidentId   = $input['incidentId']   ?? null;
@@ -33,16 +30,11 @@ if (!file_exists($file)) {
 $incidents = json_decode(file_get_contents($file), true);
 $found = false;
 
-/* ===============================
-   Update incident station
-================================ */
 foreach ($incidents as &$incident) {
     if ($incident['id'] === $incidentId) {
 
-        // 🔥 UPDATE STATION NAME
         $incident['coordinates']['stationName'] = $newStation;
 
-        // Optional but recommended
         $incident['status'] = "forwarded";
         $incident['isNewAlert'] = true;
 
@@ -58,10 +50,6 @@ if (!$found) {
     ]);
     exit;
 }
-
-/* ===============================
-   Save back to file
-================================ */
 file_put_contents($file, json_encode($incidents, JSON_PRETTY_PRINT));
 
 echo json_encode([

@@ -32,7 +32,6 @@ export default function DroneMonitoringContent() {
   const [stations, setStations] = useState([]);
   const [selectedStation, setSelectedStation] = useState("all");
 
-  /* ---------------- Fetch drones (auto refresh) ---------------- */
   const loadDrones = useCallback(async (isAutoRefresh = false) => {
     try {
       const res = await fetch(`${API}/get_drone_locations.php`);
@@ -41,12 +40,10 @@ export default function DroneMonitoringContent() {
       setDrones(data);
     } catch (err) {
       console.error(err);
-      // Only show error toast if it's NOT an auto-refresh
       if (!isAutoRefresh) toast.error("Failed to load drone fleet data");
     }
   }, []);
 
-  /* ---------------- Fetch stations ---------------- */
   const loadStations = useCallback(async () => {
     try {
       const res = await fetch(`${API}/getStations.php`);
@@ -55,29 +52,24 @@ export default function DroneMonitoringContent() {
       setStations(data);
     } catch (err) {
       console.error(err);
-      // Critical error: Always show
       toast.error("Failed to load stations list");
     }
   }, []);
 
-  /* ---------------- Initial Load & Interval ---------------- */
   useEffect(() => {
     const initData = async () => {
-      // Load initial data quietly
       await Promise.all([loadDrones(false), loadStations()]);
     };
 
     initData();
 
     const interval = setInterval(() => {
-      // Pass true so background connection errors don't spam the user
       loadDrones(true); 
     }, 5000);
 
     return () => clearInterval(interval);
   }, [loadDrones, loadStations]);
 
-  /* ---------------- Status normalize ---------------- */
   const normalizeStatus = (status) => {
     if (!status) return "unknown";
     const s = status.toLowerCase();
@@ -88,13 +80,11 @@ export default function DroneMonitoringContent() {
     return "unknown";
   };
 
-  /* ---------------- Station filter ---------------- */
   const filteredDrones =
     selectedStation === "all"
       ? drones
       : drones.filter((d) => d.station === selectedStation);
 
-  /* ---------------- Counts ---------------- */
   const activeDrones = filteredDrones.filter(
     (d) => normalizeStatus(d.status) === "active"
   );
@@ -125,20 +115,16 @@ export default function DroneMonitoringContent() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Station Dropdown */}
     <div className="flex justify-start">
   <div className="w-64">
-    <label className="text-sm font-medium">Station</label> {/* Added label to match theme */}
+    <label className="text-sm font-medium">Station</label> 
     <Select value={selectedStation} onValueChange={setSelectedStation}>
       
-      {/* Trigger matches Status/Ward: bg-[#141414], border-gray-700, and no focus ring */}
       <SelectTrigger className="w-full p-2 bg-[#141414] text-white border border-gray-700 rounded focus:ring-0 focus:ring-offset-0 focus:outline-none">
         <SelectValue placeholder="Select Station" />
       </SelectTrigger>
 
-      {/* Content matches the dropdown theme */}
       <SelectContent className="bg-[#141414] border-gray-700 text-white">
-        {/* Hide the default checkmark and add spacing */}
         <SelectItem 
           value="all" 
           className="focus:bg-gray-800 focus:text-white cursor-pointer [&>span:first-child]:hidden"
@@ -161,7 +147,6 @@ export default function DroneMonitoringContent() {
 </div>
 
 
-      {/* Summary */}
       <DroneMonitoringHeader
         totalDrones={filteredDrones.length}
         activeDrones={activeDrones.length}
@@ -186,7 +171,6 @@ export default function DroneMonitoringContent() {
           </Card>
         </div>
 
-        {/* Right stats */}
         <div className="space-y-4">
           <Card>
             <CardHeader>
@@ -226,7 +210,6 @@ export default function DroneMonitoringContent() {
         </div>
       </div>
 
-      {/* Detailed table */}
       <Card>
         <CardHeader>
           <CardTitle>Drone Fleet Details</CardTitle>

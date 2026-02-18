@@ -2,10 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import L from "leaflet";
 
 export default function DroneMonitoringMap({ drones }) {
-  const [mapMode, setMapMode] = useState("2d");  // Only 2D active now
+  const [mapMode, setMapMode] = useState("2d");  
   const mapRef = useRef(null);
 
-  // ------------------- Load Map -------------------
   function loadLeafletMap() {
     const div = document.getElementById("monitorMap2D");
     if (!div || div.offsetHeight === 0) return;
@@ -40,7 +39,6 @@ export default function DroneMonitoringMap({ drones }) {
     setTimeout(() => mapRef.current?.invalidateSize(), 200);
   }
 
-  // init when visible
   useEffect(() => {
     const mapDiv = document.getElementById("monitorMap2D");
     if (!mapDiv) return;
@@ -68,13 +66,6 @@ export default function DroneMonitoringMap({ drones }) {
     };
   }, []);
 
-  // ----------------- 3D MAP DISABLED (commented) -----------------
-  /*
-  useEffect(() => {
-    if (mapMode === "3d" && window.initMap) window.initMap();
-  }, [mapMode]);
-  */
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -90,7 +81,6 @@ export default function DroneMonitoringMap({ drones }) {
           >2D Map</button> */}
 
           {/*
-          -------- 3D Button Disabled --------
           <button 
             onClick={() => setMapMode("3d")}
             className={`px-3 py-1 rounded ${mapMode==="3d"?"bg-blue-600":"bg-gray-700"}`}
@@ -102,8 +92,7 @@ export default function DroneMonitoringMap({ drones }) {
       <div className="rounded-xl border border-gray-700 bg-[#14171b] overflow-hidden">
         <div id="monitorMap2D" style={{height:"350px"}}></div>
 
-        {/*
-        ---------- 3D Map Container Disabled ----------
+        {/* 
         <div id="map-container"
           style={{display: mapMode==="3d"?"block":"none", height:"500px"}}
         ></div>

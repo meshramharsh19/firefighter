@@ -25,7 +25,6 @@ export default function AddStationModal({ onClose, stationData }) {
   const [lng, setLng] = useState(73.868444);
   const [loading, setLoading] = useState(false);
 
-  // Prefill when editing
   useEffect(() => {
     if (stationData) {
       setStationName(stationData.name);
@@ -70,7 +69,6 @@ export default function AddStationModal({ onClose, stationData }) {
         lng: parseFloat(lng),
       };
 
-      // Only send ID in edit mode
       if (stationData?.id) {
         payload.id = stationData.id;
       }

@@ -6,5 +6,5 @@ export default function logoutUser() {
   setTimeout(() => {
     sessionStorage.removeItem("fireOpsSession");
     window.location.href = "/";
-  }, 500);  // wait so toast appears
+  }, 500);  
 }

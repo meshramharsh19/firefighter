@@ -14,7 +14,6 @@ $timeout = 15;
 $pollInterval = 2;
 $startTime = time();
 
-// 👇 Get last known count from frontend
 $lastCount = isset($_GET['lastCount']) ? (int)$_GET['lastCount'] : -1;
 
 error_log("=== New Poll Request ===");
@@ -40,17 +39,14 @@ while (true) {
 
     mysqli_free_result($result);
 
-    // 👇 Log values each loop
     error_log("LastCount: $lastCount | CurrentCount: $currentCount");
 
-    // 👇 Return immediately if count changed
     if ($currentCount !== $lastCount) {
         error_log("Count changed. Returning response.");
         echo json_encode(['count' => $currentCount]);
         exit;
     }
 
-    // 👇 Timeout fallback
     if ((time() - $startTime) >= $timeout) {
         error_log("Timeout reached. Returning current count.");
         echo json_encode(['count' => $currentCount]);

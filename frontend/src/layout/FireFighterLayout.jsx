@@ -5,7 +5,7 @@ import DashboardHeader from "../components/common/fire-fighter/DashboardHeader";
 export default function FireFighterLayout() {
   return (
     <div>
-      <DashboardHeader sessionStartTime={Date.now()} />   {/* Header shown */}
+      <DashboardHeader sessionStartTime={Date.now()} />  
       
       <div>
         <Outlet />   

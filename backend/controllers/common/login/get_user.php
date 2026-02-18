@@ -33,7 +33,6 @@ if ($user["status"] == 0) {
     exit;
 }
 
-/* 🔥 BACKEND SESSION SET */
 $_SESSION["user"] = [
     "id" => $user["id"],
     "fullName" => $user["fullName"],

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-// Material UI Imports (Simulating a standard setup)
 import { 
   Box, 
   Card, 
@@ -12,7 +11,6 @@ import {
   CircularProgress,
   Grid
 } from '@mui/material';
-// Lucide Icon Imports (Used for visual continuity with the original 'SafeIcon')
 import { 
   Flame, 
   Phone, 
@@ -26,21 +24,17 @@ import {
   Lock 
 } from 'lucide-react';
 
-// --- Mock Data (Replacing '@/data/user') ---
 const CURRENT_FIRE_FIGHTER = {
   id: 'FF-421',
   name: 'Captain Rex',
 };
 
-// --- Custom OTP Input Component (Implemented using MUI TextField with full UX logic) ---
+
 const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   const inputRefs = useRef([]);
-  // Use local state to manage individual digits for complex interactions (paste, backspace, etc.)
   const [otp, setOtp] = useState(Array(length).fill(''));
 
-  // 1. Initialize OTP array from external 'value' prop
   useEffect(() => {
-    // Only update if the external value differs significantly from the internal state
     const externalOtpString = value.split('').slice(0, length).join('');
     const internalOtpString = otp.join('');
 
@@ -56,13 +50,10 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
     }
   }, [value, length]);
 
-
-  // 2. Logic to auto-focus on the first empty input
   useEffect(() => {
     if (!disabled) {
       const firstEmptyIndex = otp.findIndex(digit => !digit);
       if (firstEmptyIndex !== -1 && inputRefs.current[firstEmptyIndex]) {
-        // Use a slight timeout to ensure the browser finishes rendering before focusing
         const timer = setTimeout(() => {
             inputRefs.current[firstEmptyIndex]?.focus();
         }, 0);
@@ -72,10 +63,8 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
   }, [otp, disabled]);
 
   const handleChange = (index, digit) => {
-    // Only allow digits
     if (!/^\d*$/.test(digit)) return;
 
-    // We only take the last character if a string is entered (e.g., via type)
     const char = digit.slice(-1);
 
     const newOtp = [...otp];
@@ -83,11 +72,9 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
 
     setOtp(newOtp);
 
-    // Call onChange with complete OTP string
     const otpString = newOtp.join('');
     onChange(otpString);
 
-    // Auto-focus next input only if a character was actually entered and it's not the last field
     if (char && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -95,12 +82,10 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
 
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace') {
-      e.preventDefault(); // Prevent default browser navigation/back
+      e.preventDefault();
       if (!otp[index] && index > 0) {
-        // Move to previous input if current is empty
         inputRefs.current[index - 1]?.focus();
       } else if (otp[index]) {
-        // Clear current input if not empty
         const newOtp = [...otp];
         newOtp[index] = '';
         setOtp(newOtp);
@@ -119,7 +104,7 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
     const digits = pastedData.replace(/\D/g, '').slice(0, length);
 
     if (digits.length > 0) {
-      const newOtp = Array(length).fill(''); // Start with a clean slate
+      const newOtp = Array(length).fill(''); 
       digits.split('').forEach((d, i) => {
         if (i < length) {
           newOtp[i] = d;
@@ -129,7 +114,6 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
       setOtp(newOtp);
       onChange(newOtp.join(''));
 
-      // Focus last input or next input after the pasted block
       const focusIndex = Math.min(digits.length, length - 1);
       inputRefs.current[focusIndex]?.focus();
     }
@@ -151,39 +135,37 @@ const OTPInput = ({ length = 6, value, onChange, disabled }) => {
             type="text"
             inputMode="numeric"
             autoFocus={index === 0}
-            // MUI InputProps equivalent to custom styling and attributes
+
             inputProps={{
               maxLength: 1,
-              style: { textAlign: 'center', fontSize: '1.5rem', padding: '12px' }, // Equivalent to text-2xl font-bold
+              style: { textAlign: 'center', fontSize: '1.5rem', padding: '12px' }, 
             }}
-            // Custom styling equivalent to the original Tailwind classes
+
             sx={{
-              width: 55, // Equivalent to w-12/h-14 square box
+              width: 55,
               height: 55, 
               '& input': {
-                // Style for the input element itself
                 padding: '12px 0', 
                 height: '100%',
               },
-              // Default state
               '& .MuiOutlinedInput-root': {
-                borderRadius: 1, // Rounded corners
-                backgroundColor: '#f5f5f5', // bg-input/bg-muted equivalent
-                borderColor: '#ccc', // border-border equivalent
+                borderRadius: 1, 
+                backgroundColor: '#f5f5f5', 
+                borderColor: '#ccc', 
                 transition: 'all 0.2s',
               },
-              // Focus state equivalent to focus:border-primary focus:ring-2
+              
               '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'error.main', // Using the primary color (Red)
+                borderColor: 'error.main', 
                 borderWidth: '2px',
-                boxShadow: `0 0 0 2px rgba(211, 47, 47, 0.2)`, // Focus ring equivalent
+                boxShadow: `0 0 0 2px rgba(211, 47, 47, 0.2)`, 
               },
-              // Filled state equivalent to otp[index] && 'border-primary/50 bg-primary/5'
+ 
               '& .MuiOutlinedInput-root:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
                 borderColor: otp[index] ? 'error.light' : '#ccc',
                 backgroundColor: otp[index] ? 'rgba(211, 47, 47, 0.05)' : '#f5f5f5',
               },
-              // Disabled state
+
               '& .Mui-disabled': {
                 opacity: 0.5,
                 cursor: 'not-allowed',
@@ -207,8 +189,6 @@ export default function LoginForm() {
     successMessage: null,
   });
 
-  // Since the new OTPInput component now manages its own internal state and triggers
-  // onChange with the full string, the logic here is simplified.
   const handleOtpChange = (newOtp) => {
     setState(prev => ({ ...prev, otp: newOtp }));
     if (newOtp.length === 6 && !state.isLoading) {
@@ -232,14 +212,13 @@ export default function LoginForm() {
 
     setState(prev => ({ ...prev, isLoading: true }));
 
-    // Simulate API call to send OTP
     setTimeout(() => {
       setState(prev => ({
         ...prev,
         step: 'otp',
         isLoading: false,
         successMessage: `OTP sent to ${state.mobileNumber}. Valid for 5 minutes. (Demo: use 123456)`,
-        otp: '', // Ensure OTP is clear when moving to OTP step
+        otp: '', 
       }));
     }, 1500);
   };
@@ -257,7 +236,6 @@ export default function LoginForm() {
 
     setState(prev => ({ ...prev, isLoading: true }));
 
-    // Simulate API call to verify OTP
     setTimeout(() => {
       if (otp === '123456') {
         setState(prev => ({
@@ -275,7 +253,6 @@ export default function LoginForm() {
         }));
 
         setTimeout(() => {
-          // This should navigate to the dashboard page in the external environment
           window.location.href = './fire-fighter-dashboard.html';
         }, 1000);
       } else {
@@ -283,7 +260,7 @@ export default function LoginForm() {
           ...prev,
           isLoading: false,
           error: 'Invalid OTP. Please try again. (Demo: use 123456)',
-          otp: '', // Clear OTP field
+          otp: '', 
         }));
       }
     }, 1500);
@@ -300,7 +277,6 @@ export default function LoginForm() {
   };
 
   const handleResendOTP = () => {
-    // Clear previous OTP state and re-trigger the mobile submit logic
     setState(prev => ({ ...prev, otp: '', error: null, successMessage: null }));
     handleMobileSubmit({ preventDefault: () => {} });
   };
@@ -315,7 +291,6 @@ export default function LoginForm() {
         maxWidth: 400, 
         margin: '0 auto', 
         padding: 3,
-        // Center the whole form vertically/horizontally
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -323,7 +298,6 @@ export default function LoginForm() {
         justifyContent: 'center',
       }}
     >
-      {/* Header */}
       <Box sx={{ marginBottom: 4, textAlign: 'center' }}>
         <Box 
           sx={{ 
@@ -355,7 +329,6 @@ export default function LoginForm() {
         </Typography>
       </Box>
 
-      {/* Login Card */}
       <Card sx={{ width: '100%', boxShadow: 3, borderRadius: 2 }}>
         <CardHeader 
           title={
@@ -376,21 +349,18 @@ export default function LoginForm() {
         <CardContent sx={{ paddingTop: 0, paddingBottom: '16px !important' }}>
           <Box component="div" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             
-            {/* Error Alert */}
             {state.error && (
               <Alert icon={<AlertCircle size={20} />} severity="error">
                 {state.error}
               </Alert>
             )}
 
-            {/* Success Alert */}
             {state.successMessage && (
               <Alert icon={<CheckCircle size={20} />} severity="success">
                 {state.successMessage}
               </Alert>
             )}
 
-            {/* Mobile Number Step */}
             {isMobileStep && (
               <Box component="form" onSubmit={handleMobileSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
@@ -431,7 +401,6 @@ export default function LoginForm() {
                   {state.isLoading ? 'Sending OTP...' : 'Send OTP'}
                 </Button>
 
-                {/* Demo Info */}
                 <Box sx={{ 
                   bgcolor: 'grey.50', 
                   border: '1px solid', 
@@ -452,7 +421,6 @@ export default function LoginForm() {
               </Box>
             )}
 
-            {/* OTP Verification Step */}
             {isOTPStep && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box sx={{ textAlign: 'center' }}>
@@ -492,7 +460,6 @@ export default function LoginForm() {
                   </Button>
                 </Box>
 
-                {/* OTP Timer */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'text.secondary' }}>
                   <Clock size={16} />
                   <Typography variant="body2">
@@ -505,7 +472,6 @@ export default function LoginForm() {
         </CardContent>
       </Card>
 
-      {/* Footer Info */}
       <Box sx={{ marginTop: 4, textAlign: 'center', color: 'text.secondary' }}>
         <Typography variant="caption" display="block">
           Session valid for <Typography component="span" fontWeight="bold" color="textPrimary" variant="caption">8 hours</Typography> from login

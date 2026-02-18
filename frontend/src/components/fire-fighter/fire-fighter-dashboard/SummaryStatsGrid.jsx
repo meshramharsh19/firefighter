@@ -3,7 +3,7 @@ import StatusCard from "@/components/common/fire-fighter/StatusCard";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
 export default function SummaryStatsGrid({ onFilterChange }) {
-  const { station } = useUserInfo(); // Logged-in user's station
+  const { station } = useUserInfo(); 
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);

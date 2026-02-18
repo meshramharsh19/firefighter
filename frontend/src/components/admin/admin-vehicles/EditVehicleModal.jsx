@@ -8,7 +8,7 @@ import {
   MenuItem,
   Button,
   Autocomplete
-  
+
 } from "@mui/material";
 
 
@@ -25,7 +25,6 @@ export default function EditVehicleModal({
 
   const originalRef = useRef(null);
 
-  /* ---------- SET DATA ON OPEN ---------- */
   useEffect(() => {
     if (!vehicle) return;
 
@@ -42,7 +41,6 @@ export default function EditVehicleModal({
 
   if (!formData) return null;
 
-  /* ---------- CHANGE HANDLER ---------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updated = { ...formData, [name]: value };
@@ -52,7 +50,6 @@ export default function EditVehicleModal({
     setIsDirty(JSON.stringify(updated) !== originalRef.current);
   };
 
-  /* ---------- SAVE ---------- */
   const saveChanges = async () => {
     if (!isDirty) return;
 
@@ -66,7 +63,6 @@ export default function EditVehicleModal({
     onClose();
   };
 
-  /* ---------- INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -105,7 +101,6 @@ export default function EditVehicleModal({
         },
       }}
     >
-      {/* TITLE */}
       <DialogTitle
         sx={{ borderBottom: "1px solid #25262a", pb: 2, fontWeight: 600 }}
       >
@@ -167,7 +162,6 @@ export default function EditVehicleModal({
             fullWidth
           />
 
-          {/* ✅ Searchable Station Dropdown */}
           <Autocomplete
             options={stationOptions}
             getOptionLabel={(option) =>
@@ -175,24 +169,22 @@ export default function EditVehicleModal({
             }
             value={
               stationOptions.find(
-                (st) =>
-                  (typeof st === "string" ? st : st.name) === formData.station
+                (st) => (typeof st === "string" ? st : st.name) === formData.station
               ) || null
             }
             onChange={(event, newValue) => {
               const selected =
-                typeof newValue === "string"
-                  ? newValue
-                  : newValue?.name || "";
+                typeof newValue === "string" ? newValue : newValue?.name || "";
 
               const updated = { ...formData, station: selected };
 
               setFormData(updated);
               setIsDirty(JSON.stringify(updated) !== originalRef.current);
             }}
+            disableClearable  
             ListboxProps={{
               sx: {
-                maxHeight: 48 * 3, // only 3 visible
+                maxHeight: 48 * 3, 
                 background: "#1a1b1f",
                 color: "#fff",
               },

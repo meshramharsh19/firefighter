@@ -1,7 +1,4 @@
 <?php
-/**
- * Central Audit Log Helper
- */
 
 if (!function_exists('logActivity')) {
 
@@ -15,7 +12,6 @@ if (!function_exists('logActivity')) {
             $user = [];
         }
 
-        /* 🔑 FIX: CORRECT USER FIELD MAPPING */
         $userId   = $user['id'] ?? null;
 
         $userName =

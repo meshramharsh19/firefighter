@@ -41,10 +41,8 @@ export default function DashboardHeader() {
   const warningShownRef = useRef(false);
 
 
-  // 🔥 DEV FLAG (ENV BASED)
   const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS_SHIFT === "true";
 
-  // ⏱️ SESSION TIMER LOGIC
   useEffect(() => {
     const sessionData = sessionStorage.getItem("fireOpsSession");
     let expiryTime = null;
@@ -83,7 +81,6 @@ export default function DashboardHeader() {
     return () => clearInterval(interval);
   }, []);
 
-  // ⚡ DEV CONSOLE COMMAND
   useEffect(() => {
     if (DEV_BYPASS) {
       window.forceShiftComplete = () => {
@@ -106,16 +103,13 @@ export default function DashboardHeader() {
     return "success";
   };
 
-  // 🔐 CONDITIONAL LOGOUT
   const handleLogoutAttempt = () => {
-    // 🧪 DEV MODE → FORCE LOGOUT
     if (DEV_BYPASS) {
       toast.success("DEV MODE: Logout allowed 🧪");
       logoutUser();
       return;
     }
 
-    // 🔒 PROD MODE
     if (timeRemaining > 0) {
       toast.error(
         `Shift Active! Cannot logout for ${formatTime(timeRemaining)}`,
@@ -135,44 +129,36 @@ export default function DashboardHeader() {
   };
 
 
-  // ✅ UPDATED LONG POLLING LOGIC
   useEffect(() => {
-    let isActive = true;   // 🔵 NEW
+    let isActive = true;   
 
-    const poll = async (lastCount = 0) => {   // 🔵 NEW (recursive function with parameter)
+    const poll = async (lastCount = 0) => {   
       try {
         const res = await fetch(
-          `${API}/get_incident_alert_count.php?lastCount=${lastCount}`,  // 🔵 CHANGED (added lastCount)
+          `${API}/get_incident_alert_count.php?lastCount=${lastCount}`, 
           { cache: "no-store" }
         );
 
         const data = await res.json();
 
-        if (!isActive) return;  // 🔵 NEW safety check
+        if (!isActive) return;  
 
         setNotificationCount(data.count);
 
-        // 🔵 IMPORTANT: Immediately start next poll with updated count
         poll(data.count);
 
       } catch (err) {
         console.error("Polling error:", err);
 
-        // 🔵 Retry after delay if error
         setTimeout(() => poll(lastCount), 2000);
       }
     };
 
-    poll(0);  // 🔵 START with 0
-
+    poll(0);  
     return () => {
-      isActive = false;  // 🔵 CLEAN STOP
+      isActive = false;  
     };
   }, []);
-
-
-
-
 
   return (
     <AppBar
@@ -185,7 +171,6 @@ export default function DashboardHeader() {
       elevation={3}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* LEFT */}
         <Box display="flex" alignItems="center" gap={2}>
           <Avatar sx={{ bgcolor: "#b71c1c", border: "2px solid #ff5252" }}>
             <WhatshotIcon />
@@ -200,7 +185,6 @@ export default function DashboardHeader() {
           </Box>
         </Box>
 
-        {/* RIGHT */}
         <Box display="flex" alignItems="center" gap={2}>
           {DEV_BYPASS && (
             <Chip

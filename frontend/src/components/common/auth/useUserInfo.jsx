@@ -31,7 +31,7 @@ export default function useUserInfo() {
       name: parsed.name || "",
       phone: parsed.phone || "",
       role: parsed.role || "",
-      station: parsed.station || "",      // 🔥 important for filtering incidents
+      station: parsed.station || "",      
       designation: parsed.designation || "",
       initials,
       loginTime: parsed.loginTime || null,

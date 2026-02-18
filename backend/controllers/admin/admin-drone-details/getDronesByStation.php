@@ -9,7 +9,6 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-// Check if station parameter exists
 if (!isset($_GET["station"])) {
     echo json_encode(["status" => false, "error" => "station not provided"]);
     exit;
@@ -17,7 +16,6 @@ if (!isset($_GET["station"])) {
 
 $station = $_GET["station"];
 
-// Fetch drones of selected station
 $sql = "SELECT * FROM drones WHERE station = '$station'";
 $result = mysqli_query($conn, $sql);
 

@@ -22,7 +22,6 @@ export default function AdminHeader({ notificationCount = 0 }) {
   const [mounted, setMounted] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
-  // ✅ Use reusable user hook
   const { name, role, initials } = useUserInfo();
 
   useEffect(() => {
@@ -35,7 +34,6 @@ export default function AdminHeader({ notificationCount = 0 }) {
     <header className="admin-header">
       <div className="admin-header__container">
 
-        {/* LEFT SECTION */}
         <div className="admin-header__left">
           <div className="admin-header__logo">
             <div className="admin-header__logo-icon">
@@ -45,10 +43,8 @@ export default function AdminHeader({ notificationCount = 0 }) {
           </div>
         </div>
 
-        {/* RIGHT SECTION */}
         <div className="admin-header__right">
 
-          {/* Notifications */}
           <Button variant="ghost" size="icon" className="admin-header__notification-button">
             <SafeIcon name="Bell" size={20} className="admin-header__notification-icon" />
             {notificationCount > 0 && (
@@ -58,12 +54,10 @@ export default function AdminHeader({ notificationCount = 0 }) {
             )}
           </Button>
 
-          {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="admin-header__profile-button">
 
-                {/* Profile Avatar */}
                 <Avatar className="admin-header__profile-avatar">
                   <AvatarImage
                     src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/11/20/382b2788-4a1a-42b3-ad58-7ff36533b34a.png"
@@ -72,7 +66,6 @@ export default function AdminHeader({ notificationCount = 0 }) {
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
 
-                {/* USER NAME + ROLE */}
                 <div className="admin-header__profile-info">
                   <span className="admin-header__profile-name">{name}</span>
                   <span className="admin-header__profile-role">{role}</span>
@@ -82,23 +75,19 @@ export default function AdminHeader({ notificationCount = 0 }) {
               </Button>
             </DropdownMenuTrigger>
 
-            {/* DROPDOWN CONTENT */}
             <DropdownMenuContent
               align="end"
               className="admin-header__profile-dropdown px-2 py-2 rounded-xl shadow-lg border border-gray-800 bg-[#1a1c1f]"
             >
 
-              {/* TOP LABEL */}
               <DropdownMenuLabel
                 className={`text-sm font-semibold px-2 pb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
                 My Account
               </DropdownMenuLabel>
 
-              {/* underline */}
               <div className="h-px bg-gray-700/60 my-2"></div>
 
-              {/* PROFILE */}
               <DropdownMenuItem className="admin-header__profile-dropdown-item">
                 <SafeIcon name="User" size={16} className="mr-2" />
                 Profile
@@ -109,10 +98,8 @@ export default function AdminHeader({ notificationCount = 0 }) {
                 Settings
               </DropdownMenuItem>
 
-              {/* underline */}
               <div className="h-px bg-gray-700/60 my-2"></div>
 
-              {/* THEME TOGGLE */}
               <DropdownMenuItem
                 onClick={toggleTheme}
                 className="admin-header__profile-dropdown-item"
@@ -121,10 +108,8 @@ export default function AdminHeader({ notificationCount = 0 }) {
                 {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </DropdownMenuItem>
 
-              {/* underline */}
               <div className="h-px bg-gray-700/60 my-2"></div>
 
-              {/* LOGOUT */}
               <DropdownMenuItem
                 onClick={logoutUser}
                 className="admin-header__profile-dropdown-item text-red-500 hover:text-red-400"

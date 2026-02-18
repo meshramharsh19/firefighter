@@ -1,11 +1,9 @@
 import { createElement, lazy, Suspense } from "react";
 import { Circle } from "lucide-react";
 
-// Cache for loaded icons
 const iconCache = new Map();
 
 export default function SafeIcon({ name, ...props }) {
-  // Check cache first
   if (!iconCache.has(name)) {
     try {
       const IconComponent = lazy(() =>

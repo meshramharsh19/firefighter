@@ -8,7 +8,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-  /* ---------------- FETCH STATIONS ---------------- */
   useEffect(() => {
     const fetchStations = async () => {
       try {
@@ -31,7 +30,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
     fetchStations();
   }, []);
 
-  /* ---------------- CLOSE DROPDOWN OUTSIDE CLICK ---------------- */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -42,7 +40,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* ---------------- FILTER STATIONS ---------------- */
   const filteredStations = stations.filter((s) => {
     const name = typeof s === "string" ? s : s.name;
     return name.toLowerCase().includes(stationSearch.toLowerCase());
@@ -58,14 +55,12 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
   return (
     <div className="flex gap-4 mb-4 flex-wrap">
 
-      {/* SEARCH NAME */}
       <input
         className={baseInput}
         placeholder="Search Name"
         onChange={(e) => setFilters({ ...filters, name: e.target.value })}
       />
 
-      {/* 🔥 SEARCHABLE STATION DROPDOWN */}
       <div className="relative w-64" ref={dropdownRef}>
         <div
           onClick={() => setStationOpen(!stationOpen)}
@@ -83,7 +78,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
               isDark ? "bg-[#0f1114] border-gray-700" : "bg-white border-gray-300"
             }`}
           >
-            {/* Search inside dropdown */}
             <input
               type="text"
               placeholder="Search station..."
@@ -96,7 +90,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
               onChange={(e) => setStationSearch(e.target.value)}
             />
 
-            {/* Scrollable list */}
             <div className="max-h-48 overflow-y-auto">
               <div
                 onClick={() => {
@@ -136,7 +129,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
         )}
       </div>
 
-      {/* ROLE */}
       <select
         className={baseInput}
         onChange={(e) => setFilters({ ...filters, role: e.target.value })}
@@ -149,7 +141,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
         ))}
       </select>
 
-      {/* STATUS */}
       <select
         className={baseInput}
         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
@@ -159,7 +150,6 @@ export default function UserFilters({ isDark, roles, filters, setFilters }) {
         <option value="inactive">Inactive</option>
       </select>
 
-      {/* SORT */}
       <select
         className={baseInput}
         onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}

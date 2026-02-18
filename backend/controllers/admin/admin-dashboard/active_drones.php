@@ -13,13 +13,6 @@ if (!$station) {
     exit;
 }
 
-/*
-|----------------------------------------------------
-| FAST QUERY (index-friendly)
-|----------------------------------------------------
-| Make sure `station` column uses case-insensitive collation
-| eg: utf8mb4_general_ci
-*/
 
 $sql = "
     SELECT 

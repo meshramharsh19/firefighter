@@ -14,18 +14,16 @@ import {
   Alert,
 } from "@mui/material";
 
-// Icons
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import FlightIcon from "@mui/icons-material/Flight";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
-// Components
+
 import VehicleSelectionCard from "./VehicleSelectionCard";
 import DroneSelectionCard from "./DroneSelectionCard";
 import SelectionSummary from "./SelectionSummary";
 
-// Theme
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -52,7 +50,7 @@ const darkIncidentTheme = createTheme({
   },
 });
 
-// helpers
+
 const safeNumber = (v) =>
   v === null || v === undefined || v === "" ? null : Number(v);
 
@@ -62,6 +60,7 @@ const normalizeVehicleRow = (v = {}) => ({
   name: v.name ?? "Unnamed Vehicle",
   type: v.type ?? "—",
   station: v.station,
+  device_id: v.device_id, 
   vehicle_status:
     v.vehicle_status ?? v.vehicle_availability_status ?? v.status ?? "unknown",
   distanceKm: safeNumber(v.distanceKm),
@@ -85,26 +84,20 @@ export default function VehicleDroneSelectionPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  // 🔥 Incident from previous page
   const incident = state?.incident;
 
-  // 🧠 SAFELY derive incidentId (handles different backend field names)
   const incidentId =
     incident?.id ??
     incident?.incident_id ??
     incident?.incidentId ??
     null;
 
-  // 🔐 Station from session
   const session = JSON.parse(sessionStorage.getItem("fireOpsSession") || "{}");
   const userStation = session.station;
 
   useEffect(() => {
-    console.log("📦 Incident object received:", incident);
-    console.log("🆔 Derived Incident ID:", incidentId);
-
     if (!incident) navigate("/fire-fighter-dashboard");
-  }, [incident, incidentId, navigate]);
+  }, [incident, navigate]);
 
   if (!incident) return null;
 
@@ -123,7 +116,6 @@ export default function VehicleDroneSelectionPage() {
     message: "",
   });
 
-  // ---------------- FETCH ----------------
   useEffect(() => {
     if (!userStation) return;
     let mounted = true;
@@ -218,46 +210,62 @@ export default function VehicleDroneSelectionPage() {
           <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 4 }}>
             <Stack spacing={4}>
 
-              <AssetSection icon={<LocalShippingIcon color="primary" />} title="Available Vehicles"
-                count={selectedAssets.vehicleIds.length} total={vehicles.length}>
-                {loading ? <CircularProgress /> :
-                  vehicles.length === 0 ? <NoAssetPlaceholder message="No vehicles for this station" /> :
-                    vehicles.map((v) => (
-                      <VehicleSelectionCard
-                        key={v.id}
-                        vehicle={v}
-                        isSelected={selectedAssets.vehicleIds.includes(v.id)}
-                        onToggle={() =>
-                          setSelectedAssets((p) => ({
-                            ...p,
-                            vehicleIds: p.vehicleIds.includes(v.id)
-                              ? p.vehicleIds.filter((id) => id !== v.id)
-                              : [...p.vehicleIds, v.id],
-                          }))
-                        }
-                      />
-                    ))}
+              <AssetSection
+                icon={<LocalShippingIcon color="primary" />}
+                title="Available Vehicles"
+                count={selectedAssets.vehicleIds.length}
+                total={vehicles.length}
+              >
+                {loading ? (
+                  <CircularProgress />
+                ) : vehicles.length === 0 ? (
+                  <NoAssetPlaceholder message="No vehicles for this station" />
+                ) : (
+                  vehicles.map((v) => (
+                    <VehicleSelectionCard
+                      key={v.id}
+                      vehicle={v}
+                      isSelected={selectedAssets.vehicleIds.includes(v.id)}
+                      onToggle={() =>
+                        setSelectedAssets((p) => ({
+                          ...p,
+                          vehicleIds: p.vehicleIds.includes(v.id)
+                            ? p.vehicleIds.filter((id) => id !== v.id)
+                            : [...p.vehicleIds, v.id],
+                        }))
+                      }
+                    />
+                  ))
+                )}
               </AssetSection>
 
-              <AssetSection icon={<FlightIcon color="primary" />} title="Available Drones"
-                count={selectedAssets.droneIds.length} total={drones.length}>
-                {loading ? <CircularProgress /> :
-                  drones.length === 0 ? <NoAssetPlaceholder message="No drones for this station" /> :
-                    drones.map((d) => (
-                      <DroneSelectionCard
-                        key={d.id}
-                        drone={d}
-                        isSelected={selectedAssets.droneIds.includes(d.id)}
-                        onToggle={() =>
-                          setSelectedAssets((p) => ({
-                            ...p,
-                            droneIds: p.droneIds.includes(d.id)
-                              ? p.droneIds.filter((id) => id !== d.id)
-                              : [...p.droneIds, d.id],
-                          }))
-                        }
-                      />
-                    ))}
+              <AssetSection
+                icon={<FlightIcon color="primary" />}
+                title="Available Drones"
+                count={selectedAssets.droneIds.length}
+                total={drones.length}
+              >
+                {loading ? (
+                  <CircularProgress />
+                ) : drones.length === 0 ? (
+                  <NoAssetPlaceholder message="No drones for this station" />
+                ) : (
+                  drones.map((d) => (
+                    <DroneSelectionCard
+                      key={d.id}
+                      drone={d}
+                      isSelected={selectedAssets.droneIds.includes(d.id)}
+                      onToggle={() =>
+                        setSelectedAssets((p) => ({
+                          ...p,
+                          droneIds: p.droneIds.includes(d.id)
+                            ? p.droneIds.filter((id) => id !== d.id)
+                            : [...p.droneIds, d.id],
+                        }))
+                      }
+                    />
+                  ))
+                )}
               </AssetSection>
             </Stack>
 
@@ -266,36 +274,70 @@ export default function VehicleDroneSelectionPage() {
               selectedDrones={selectedDroneObjects}
               canActivate={canActivate}
               onActivate={async () => {
-                console.log("🚀 Activate clicked. IncidentId:", incidentId);
-
                 if (!incidentId) {
-                  setSnack({ open: true, severity: "error", message: "Invalid Incident ID" });
+                  setSnack({
+                    open: true,
+                    severity: "error",
+                    message: "Invalid Incident ID",
+                  });
+                  return;
+                }
+
+                const selectedDrone = selectedDroneObjects[0];
+                const selectedVehicle = selectedVehicleObjects[0];
+
+                const droneId = selectedDrone?.drone_id;
+                const vehicleDeviceId = selectedVehicle?.device_id;
+
+                if (!droneId || !vehicleDeviceId) {
+                  setSnack({
+                    open: true,
+                    severity: "error",
+                    message: "Select both drone and vehicle",
+                  });
                   return;
                 }
 
                 try {
-                  const res = await fetch(`${API}/update_incident_status.php`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ incidentId }),
-                  });
+                  const res = await fetch(
+                    `${API}/update_incident_status.php`,
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        incidentId,
+                        droneId,
+                        vehicleDeviceId,
+                      }),
+                    }
+                  );
 
                   const data = await res.json();
-                  console.log("📥 API Response:", data);
-
                   if (!data.success) throw new Error(data.message);
 
-                  navigate(`/live-incident-command/${incidentId}/${selectedDroneObjects[0].drone_id}`, {
-                    state: {
-                      incident: { ...incident, status: "in_progress", isNewAlert: 0 },
-                      selectedVehicles: selectedVehicleObjects,
-                      selectedDrones: selectedDroneObjects,
-                    },
-                  });
-
+                  navigate(
+                    `/live-incident-command/${incidentId}/${droneId}/${vehicleDeviceId}`,
+                    {
+                      state: {
+                        incident: {
+                          ...incident,
+                          status: "in_progress",
+                          isNewAlert: 0,
+                        },
+                        selectedVehicles: selectedVehicleObjects,
+                        selectedDrones: selectedDroneObjects,
+                        droneId,
+                        vehicleDeviceId,
+                      },
+                    }
+                  );
                 } catch (err) {
                   console.error(err);
-                  setSnack({ open: true, severity: "error", message: "Activation failed" });
+                  setSnack({
+                    open: true,
+                    severity: "error",
+                    message: "Activation failed",
+                  });
                 }
               }}
               onBack={() => navigate(-1)}
@@ -303,8 +345,11 @@ export default function VehicleDroneSelectionPage() {
           </Box>
         </Box>
 
-        <Snackbar open={snack.open} autoHideDuration={4000}
-          onClose={() => setSnack((s) => ({ ...s, open: false }))}>
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={4000}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        >
           <Alert severity={snack.severity}>{snack.message}</Alert>
         </Snackbar>
       </Box>

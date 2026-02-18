@@ -57,19 +57,16 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
 
       const result = await res.json();
 
-      // 🔴 Handle conflict explicitly
       if (res.status === 409) {
         toast.error(result.message || "Drone code already exists");
         return;
       }
 
-      // 🔴 Handle other API failures
       if (!res.ok || !result.success) {
         toast.error(result.message || "Failed to add drone");
         return;
       }
 
-      // ✅ Success
       toast.success("Drone added successfully");
       setDrone(INITIAL_DRONE);
       onOpenChange(false);
@@ -172,8 +169,6 @@ export default function AddDroneDialog({ open, onOpenChange, stations, onSuccess
     </Dialog>
   );
 }
-
-/* ---------------- Reusable Inputs ---------------- */
 
 function InputField({ label, value, onChange, type = "text", placeholder }) {
   return (

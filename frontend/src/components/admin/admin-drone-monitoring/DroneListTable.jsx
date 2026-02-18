@@ -72,7 +72,6 @@ export default function DroneListTable({ drones, onViewDetails }) {
             
             <TableRow key={drone.drone_code} className="border-border hover:bg-muted/50">
               
-              {/* Drone Name */}
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                   <SafeIcon name="Plane" size={16} className="text-muted-foreground" />
@@ -80,17 +79,14 @@ export default function DroneListTable({ drones, onViewDetails }) {
                 </div>
               </TableCell>
 
-              {/* Serial Number */}
               <TableCell className="text-sm text-muted-foreground">
                 {drone.drone_code || "—"}
               </TableCell>
 
-              {/* Ward */}
               <TableCell className="text-sm">
                 {drone.station || "—"}
               </TableCell>
 
-              {/* Status */}
               <TableCell>
                 <StatusBadge
                   status={getStatusType(drone.status)}
@@ -98,7 +94,6 @@ export default function DroneListTable({ drones, onViewDetails }) {
                 />
               </TableCell>
 
-              {/* Battery */}
               {/* <TableCell>
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
@@ -119,14 +114,12 @@ export default function DroneListTable({ drones, onViewDetails }) {
                 </div>
               </TableCell> */}
 
-              {/* Flight Hours */}
               <TableCell className="text-sm">
                 {drone.flight_hours
                   ? `${Number(drone.flight_hours).toFixed(1)}h`
                   : "0.0h"}
               </TableCell>
 
-              {/* Health */}
               <TableCell>
                 <span
                   className={`inline-block px-2 py-1 rounded text-xs font-medium ${getHealthStatusVariant(
@@ -137,17 +130,14 @@ export default function DroneListTable({ drones, onViewDetails }) {
                 </span>
               </TableCell>
 
-              {/* Pilot */}
               <TableCell className="text-sm">
                 {drone.pilot_name || "—"}
               </TableCell>
 
-              {/* Firmware */}
               <TableCell className="text-sm text-muted-foreground">
                 {drone.firmware_version || "—"}
               </TableCell>
 
-              {/* Actions */}
               {/* <TableCell className="text-right">
                 <Button
                   variant="ghost"

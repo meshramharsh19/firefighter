@@ -7,8 +7,8 @@ const API = `${API_BASE}/admin/station`;
 
 export default function StationList({
   filters,
-  onViewMap = () => {},       // prevent undefined crash
-  onEditStation = () => {},   // prevent undefined crash
+  onViewMap = () => {},      
+  onEditStation = () => {},  
   refreshTrigger,
 }) {
   const [stations, setStations] = useState([]);

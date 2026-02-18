@@ -1,4 +1,3 @@
-// SelectionSummary.jsx
 import React from "react";
 import {
   Box,
@@ -45,7 +44,6 @@ export default function SelectionSummary({
       }}
     >
       <CardContent sx={{ px: 3, py: 2 }}>
-        {/* TITLE */}
         <Typography
           variant="h6"
           fontWeight={700}
@@ -58,7 +56,6 @@ export default function SelectionSummary({
           Review your asset selection
         </Typography>
 
-        {/* Counters */}
         <SummaryBox
           icon={<LocalShippingIcon />}
           label="Vehicle(s)"
@@ -81,13 +78,11 @@ export default function SelectionSummary({
 
         <Divider sx={{ my: 2.5, borderColor: "#2c2c2c" }} />
 
-        {/* Distance */}
         <FlexRow label="Total Distance" value={`${totalDistance.toFixed(1)} km`} />
         <FlexRow label="Max ETA" value={`${maxEta} minutes`} />
 
         <Divider sx={{ my: 2.5, borderColor: "#2c2c2c" }} />
 
-        {/* Selected Vehicles */}
         <SectionHeader text="SELECTED VEHICLES" />
         {selectedVehicles.map((v) => (
           <SelectedItem
@@ -97,7 +92,6 @@ export default function SelectionSummary({
           />
         ))}
 
-        {/* Selected Drones */}
         <SectionHeader text="SELECTED DRONE(S)" />
         {selectedDrones.map((d) => (
           <SelectedItem
@@ -107,10 +101,8 @@ export default function SelectionSummary({
           />
         ))}
 
-        {/* READY / WARNING BOX */}
         <StatusBox canActivate={canActivate} />
 
-        {/* Buttons */}
         <Button
           variant="contained"
           color="error"
@@ -150,7 +142,6 @@ export default function SelectionSummary({
   );
 }
 
-/* ---------------------- Components ---------------------- */
 
 function SummaryBox({ icon, label, count, last }) {
   return (

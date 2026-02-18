@@ -3,7 +3,6 @@ import SafeIcon from "@/components/common/SafeIcon";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
-// MUI
 import {
   Button,
   Chip,
@@ -30,7 +29,6 @@ export default function CommandToolbar({
     <div className="bg-[#141414] backdrop-blur-sm p-4 border-b border-[#1f1f1f]">
       <div className="flex items-center justify-between gap-4">
 
-        {/* LEFT: INCIDENT INFO */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#291818] border border-[#dc2626]">
             <SafeIcon name="AlertTriangle" className="h-5 w-5 text-primary" />
@@ -53,7 +51,6 @@ export default function CommandToolbar({
           />
         </div>
 
-        {/* CENTER: VIEW MODES */}
         <div className="flex items-center gap-2">
 
           <Button
@@ -98,7 +95,6 @@ export default function CommandToolbar({
           </Button>
         </div>
 
-        {/* RIGHT: ACTIONS */}
         <div className="flex items-center gap-2">
 
           <Button

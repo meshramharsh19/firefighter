@@ -35,7 +35,7 @@ export default function VehicleStats({ vehicles = [] }) {
       value:maintenance,
       icon:"Wrench",
       color:"text-red-400",
-      bg:`bg-red-500/10 border-red-500/40 ${maintenance>0?"animate-pulse":""}`, // 🔥 alert highlight
+      bg:`bg-red-500/10 border-red-500/40 ${maintenance>0?"animate-pulse":""}`,
     },
   ];
 
@@ -51,13 +51,11 @@ export default function VehicleStats({ vehicles = [] }) {
           <CardContent className="pt-6 pb-5">
             <div className="flex items-center justify-between">
 
-              {/* Text */}
               <div>
                 <p className="text-sm font-medium text-gray-400">{item.label}</p>
                 <p className="text-3xl font-bold text-gray-100 mt-2">{item.value}</p>
               </div>
 
-              {/* Icon */}
               <div className={`p-3 rounded-lg border ${item.bg}`}>
                 <SafeIcon name={item.icon} size={26} className={`${item.color}`} />
               </div>

@@ -12,22 +12,18 @@ export default function CommandPanelGrid({
 }) {
   return (
     <div className="grid grid-cols-2 gap-4 h-full">
-      {/* Top Left: VTS Live Location */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <VTSLivePanel onMaximize={onMaximizeVTS} />
       </div>
 
-      {/* Top Right: Drone Location */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <DroneLivePanel onMaximize={onMaximizeDroneLocation} />
       </div>
 
-      {/* Bottom Left: Drone Camera Feed */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <DroneCameraPanel onMaximize={onMaximizeDroneCamera} />
       </div>
 
-      {/* Bottom Right: 3D Digital Twin */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <DigitalTwinPanel onMaximize={onMaximize3DTwin} />
       </div>

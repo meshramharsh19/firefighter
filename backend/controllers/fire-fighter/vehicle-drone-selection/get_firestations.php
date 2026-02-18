@@ -1,5 +1,4 @@
 <?php
-// get_firestations.php
 error_reporting(0);
 ini_set('display_errors', 0);
 header("Access-Control-Allow-Origin: *");
@@ -9,10 +8,8 @@ header("Content-Type: application/json; charset=utf-8");
 
 require "../../../config/db.php";
 
-// We will take distinct station names from vehicles and drones (safe if you don't have a dedicated stations table)
 $stations = [];
 
-// From vehicles
 $sqlV = "SELECT DISTINCT station FROM vehicles WHERE station IS NOT NULL AND station <> ''";
 $resV = mysqli_query($conn, $sqlV);
 if ($resV) {
@@ -21,7 +18,6 @@ if ($resV) {
     }
 }
 
-// From drones (merge only new ones)
 $sqlD = "SELECT DISTINCT station FROM drones WHERE station IS NOT NULL AND station <> ''";
 $resD = mysqli_query($conn, $sqlD);
 if ($resD) {
@@ -32,7 +28,6 @@ if ($resD) {
     }
 }
 
-// Build structured response
 $stationObjs = array_map(function($s, $i) {
     return [
         "id" => $i + 1,

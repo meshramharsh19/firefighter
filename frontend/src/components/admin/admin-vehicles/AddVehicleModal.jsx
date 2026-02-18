@@ -13,7 +13,6 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
 
-/* ---------- VALIDATORS ---------- */
 const isAlphaSpace = (v) => /^[A-Za-z\s]*$/.test(v);
 const isAlphaNumeric = (v) => /^[A-Za-z0-9\-]*$/.test(v);
 
@@ -36,7 +35,6 @@ export default function AddVehicleModal({
     status: "available",
   });
 
-  /* ---------- RESET FORM ---------- */
   const resetForm = () => {
     setError("");
     setFormData({
@@ -54,7 +52,6 @@ export default function AddVehicleModal({
     if (open) resetForm();
   }, [open]);
 
-  /* ---------- LIVE VALIDATION ---------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -75,7 +72,6 @@ export default function AddVehicleModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  /* ---------- SAVE ---------- */
   const handleSave = async () => {
     if (saving) return;
 
@@ -105,7 +101,6 @@ export default function AddVehicleModal({
     }
   };
 
-  /* ---------- DARK INPUT STYLE ---------- */
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       background: "#151619",
@@ -189,7 +184,6 @@ export default function AddVehicleModal({
             fullWidth
           />
 
-          {/* ✅ Search Station Dropdown */}
           <Autocomplete
             options={stationOptions}
             getOptionLabel={(option) =>

@@ -1,4 +1,3 @@
-// StationSuggestionCard.jsx
 import React from "react";
 import { Box, Card, CardContent, Typography, Chip } from "@mui/material";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -6,7 +5,6 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import FlightIcon from "@mui/icons-material/Flight";
 
 export default function StationSuggestionCard({ station, rank = 0, vehicleCount = 0, droneCount = 0 }) {
-  // station: { id, name }
   return (
     <Card sx={{ mb: 1 }}>
       <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>

@@ -10,7 +10,6 @@ header("Content-Type: application/json");
 require "../../../config/db.php";
 require "../../../helpers/logActivity.php";
 
-/* ================= READ INPUT ================= */
 $drone_code      = $_POST['drone_code'] ?? null;
 $new_pilot_id    = $_POST['pilot_id'] ?? null;
 $new_pilot_name  = $_POST['pilot_name'] ?? null;
@@ -24,7 +23,6 @@ if (!$drone_code || !$new_pilot_id || !$old_pilot_id) {
     exit;
 }
 
-/* ================= CURRENT USER ================= */
 $logUser = $_SESSION["user"] ?? [
     "id"       => null,
     "fullName" => "SYSTEM",
@@ -34,10 +32,6 @@ $logUser = $_SESSION["user"] ?? [
 $conn->begin_transaction();
 
 try {
-
-    /* ------------------------------------------------
-       STEP 1: Check new pilot availability
-    --------------------------------------------------*/
     $check = $conn->prepare("
         SELECT COUNT(*) AS cnt
         FROM drones
@@ -56,9 +50,6 @@ try {
         exit;
     }
 
-/* ------------------------------------------------
-   STEP 2: Free old pilot (NO LOG HERE)
---------------------------------------------------*/
 $free = $conn->prepare("
     UPDATE drones
     SET pilot_status = 'available'
@@ -67,9 +58,6 @@ $free = $conn->prepare("
 $free->bind_param("i", $old_pilot_id);
 $free->execute();
 
-/* ------------------------------------------------
-   STEP 3: Assign new pilot
---------------------------------------------------*/
 $assign = $conn->prepare("
     UPDATE drones SET
         pilot_id = ?,
@@ -93,9 +81,6 @@ $assign->bind_param(
 
 $assign->execute();
 
-/* ------------------------------------------------
-   STEP 4: SINGLE LOG (REASSIGN)
---------------------------------------------------*/
 logActivity(
     $conn,
     $logUser,

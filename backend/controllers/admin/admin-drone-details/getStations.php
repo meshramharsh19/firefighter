@@ -6,7 +6,6 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-// Fetch all stations
 $sql = "SELECT id, station_name, station_code, latitude, longitude 
         FROM fire_station
         ORDER BY station_name ASC";

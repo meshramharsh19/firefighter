@@ -36,11 +36,11 @@ export default function VehicleList({
     }
   };
 
-  // 🔥 UPDATE VEHICLE
   const handleEditSave = async (updated) => {
     try {
       const res = await fetch(`${API}/updateVehicle.php`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
       });
@@ -48,7 +48,6 @@ export default function VehicleList({
       const data = await res.json();
 
       if (data?.success) {
-        // Update UI immediately
         setVehicles((prev) =>
           prev.map((v) =>
             v.id === updated.id ? { ...v, ...updated } : v
@@ -87,7 +86,6 @@ export default function VehicleList({
           >
             <CardContent className="pt-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Info */}
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <SafeIcon
@@ -103,7 +101,6 @@ export default function VehicleList({
                   </div>
                 </div>
 
-                {/* Registration */}
                 <div>
                   <p className="text-xs text-muted-foreground">Registration</p>
                   <p className="font-mono font-semibold">
@@ -116,7 +113,6 @@ export default function VehicleList({
                   <p className="text-xs">{vehicle.device_id}</p>
                 </div>
 
-                {/* Location + Station */}
                 <div>
                   {/* <p className="text-xs text-muted-foreground">Location</p>
                   <p className="flex items-center gap-1">
@@ -129,7 +125,6 @@ export default function VehicleList({
                   </Badge>
                 </div>
 
-                {/* Status + Actions */}
                 <div>
                   <p className="text-xs mb-1 text-muted-foreground">Status</p>
                   <StatusBadge status={vehicle.status} showIcon />
@@ -160,7 +155,6 @@ export default function VehicleList({
         ))}
       </div>
 
-      {/* 🔥 EDIT MODAL */}
       {editVehicle && (
         <EditVehicleModal
           open={true}

@@ -5,21 +5,17 @@ import VehicleAvailabilityPanel from "@/components/fire-fighter/fire-fighter-das
 import IncidentAlertFeed from "@/components/fire-fighter/fire-fighter-dashboard/IncidentAlertFeed";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
-// 🔥 BASE API (ONLY HERE)
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-// 🔥 MODULE API
 const API = `${API_BASE}/fire-fighter/fire-fighter-dashboard`;
 
 export default function FireFighterDashboard() {
   const { station, role, name } = useUserInfo();
-
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [incidentFilter, setIncidentFilter] = useState("all");
   const tableRef = useRef(null);
 
-  // 🔥 Fetch Incidents
   useEffect(() => {
     if (!station) {
       setLoading(false);
@@ -71,7 +67,6 @@ export default function FireFighterDashboard() {
     <div className="min-h-screen bg-[#0d0d0f] text-gray-200">
       <main className="min-h-[calc(100vh-64px)]">
         <div className="container mx-auto px-6 py-6 space-y-8">
-          {/* Summary */}
           <div className="bg-[#131416] rounded-xl p-4 shadow-md border border-[#1e1f22]">
             <SummaryStatsGrid
               apiBase={API}
@@ -89,13 +84,11 @@ export default function FireFighterDashboard() {
             />
           </div>
 
-          {/* Alerts */}
           <IncidentAlertFeed
             IncidentAPI_BASE={API}
             station={station}
           />
 
-          {/* Incident Table */}
           <div
             ref={tableRef}
             className="bg-[#131416] rounded-xl p-4 shadow border border-[#1e1f22]"
@@ -107,7 +100,6 @@ export default function FireFighterDashboard() {
             />
           </div>
 
-          {/* Vehicle Panel */}
           <div className="bg-[#131416] rounded-xl p-5 shadow border border-[#1e1f22]">
             <VehicleAvailabilityPanel
               apiBase={API}

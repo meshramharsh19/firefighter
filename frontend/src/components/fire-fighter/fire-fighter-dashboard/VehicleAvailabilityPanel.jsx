@@ -11,7 +11,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function VehicleAvailabilityPanel() {
 
-  const { station } = useUserInfo();  // 🔥 get station of logged-in user
+  const { station } = useUserInfo(); 
 
   const [vehicles, setVehicles] = useState([]);
   const [drones, setDrones] = useState([]);
@@ -60,7 +60,6 @@ export default function VehicleAvailabilityPanel() {
 
       <CardContent className="space-y-6">
 
-        {/* Summary */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 text-center rounded border border-white/10 hover:border-red-400 hover:shadow-[0_0_10px_rgba(255,0,0,0.35)] transition-all duration-300">
             <p className="text-[11px] text-gray-400">Available</p>
@@ -74,7 +73,6 @@ export default function VehicleAvailabilityPanel() {
 
         <Divider sx={{borderColor:"#26282b"}} />
 
-        {/* Vehicles */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <SafeIcon name="Truck" className="text-red-400"/> Vehicles ({vehicles.length})
         </h3>
@@ -100,7 +98,6 @@ export default function VehicleAvailabilityPanel() {
 
         <Divider sx={{borderColor:"#26282b"}} />
 
-        {/* Drones */}
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <SafeIcon name="Plane" className="text-red-400"/> Drones ({drones.length})
         </h3>

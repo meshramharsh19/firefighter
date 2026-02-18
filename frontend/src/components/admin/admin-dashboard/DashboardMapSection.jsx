@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import StatusBadge from "@/components/common/StatusBadge";
 import SafeIcon from "@/components/common/SafeIcon";
 
-// ---------------- HELPERS ----------------
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
@@ -29,7 +28,6 @@ function loadCss(href) {
   document.head.appendChild(link);
 }
 
-// 🔥 BACKGROUND PRELOAD (NO INIT)
 function preloadCesium() {
   if (window.__CESIUM_PRELOADED__) return;
   window.__CESIUM_PRELOADED__ = true;
@@ -46,7 +44,6 @@ function preloadCesium() {
   loadScript("/assets/js/map.js");
 }
 
-// =====================================================
 
 function DashboardMapSection({
   droneLocations = [],
@@ -60,7 +57,6 @@ function DashboardMapSection({
   const cesiumInitRef = useRef(false);
   const hasAutoZoomedRef = useRef(false);
 
-  /* ---------------- BACKGROUND PRELOAD ---------------- */
   useEffect(() => {
     if ("requestIdleCallback" in window) {
       requestIdleCallback(() => preloadCesium());
@@ -69,7 +65,6 @@ function DashboardMapSection({
     }
   }, []);
 
-  /* ---------------- 2D MAP INIT ---------------- */
 
   const init2DMap = useCallback(() => {
     const div = document.getElementById("liveMap");
@@ -131,14 +126,12 @@ function DashboardMapSection({
     return () => obs.disconnect();
   }, [mapMode, init2DMap]);
 
-  /* ---------------- 3D MAP INIT ---------------- */
 
   useEffect(() => {
     if (mapMode !== "3d") return;
 
     async function initCesium() {
       try {
-        // Already preloaded, this becomes instant
         if (!cesiumInitRef.current) {
           await loadScript(
             "https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
@@ -158,8 +151,6 @@ function DashboardMapSection({
 
     initCesium();
   }, [mapMode]);
-
-  /* ---------------- SHOW ALL DRONES IN 3D (ORIGINAL LOGIC) ---------------- */
 
   useEffect(() => {
     if (mapMode !== "3d") return;
@@ -229,7 +220,6 @@ function DashboardMapSection({
         }
       }
 
-      // 🔥 ORIGINAL FLY / ZOOM
       if (!hasAutoZoomedRef.current) {
         hasAutoZoomedRef.current = true;
 
@@ -253,14 +243,11 @@ function DashboardMapSection({
     };
   }, [mapMode, droneLocations]);
 
-  /* ---------------- RESET AUTO ZOOM ---------------- */
   useEffect(() => {
     if (mapMode === "3d") {
       hasAutoZoomedRef.current = false;
     }
   }, [mapMode]);
-
-  /* ---------------- UI (UNCHANGED) ---------------- */
 
   return (
     <>

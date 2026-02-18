@@ -6,10 +6,6 @@ header("Content-Type: application/json");
 
 require "../../../config/db.php";
 
-/*
-  ONE TABLE SCAN
-  Conditional aggregation (FAST)
-*/
 $sql = "
   SELECT
     COUNT(*) AS total_drones,

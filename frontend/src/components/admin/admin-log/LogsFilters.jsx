@@ -9,7 +9,6 @@ export default function LogsFilters({ filters, setFilters }) {
       </CardHeader>
 
       <CardContent className="grid md:grid-cols-4 gap-4">
-        {/* SEARCH */}
         <Input
           placeholder="Search logs..."
           value={filters.search}
@@ -23,7 +22,6 @@ export default function LogsFilters({ filters, setFilters }) {
           className="bg-[#141414] text-white border border-[#2E2E2E]"
         />
 
-        {/* MODULE */}
         <select
           value={filters.module}
           onChange={(e) =>
@@ -42,7 +40,6 @@ export default function LogsFilters({ filters, setFilters }) {
           <option value="INCIDENT">Incident</option>
         </select>
 
-        {/* DATE */}
         <Input
           type="date"
           value={filters.date}
@@ -56,7 +53,6 @@ export default function LogsFilters({ filters, setFilters }) {
           className="bg-[#141414] text-white border border-[#2E2E2E]"
         />
 
-        {/* CLEAR DATE */}
         <button
           onClick={() =>
             setFilters((p) => ({

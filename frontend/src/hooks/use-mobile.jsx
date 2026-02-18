@@ -4,7 +4,6 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Prevent crash during SSR
     if (typeof window === "undefined") return;
 
     const checkMobile = () => {

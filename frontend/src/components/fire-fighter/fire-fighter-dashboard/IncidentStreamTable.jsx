@@ -18,7 +18,7 @@ import {
   Stack,
 } from "@mui/material";
 
-/* ---------------- Status Pill ---------------- */
+
 const StatusChip = ({ status }) => {
   const variants = {
     new: { bg: "rgba(255,50,50,0.25)", color: "#ff5252", label: "New" },
@@ -45,11 +45,10 @@ const StatusChip = ({ status }) => {
   );
 };
 
-/* ---------------- Table Component ---------------- */
+
 function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChange }) {
   const [sortField, setSortField] = useState("time");
   const [sortDirection, setSortDirection] = useState("desc");
-  // const [filter, setFilter] = useState("all");
 
   const handleSort = (field) => {
     if (sortField === field)
@@ -60,7 +59,6 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
     }
   };
 
-  /* ---------------- FILTER LOGIC ---------------- */
   const filteredIncidents = useMemo(() => {
     const now = new Date();
     const todayStr =
@@ -87,7 +85,6 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
     });
   }, [filter, incidents]);
 
-  /* ---------------- SORT ---------------- */
   const sorted = [...filteredIncidents].sort((a, b) => {
     const mod = sortDirection === "asc" ? 1 : -1;
     return typeof a[sortField] === "string"
@@ -115,7 +112,6 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
         color: "#eaeaea",
       }}
     >
-      {/* ---------------- HEADER ---------------- */}
       <CardHeader
         title={
           <Typography
@@ -153,8 +149,8 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
                     borderColor: "#dc2626",
                     backgroundColor:
                       filter === b.id
-                        ? "#b91c1c" // darker red if active
-                        : "rgba(220,38,38,0.15)", // light red hover
+                        ? "#b91c1c" 
+                        : "rgba(220,38,38,0.15)", 
                     color: "#fff",
                   },
                 }}
@@ -166,7 +162,6 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
         }
       />
 
-      {/* ---------------- TABLE ---------------- */}
       <CardContent sx={{ p: 0 }}>
         <Box sx={{ overflowX: "auto" }}>
           <Table stickyHeader size="small">
@@ -235,7 +230,7 @@ function IncidentTableComponent({ incidents, onViewDetails, filter, onFilterChan
   );
 }
 
-/* ---------------- EXPORT ---------------- */
+
 export default function IncidentStreamTable({ incidents,filter, onFilterChange, }) {
   return (
    <IncidentTableComponent

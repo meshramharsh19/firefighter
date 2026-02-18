@@ -16,8 +16,6 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
   const inputClass = "w-full mt-1 h-9 rounded-md bg-[#0D0F12] border border-[#2E2E2E] px-3 text-sm " +
   "hover:border-[#dc2626] focus:outline-none focus:ring-0 focus:border-[#dc2626]";
 
-
-  // Sync state with drone prop when dialog opens
   useEffect(() => {
     if (drone) {
       setEditData({
@@ -61,7 +59,6 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
         <DialogHeader><DialogTitle>Edit Drone: {drone?.drone_name}</DialogTitle></DialogHeader>
         
         <div className="space-y-4 py-2">
-          {/* Flight Hours */}
           <div>
             <label className="text-sm text-muted-foreground">Flight Hours</label>
             <input
@@ -77,7 +74,6 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
             />
           </div>
 
-          {/* Health Status */}
           <div>
             <label className="text-sm text-muted-foreground">Health</label>
             <select
@@ -93,7 +89,6 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
             </select>
           </div>
 
-          {/* Firmware Version */}
           <div>
             <label className="text-sm text-muted-foreground">Firmware Version</label>
             <input
@@ -106,7 +101,6 @@ export default function EditDroneDialog({ open, onOpenChange, drone, onSuccess }
             />
           </div>
 
-          {/* Status */}
           <div>
             <label className="text-sm text-muted-foreground">Status</label>
             <select

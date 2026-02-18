@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-/* ---------------- Headers ---------------- */
 header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -22,14 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require "../../../config/db.php";
 require "../../../helpers/logActivity.php";
 
-/* ---------------- Helpers ---------------- */
 function fail(int $code = 400): void {
     http_response_code($code);
     echo json_encode(["success" => false]);
     exit;
 }
 
-/* ---------------- Input ---------------- */
 $data = $_POST;
 
 $required = [
@@ -65,7 +62,6 @@ $logUser = $_SESSION["user"] ?? [
 try {
     $conn->begin_transaction();
 
-    /* Duplicate check */
     $check = $conn->prepare(
         "SELECT id FROM drones WHERE drone_code = ? LIMIT 1"
     );
@@ -78,7 +74,6 @@ try {
     }
     $check->close();
 
-    /* Insert */
     $stmt = $conn->prepare(
         "INSERT INTO drones
         (drone_code, drone_name, status, flight_hours, health_status, firmware_version, is_ready, station)

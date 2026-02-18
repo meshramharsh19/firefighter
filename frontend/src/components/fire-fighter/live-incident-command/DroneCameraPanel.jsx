@@ -8,7 +8,6 @@ export default function DroneCameraPanel({ onMaximize, isMaximized = false, onEx
   return (
     <div className={`flex flex-col h-full ${isMaximized ? "p-6" : "p-4"}`}>
 
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <SafeIcon name="Video" className="h-5 w-5 text-[#dc2626]" />
@@ -43,7 +42,6 @@ export default function DroneCameraPanel({ onMaximize, isMaximized = false, onEx
         </div>
       </div>
 
-      {/* VIDEO STREAM WITH MORE HEIGHT */}
       <div
         className={`rounded-lg overflow-hidden border-2 border-dashed border border-[#2E2E2E] flex items-center justify-center`}
         style={{ height: isMaximized ? "120vh" : "125vh" }}

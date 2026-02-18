@@ -8,7 +8,7 @@ export default function StatusCard({
   icon,
   variant = "default",
   trend,
-  onClick,          // ✅ ADD
+  onClick,       
 }) {
   const getVariantStyles = () => {
     switch (variant) {
@@ -43,8 +43,8 @@ export default function StatusCard({
 
   return (
     <Card
-      onClick={onClick}                 // ✅ ATTACH CLICK
-      role="button"                     // ✅ accessibility
+      onClick={onClick}               
+      role="button"                     
       tabIndex={0}
       onKeyDown={(e) => {
         if ((e.key === "Enter" || e.key === " ") && onClick) {
@@ -52,7 +52,7 @@ export default function StatusCard({
         }
       }}
       className={`
-        cursor-pointer                  // ✅ pointer
+        cursor-pointer                 
         ${getVariantStyles()} text-gray-200 
         rounded-xl border transition-all duration-200 
         hover:scale-[1.03] hover:border-gray-500/40
@@ -62,7 +62,6 @@ export default function StatusCard({
       <CardContent className="p-5">
         <div className="flex items-center justify-between">
 
-          {/* Title + Number */}
           <div className="space-y-1">
             <p className="text-xs tracking-wide text-gray-400">{title}</p>
 
@@ -82,7 +81,6 @@ export default function StatusCard({
             </div>
           </div>
 
-          {/* ICON */}
           <div
             className={`flex h-12 w-12 items-center justify-center rounded-lg ${getIconBg()}`}
           >
