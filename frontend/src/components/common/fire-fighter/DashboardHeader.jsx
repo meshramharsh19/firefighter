@@ -32,11 +32,20 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/fire-fighter/vehicle-drone-selection`;
 
 export default function DashboardHeader() {
+  /* ----------------------------- STATE ----------------------------- */
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState(null);
+
+  /* ----------------------------- CONTEXT --------------------------- */
   const { isDark, toggleTheme } = useTheme();
   const { name, role, initials } = useUserInfo();
+
+  /* ----------------------------- SESSION --------------------------- */
+  const sessionData = sessionStorage.getItem("fireOpsSession");
+  const stationName = sessionData
+    ? JSON.parse(sessionData).station
+    : null;
 
   const warningShownRef = useRef(false);
 
@@ -48,8 +57,7 @@ export default function DashboardHeader() {
     let expiryTime = null;
 
     if (sessionData) {
-      const parsed = JSON.parse(sessionData);
-      expiryTime = parsed.sessionExpiry;
+      expiryTime = JSON.parse(sessionData).sessionExpiry;
     }
 
     if (!expiryTime) {
@@ -90,6 +98,7 @@ export default function DashboardHeader() {
     }
   }, [DEV_BYPASS]);
 
+  /* ------------------------- UTILITIES ----------------------------- */
   const formatTime = (sec) => {
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
@@ -105,23 +114,12 @@ export default function DashboardHeader() {
 
   const handleLogoutAttempt = () => {
     if (DEV_BYPASS) {
-      toast.success("DEV MODE: Logout allowed 🧪");
       logoutUser();
       return;
     }
 
     if (timeRemaining > 0) {
-      toast.error(
-        `Shift Active! Cannot logout for ${formatTime(timeRemaining)}`,
-        {
-          icon: "🔒",
-          style: {
-            background: "#333",
-            color: "#fff",
-            border: "1px solid #555",
-          },
-        }
-      );
+      toast.error(`Shift Active! Cannot logout`, { icon: "🔒" });
       setMenuAnchor(null);
     } else {
       logoutUser();
@@ -146,10 +144,8 @@ export default function DashboardHeader() {
         setNotificationCount(data.count);
 
         poll(data.count);
-
       } catch (err) {
         console.error("Polling error:", err);
-
         setTimeout(() => poll(lastCount), 2000);
       }
     };

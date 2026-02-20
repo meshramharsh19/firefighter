@@ -16,28 +16,40 @@ $startTime = time();
 
 $lastCount = isset($_GET['lastCount']) ? (int)$_GET['lastCount'] : -1;
 
+if (!$station) {
+    echo json_encode(["count" => 0]);
+    exit;
+}
+
 error_log("=== New Poll Request ===");
+error_log("Station: " . $station);
 error_log("Frontend Last Count: " . $lastCount);
 
 while (true) {
 
-    $result = mysqli_query($conn, "
+    // 🔥 STATION-WISE COUNT
+    $stmt = $conn->prepare("
         SELECT COUNT(*) AS count
         FROM incidents
         WHERE status = 'new'
-        AND isNewAlert = 1
+          AND isNewAlert = 1
+          AND LOWER(stationName) = LOWER(?)
     ");
 
-    if (!$result) {
-        error_log("DB ERROR: " . mysqli_error($conn));
-        echo json_encode(["error" => "Database error"]);
+    if (!$stmt) {
+        error_log("Prepare failed: " . $conn->error);
+        echo json_encode(["error" => "Query prepare failed"]);
         exit;
     }
 
-    $row = mysqli_fetch_assoc($result);
+    $stmt->bind_param("s", $station);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $row = $result->fetch_assoc();
     $currentCount = (int)$row['count'];
 
-    mysqli_free_result($result);
+    $stmt->close();
 
     error_log("LastCount: $lastCount | CurrentCount: $currentCount");
 
