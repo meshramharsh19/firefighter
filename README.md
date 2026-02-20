@@ -22,9 +22,9 @@ Install these first:
 
 1. Open your XAMPP installation folder.
    - Example (Windows): `C:\xampp\htdocs`
-2. Copy this project folder (`firefighter`) into `htdocs`.
+2. Copy this project folder (`fire-fighter`) into `htdocs`.
 3. Final path should look like:
-   - `C:\xampp\htdocs\firefighter`
+   - `C:\xampp\htdocs\fire-fighter`
 
 ---
 
@@ -34,13 +34,11 @@ Install these first:
 2. Open phpMyAdmin:
    - `http://localhost/phpmyadmin`
 3. Create a new database named:
-   - `firefighter`
-4. Select the `firefighter` database.
+   - `fire-fighter`
+4. Select the `fire-fighter` database.
 5. Click **Import**.
 6. Import SQL file from repository:
    - `database/init.sql`
-
-> Note: If your SQL import expects database name `fire-fighter`, either create that DB name instead, or update backend DB name in config.
 
 ---
 
@@ -50,15 +48,15 @@ Backend folder path in project:
 - `backend/`
 
 Because Apache serves from `htdocs`, ensure project is accessible at:
-- `http://localhost/firefighter/`
+- `http://localhost/fire-fighter/`
 
-If you use DB name `firefighter`, update backend DB config:
+If you use DB name `fire-fighter`, update backend DB config:
 - File: `backend/config/db.php`
-- Set DB name to `firefighter`.
+- Set DB name to `fire-fighter`.
 
 Example:
 ```php
-$db = getenv("DB_NAME") ?: "firefighter";
+$db = getenv("DB_NAME") ?: "fire-fighter";
 ```
 
 ---
@@ -90,7 +88,7 @@ Make sure frontend env points to PHP backend base URL.
 
 Example `.env` inside `frontend/`:
 ```env
-VITE_API_BASE_URL=http://localhost/firefighter/backend/controllers
+VITE_API_BASE_URL=http://localhost/fire-fighter/backend/controllers
 ```
 
 Then restart Vite dev server after changing `.env`.
@@ -118,7 +116,7 @@ Then restart Vite dev server after changing `.env`.
 
 - **API not reachable from frontend**
   - Check `VITE_API_BASE_URL` in `frontend/.env`.
-  - Confirm backend path is correct under `htdocs/firefighter`.
+  - Confirm backend path is correct under `htdocs/fire-fighter`.
 
 - **CORS/session issues**
   - Ensure backend URLs and frontend URL match expected localhost ports/domains.
