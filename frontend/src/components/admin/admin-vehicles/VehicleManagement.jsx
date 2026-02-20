@@ -8,7 +8,6 @@ import SafeIcon from "@/components/common/SafeIcon";
 
 import VehicleStats from "./VehicleStats";
 import VehicleList from "./VehicleList";
-import VehicleMap from "./VehicleMap";
 import AddVehicleModal from "./AddVehicleModal";
 import VehicleDetailsModal from "./VehicleDetailsModal";
 

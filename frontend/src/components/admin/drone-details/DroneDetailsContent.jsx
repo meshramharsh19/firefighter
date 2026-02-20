@@ -21,9 +21,7 @@ const LAST_DRONE_KEY_PREFIX = "last_selected_drone_";
 const getDroneKey = (station) =>
   `${LAST_DRONE_KEY_PREFIX}${station}`;
 
-/* ================= COMPONENT ================= */
 export default function DroneDetailsContent() {
-  /* -------- STATE -------- */
   const [stations, setStations] = useState([]);
   const [drones, setDrones] = useState([]);
   const [selectedStation, setSelectedStation] = useState("");
@@ -37,15 +35,12 @@ export default function DroneDetailsContent() {
   const [searchMode, setSearchMode] = useState(false);
   const [stationSearch, setStationSearch] = useState("");
 
-  /* ================= DERIVED ================= */
   const filteredStations = searchMode
     ? stations.filter((s) =>
       s.name.toLowerCase().includes(stationSearch.toLowerCase())
     )
     : stations;
 
-
-  // 🔥 FETCH STATIONS
   useEffect(() => {
     fetch(`${API_BASE}/admin/station/get_stations.php`)
       .then((res) => res.json())
@@ -83,7 +78,6 @@ export default function DroneDetailsContent() {
     return () => window.removeEventListener("click", close);
   }, []);
 
-  /* ================= API FUNCTIONS ================= */
 
   const fetchDronesByStation = (stationName) => {
     fetch(`${API}/getDronesByStation.php?station=${stationName}`)
@@ -127,13 +121,10 @@ export default function DroneDetailsContent() {
       });
   };
 
-  /* ================= RENDER ================= */
   return (
     <div className="space-y-6 p-6">
 
-      {/* Station & Drone Selectors */}
       <div className="flex gap-6 items-end" onClick={(e) => e.stopPropagation()}>
-        {/* STATION SELECT */}
         <div
           className="relative w-60"
           onClick={(e) => e.stopPropagation()}
@@ -219,8 +210,6 @@ export default function DroneDetailsContent() {
           )}
         </div>
 
-
-        {/* DRONE SELECT */}
         <div className="flex flex-col">
           <label className="text-md font-medium text-muted-foreground mb-2">
             Select Drone:
@@ -247,7 +236,6 @@ export default function DroneDetailsContent() {
         </div>
       </div>
 
-      {/* ================= HEADER & STATS ================= */}
       <DroneHeader
         selectedDrone={selectedDrone}
         onAddClick={() => setShowAddDialog(true)}
@@ -256,7 +244,6 @@ export default function DroneDetailsContent() {
 
       <QuickStats selectedDrone={selectedDrone} />
 
-      {/* ================= TABS ================= */}
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
@@ -286,7 +273,6 @@ export default function DroneDetailsContent() {
         </TabsContent>
       </Tabs>
 
-      {/* ================= DIALOGS ================= */}
       <AddDroneDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
