@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useIncidentNotification } from "../../../context/IncidentNotificationContext";
+import { useIncidentNotification } from "@/Context/IncidentNotificationContext";
 
 export default function IncidentToast() {
   const {
