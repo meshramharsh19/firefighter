@@ -3,11 +3,11 @@ import StatusCard from "@/components/common/fire-fighter/StatusCard";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 
 export default function SummaryStatsGrid({ onFilterChange }) {
-  const { station } = useUserInfo(); 
+  const { station } = useUserInfo();
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
   const API = `${API_BASE}/fire-fighter/fire-fighter-dashboard`
 
@@ -17,22 +17,27 @@ export default function SummaryStatsGrid({ onFilterChange }) {
       return;
     }
 
-    const url = `${API}/get_summary.php?station=${encodeURIComponent(
-      station
-    )}`;
+    const fetchSummary = () => {
+      const url = `${API}/get_summary.php?station=${encodeURIComponent(station)}`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status) {
-          setStats(data.summary);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Summary fetch failed:", err);
-        setLoading(false);
-      });
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status) {
+            setStats(data.summary);
+          }
+        })
+        .catch((err) => {
+          console.error("Summary fetch failed:", err);
+        })
+        .finally(() => setLoading(false));
+    };
+
+    fetchSummary(); // initial fetch
+
+    const interval = setInterval(fetchSummary, 10000); // every 10s
+
+    return () => clearInterval(interval);
   }, [station]);
 
   if (loading) return <p className="text-white p-3">Loading statistics...</p>;

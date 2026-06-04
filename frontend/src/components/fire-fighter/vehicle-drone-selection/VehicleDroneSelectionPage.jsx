@@ -340,7 +340,7 @@ export default function VehicleDroneSelectionPage() {
                   });
                   return;
                 }
-               // For simplicity, we take the first selected drone and vehicle for activation
+                // For simplicity, we take the first selected drone and vehicle for activation
                 const selectedDrone = selectedDroneObjects[0];
                 const selectedVehicle = selectedVehicleObjects[0];
 
@@ -355,6 +355,7 @@ export default function VehicleDroneSelectionPage() {
                 const droneDbId = selectedDrone?.id;
                 const droneCode = selectedDrone?.drone_id;
                 const vehicleDeviceId = selectedVehicle?.device_id;
+                const vehicleId = selectedVehicle?.id;    
 
                 if (!droneDbId || !vehicleDeviceId) {
                   setSnack({
@@ -393,18 +394,18 @@ export default function VehicleDroneSelectionPage() {
                   // 🔥 Drone → Port Mapping
                   const port = 8081;
 
-                  const apiUrl = `http://43.205.31.167:${port}/api/incident_location`;
+                  // const apiUrl = `http://43.205.31.167:${port}/api/incident_location`;
 
-                  console.log("🚁 Sending to:", apiUrl);
+                  // console.log("🚁 Sending to:", apiUrl);
 
-                  // ✅ 1. SEND INCIDENT LOCATION
-                  await fetch(apiUrl, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                  });
+                  // // ✅ 1. SEND INCIDENT LOCATION
+                  // await fetch(apiUrl, {
+                  //   method: "POST",
+                  //   headers: {
+                  //     "Content-Type": "application/json",
+                  //   },
+                  //   body: JSON.stringify(payload),
+                  // });
 
                   // ✅ 2. SEND INCIDENT TO NODE SERVER
                   // 1. START DRONE FIRST
@@ -432,6 +433,7 @@ export default function VehicleDroneSelectionPage() {
                   //     incident_id: incidentId,
                   //   }),
                   // });
+
                   // ✅ 4. START DRONE MISSION
                   await fetch(`${API}/start_drone_mission.php`, {
                     method: "POST",
@@ -441,6 +443,7 @@ export default function VehicleDroneSelectionPage() {
                     body: JSON.stringify({
                       incident_id: incidentId,
                       drone_id: droneDbId,
+                      vehicle_id: vehicleId,
                     }),
                   });
 

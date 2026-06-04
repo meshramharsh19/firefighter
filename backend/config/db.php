@@ -1,5 +1,5 @@
 <?php
-$host = getenv("DB_HOST") ?: "mysql";
+$host = getenv("DB_HOST") ?: "mysql"; // Use "mysql" for Docker, "localhost" for local development
 $user = getenv("DB_USER") ?: "root";
 $pass = getenv("DB_PASSWORD") ?: "root";
 $db   = getenv("DB_NAME") ?: "fire-fighter";

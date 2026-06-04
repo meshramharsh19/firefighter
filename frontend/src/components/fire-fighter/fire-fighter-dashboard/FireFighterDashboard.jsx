@@ -141,6 +141,8 @@ export default function FireFighterDashboard() {
               incidents={incidents}
               filter={incidentFilter}
               onFilterChange={setIncidentFilter}
+              apiBase={API}
+              station={station}
             />
           </div>
 

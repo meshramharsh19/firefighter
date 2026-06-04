@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 04, 2026 at 12:21 PM
+-- Generation Time: Jun 04, 2026 at 08:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -124,7 +124,81 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `user_name`, `role`, `action`, `mo
 (103, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-04-27 10:12:19'),
 (104, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-01', NULL, '::1', '2026-04-27 10:13:45'),
 (105, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-04-27 10:13:56'),
-(106, 4, 'Suresh Yadav', 'Fire Station Command Control', 'EXPORT_REPORT', 'INCIDENT', 'Exported report for Incident INC-20260115-003', NULL, '::1', '2026-04-27 10:13:58');
+(106, 4, 'Suresh Yadav', 'Fire Station Command Control', 'EXPORT_REPORT', 'INCIDENT', 'Exported report for Incident INC-20260115-003', NULL, '::1', '2026-04-27 10:13:58'),
+(107, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-07 09:28:32'),
+(108, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-05-07 09:29:35'),
+(109, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-05-07 09:31:32'),
+(110, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-08 10:28:18'),
+(111, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-05-08 10:28:54'),
+(112, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-12 10:21:10'),
+(113, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-05-12 10:21:50'),
+(114, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-29 05:18:18'),
+(115, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-05-29 05:20:09'),
+(116, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGOUT', 'AUTH', 'User logged out successfully', NULL, '::1', '2026-05-29 05:26:24'),
+(117, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-29 05:26:54'),
+(118, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20251122-002 acknowledged', NULL, '::1', '2026-05-29 05:27:41'),
+(119, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-05-29 05:29:16'),
+(120, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20251122-002 acknowledged', NULL, '::1', '2026-05-29 05:30:00'),
+(121, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-05-29 06:09:36'),
+(122, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20251122-002', NULL, '::1', '2026-05-29 06:10:06'),
+(123, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20251122-002 acknowledged', NULL, '::1', '2026-05-29 07:24:16'),
+(124, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-05-29 07:25:51'),
+(125, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:04:01'),
+(126, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:04:14'),
+(127, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:05:14'),
+(128, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:06:10'),
+(129, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:06:22'),
+(130, NULL, NULL, NULL, 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:06:27'),
+(131, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:07:22'),
+(132, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGOUT', 'AUTH', 'User logged out successfully', NULL, '::1', '2026-06-01 05:07:26'),
+(133, 1, 'Rahul Sharma', 'Admin', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 05:07:41'),
+(134, 1, 'Rahul Sharma', 'Admin', 'LOGOUT', 'AUTH', 'User logged out successfully', NULL, '::1', '2026-06-01 06:19:05'),
+(135, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 06:30:18'),
+(136, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 08:50:44'),
+(137, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-01 08:57:05'),
+(138, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-02 01:36:41'),
+(139, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20251122-002 acknowledged', NULL, '::1', '2026-06-02 01:39:59'),
+(140, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 02:11:12'),
+(141, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20251122-002', NULL, '::1', '2026-06-02 03:06:23'),
+(142, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 03:13:58'),
+(143, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-01', NULL, '::1', '2026-06-02 03:14:55'),
+(144, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 03:17:07'),
+(145, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 03:19:07'),
+(146, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 03:19:35'),
+(147, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 03:20:05'),
+(148, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-02 05:27:15'),
+(149, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 05:28:01'),
+(150, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 05:28:39'),
+(151, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 05:42:50'),
+(152, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 05:47:32'),
+(153, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 05:48:05'),
+(154, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 06:01:19'),
+(155, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 06:04:28'),
+(156, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 06:04:42'),
+(157, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 06:05:18'),
+(158, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-02 06:08:17'),
+(159, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-02 06:08:28'),
+(160, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-02 06:09:22'),
+(161, 4, 'Suresh Yadav', 'Fire Station Command Control', 'LOGIN', 'AUTH', 'User logged in successfully', NULL, '::1', '2026-06-04 05:37:29'),
+(162, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-04 05:42:07'),
+(163, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-01', NULL, '::1', '2026-06-04 05:42:28'),
+(164, 4, 'Suresh Yadav', 'Fire Station Command Control', 'EXPORT_REPORT', 'INCIDENT', 'Exported report for Incident INC-20260115-003', NULL, '::1', '2026-06-04 05:42:33'),
+(165, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-04 05:42:44'),
+(166, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-04 05:43:55'),
+(167, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-04 05:46:49'),
+(168, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 05:47:10'),
+(169, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 05:49:40'),
+(170, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-04 05:50:51'),
+(171, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-04 05:51:14'),
+(172, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 05:51:26'),
+(173, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20260115-003', NULL, '::1', '2026-06-04 05:52:20'),
+(174, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20251122-002 acknowledged', NULL, '::1', '2026-06-04 05:52:28'),
+(175, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 05:52:37'),
+(176, 4, 'Suresh Yadav', 'Fire Station Command Control', 'END_MISSION', 'INCIDENT', 'Mission ended for Incident INC-20251122-002', NULL, '::1', '2026-06-04 05:54:12'),
+(177, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACKNOWLEDGE', 'INCIDENT', 'Incident ID: INC-20260115-003 acknowledged', NULL, '::1', '2026-06-04 05:54:29'),
+(178, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 05:54:38'),
+(179, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-02', NULL, '::1', '2026-06-04 06:06:57'),
+(180, 4, 'Suresh Yadav', 'Fire Station Command Control', 'ACTIVATE_DRONE_MISSION', 'INCIDENT', 'Activated with Vehicles: Quick Response Vehicle | Drones: SkyGuard-01', NULL, '::1', '2026-06-04 06:10:51');
 
 -- --------------------------------------------------------
 
@@ -137,7 +211,7 @@ CREATE TABLE `drones` (
   `drone_code` varchar(50) NOT NULL,
   `drone_name` varchar(150) NOT NULL,
   `ward` varchar(50) DEFAULT NULL,
-  `status` enum('Active','StandBy','Maintenance') NOT NULL,
+  `status` enum('Active','StandBy','Maintenance','On-Mission') NOT NULL,
   `battery` int(11) DEFAULT NULL,
   `flight_hours` float DEFAULT 0,
   `health_status` varchar(50) DEFAULT 'Optimal',
@@ -157,10 +231,10 @@ CREATE TABLE `drones` (
 --
 
 INSERT INTO `drones` (`id`, `drone_code`, `drone_name`, `ward`, `status`, `battery`, `flight_hours`, `health_status`, `firmware_version`, `is_ready`, `station`, `pilot_id`, `pilot_name`, `pilot_email`, `pilot_phone`, `pilot_role`, `pilot_status`) VALUES
-(1, 'DRN-001', 'SkyGuard-01', NULL, 'Active', 100, 20, 'Optimal', 'V3.4.5', 1, 'Katraj Fire Station', 2, 'Amit Verma', 'amit.verma@example.com', '9876501234', 'Pilot', 'assigned'),
-(2, 'DRN-002', 'SkyGuard-02', NULL, 'Active', 100, 13, 'Optimal', 'v1.0.0', 1, 'Katraj Fire Station', NULL, NULL, NULL, NULL, NULL, 'available'),
-(3, 'DRN-003', 'SkyGuard-03', NULL, 'Active', 100, 37, 'Optimal', 'v3.6.3', 1, 'Central Fire Brigade (Lohiya Nagar)', NULL, NULL, NULL, NULL, NULL, 'available'),
-(4, 'DRN-004', 'SkyGuard-04', NULL, 'StandBy', 100, 10, 'Optimal', 'v4.2.3', 1, 'Central Fire Brigade (Lohiya Nagar)', NULL, NULL, NULL, NULL, NULL, 'available'),
+(1, 'DRN-001', 'SkyGuard-01', NULL, 'On-Mission', 100, 20, 'Optimal', 'V3.4.5', 1, 'Katraj Fire Station', 2, 'Amit Verma', 'amit.verma@example.com', '9876501234', 'Pilot', 'available'),
+(2, 'DRN-002', 'SkyGuard-02', NULL, 'On-Mission', 100, 13, 'Optimal', 'v1.0.0', 1, 'Katraj Fire Station', NULL, NULL, NULL, NULL, NULL, 'available'),
+(3, 'DRN-003', 'SkyGuard-03', NULL, 'Maintenance', 0, 37, 'Optimal', 'v3.6.3', 1, 'Central Fire Brigade (Lohiya Nagar)', NULL, NULL, NULL, NULL, NULL, 'available'),
+(4, 'DRN-004', 'SkyGuard-04', NULL, 'Maintenance', 100, 10, 'Optimal', 'v4.2.3', 1, 'Central Fire Brigade (Lohiya Nagar)', NULL, NULL, NULL, NULL, NULL, 'available'),
 (7, 'DRN-007', 'SkyGuard-07', NULL, 'Active', 100, 2, 'Optimal', 'V.1.2.6', 1, 'Kothrud Fire Station', NULL, NULL, NULL, NULL, NULL, 'available'),
 (8, 'DRN-008', 'SkyGuard-08', NULL, 'StandBy', 100, 18, 'Optimal', 'V.1.2.6', 1, 'Kothrud Fire Station', NULL, NULL, NULL, NULL, NULL, 'available'),
 (15, 'DRN-015', 'SkyGuard-15', NULL, 'Active', 100, 0, 'Optimal', 'v1.0.0', 1, 'Dandekar Pool Fire Station', NULL, NULL, NULL, NULL, NULL, 'available'),
@@ -245,15 +319,25 @@ CREATE TABLE `drone_missions` (
   `end_time` datetime DEFAULT NULL,
   `status` varchar(50) DEFAULT 'started',
   `path_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`path_data`)),
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `vehicle_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `drone_missions`
 --
 
-INSERT INTO `drone_missions` (`id`, `drone_id`, `incident_id`, `start_time`, `end_time`, `status`, `path_data`, `created_at`) VALUES
-(13, 1, 'INC-20260115-003', '2026-04-27 15:43:45', '2026-04-27 15:43:56', 'completed', NULL, '2026-04-27 10:13:45');
+INSERT INTO `drone_missions` (`id`, `drone_id`, `incident_id`, `start_time`, `end_time`, `status`, `path_data`, `created_at`, `vehicle_id`) VALUES
+(15, 2, 'INC-20251122-002', '2026-05-29 11:39:36', '2026-05-29 11:40:06', 'completed', NULL, '2026-05-29 06:09:36', NULL),
+(21, 2, 'INC-20260115-003', '2026-06-02 11:38:28', '2026-06-02 11:39:22', 'completed', NULL, '2026-06-02 06:08:28', 3),
+(22, 1, 'INC-20260115-003', '2026-06-04 11:12:28', '2026-06-04 11:12:44', 'completed', NULL, '2026-06-04 05:42:28', 3),
+(23, 2, 'INC-20260115-003', '2026-06-04 11:17:10', '2026-06-04 11:20:51', 'completed', NULL, '2026-06-04 05:47:10', 3),
+(24, 2, 'INC-20260115-003', '2026-06-04 11:19:40', '2026-06-04 11:20:51', 'completed', NULL, '2026-06-04 05:49:40', 3),
+(25, 2, 'INC-20260115-003', '2026-06-04 11:21:26', '2026-06-04 11:22:20', 'completed', NULL, '2026-06-04 05:51:26', 3),
+(26, 2, 'INC-20251122-002', '2026-06-04 11:22:37', '2026-06-04 11:24:12', 'completed', NULL, '2026-06-04 05:52:37', 3),
+(27, 2, 'INC-20260115-003', '2026-06-04 11:24:38', NULL, 'started', NULL, '2026-06-04 05:54:38', 3),
+(28, 2, 'INC-20260115-003', '2026-06-04 11:36:57', NULL, 'started', NULL, '2026-06-04 06:06:57', 3),
+(29, 1, 'INC-20260115-003', '2026-06-04 11:40:50', NULL, 'started', NULL, '2026-06-04 06:10:50', 3);
 
 -- --------------------------------------------------------
 
@@ -355,9 +439,8 @@ CREATE TABLE `incidents` (
 --
 
 INSERT INTO `incidents` (`id`, `name`, `location`, `latitude`, `longitude`, `stationName`, `timeReported`, `status`, `isNewAlert`) VALUES
-('INC-20251122-001', 'Vehicle Accident & Fire', 'Paud Road, Near Signal, Kothrud', 18.5074, 73.8077, 'Kothrud Fire Station', '2026-04-09 15:25:00', 'new', 1),
-('INC-20251122-002', 'Warehouse Fire - Industrial Zone', 'Plot No. 45, Industrial Area, Katraj', 18.4445, 73.8521, 'Katraj Fire Station', '2026-04-09 14:10:00', 'completed', 0),
-('INC-20260115-003', 'Residential Building Fire', 'Near Katraj Bus Depot, Pune', 18.454224, 73.858513, 'Katraj Fire Station', '2026-04-10 18:40:00', 'completed', 0);
+('INC-20251122-002', 'Warehouse Fire - Industrial Zone', 'Plot No. 45, Industrial Area, Katraj', 18.4445, 73.8521, 'Katraj Fire Station', '2026-06-01 14:10:00', 'completed', 0),
+('INC-20260115-003', 'Residential Building Fire', 'Near Katraj Bus Depot, Pune', 18.454224, 73.858513, 'Katraj Fire Station', '2026-06-02 18:40:00', 'Active', 0);
 
 -- --------------------------------------------------------
 
@@ -470,9 +553,9 @@ CREATE TABLE `vehicles` (
 --
 
 INSERT INTO `vehicles` (`id`, `name`, `type`, `registration`, `device_id`, `location`, `status`, `created_at`, `station`) VALUES
-(3, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-KJ-1003', '0453aa40-80a0-11f0-902d-59ff54eea995', 'Katraj Fire Station', 'available', '2025-12-05 09:47:34', 'Katraj Fire Station'),
+(3, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-KJ-1003', '0453aa40-80a0-11f0-902d-59ff54eea995', 'Katraj Fire Station', 'On-Mission', '2025-12-05 09:47:34', 'Katraj Fire Station'),
 (374, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-CF-1001', 'VTS-QRV-104', 'Central Fire Brigade (Lohiya Nagar)', 'available', '2026-04-13 10:27:06', 'Central Fire Brigade (Lohiya Nagar)'),
-(382, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-DP-1104', 'VTS-QRV-112', 'Dandekar Pool Fire Station', 'available', '2026-04-13 10:27:06', 'Dandekar Pool Fire Station'),
+(382, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-DP-1104', 'VTS-QRV-112', 'Dandekar Pool Fire Station', 'maintenance', '2026-04-13 10:27:06', 'Dandekar Pool Fire Station'),
 (384, 'Quick Response Vehicle', 'Fire QRV', 'MH-12-SR-1106', 'VTS-QRV-114', 'Sinhgad Road Fire Station', 'available', '2026-04-13 10:27:06', 'Sinhgad Road Fire Station');
 
 --
@@ -566,7 +649,7 @@ ALTER TABLE `vehicles`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=181;
 
 --
 -- AUTO_INCREMENT for table `drones`
@@ -590,7 +673,7 @@ ALTER TABLE `drone_gps_logs`
 -- AUTO_INCREMENT for table `drone_missions`
 --
 ALTER TABLE `drone_missions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `fire_detections`

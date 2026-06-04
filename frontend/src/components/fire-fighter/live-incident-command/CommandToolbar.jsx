@@ -53,24 +53,38 @@ export default function CommandToolbar({
         body: JSON.stringify({ incidentId }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("RAW RESPONSE:", text);
 
-      if (data.success) {
-        toast.success("Mission Ended ✅");
-        setConfirmOpen(false);
-        if (data.success) {
-          await logActivity(
-            "END_MISSION",
-            `Mission ended for Incident ${incidentId}`,
-            incidentId
-          );
-
-          toast.success("Mission Ended ✅");
-          setConfirmOpen(false);
-        }
-      } else {
-        toast.error(data.error || "Failed to end mission ❌");
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("JSON PARSE FAILED:", e);
+        return;
       }
+
+      if (!data.success) {
+        toast.error(data.error || "Failed to end mission ❌");
+        return;
+      }
+
+      // ✅ log activity first
+      await logActivity(
+        "END_MISSION",
+        `Mission ended for Incident ${incidentId}`,
+        incidentId
+      );
+
+      toast.success("Mission Ended ✅");
+
+      setConfirmOpen(false);
+
+      // small delay for UI smoothness
+      setTimeout(() => {
+        navigate("/fire-fighter-dashboard");
+      }, 500);
+
     } catch (err) {
       console.error(err);
       toast.error("Error ending mission ❌");
@@ -78,7 +92,6 @@ export default function CommandToolbar({
       setLoading(false);
     }
   };
-
   // Theme observer
   const [isDark, setIsDark] = useState(
     document.documentElement.classList.contains("dark")

@@ -82,25 +82,32 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     fetchIncidents();
     const interval = setInterval(fetchIncidents, 5000);
     return () => clearInterval(interval);
-  }, [IncidentAPI_BASE]);
+  }, [IncidentAPI_BASE, station]);
 
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/sounds/alert.mp3");
-      audioRef.current.volume = 1;
-      audioRef.current.loop = true;
-    }
+    audioRef.current = new Audio("/sounds/alert.mp3");
+    audioRef.current.volume = 1;
+    audioRef.current.loop = true;
+
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
 
     const newAlerts = incidents.filter((i) => i.isNewAlert);
 
     if (newAlerts.length > 0 && !isMuted) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => { });
+      audioRef.current.play().catch(() => {});
     } else {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-  }, [incidents]);
+  }, [incidents, isMuted]);
 
   useEffect(() => {
     const unlock = () => {
@@ -110,21 +117,27 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     document.addEventListener("click", unlock);
   }, []);
 
+  const normalizeStatus = (status) => {
+    if (!status) return "new";
+    return status.toString().replace(/_/g, "-").toLowerCase();
+  };
+
   const StatusTag = ({ status }) => {
+    const normalized = normalizeStatus(status);
     const palette = {
       new: { bg: "rgba(255,55,55,0.25)", text: "#ff4d4d" },
       assigned: { bg: "rgba(255,180,0,0.25)", text: "#ffcc66" },
       "in-progress": { bg: "rgba(0,140,255,0.25)", text: "#58a6ff" },
       closed: { bg: "rgba(0,255,120,0.25)", text: "#4ade80" },
     };
-    const p = palette[status] || palette.new;
+    const p = palette[normalized] || palette.new;
 
     return (
       <Chip
         label={
-          status === "in-progress"
+          normalized === "in-progress"
             ? "In Progress"
-            : status[0].toUpperCase() + status.slice(1)
+            : normalized[0].toUpperCase() + normalized.slice(1)
         }
         size="small"
         sx={{ backgroundColor: p.bg, color: p.text, fontWeight: 600, px: 1 }}
@@ -148,6 +161,12 @@ const acknowledge = async (id) => {
   try {
     const session = JSON.parse(sessionStorage.getItem("fireOpsSession"));
 
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsMuted(true);
+
     // 🔥 API call (LOG INSERT)
     await fetch(`${IncidentAPI_BASE}/acknowledge_incident.php`, {
       method: "POST",
@@ -162,7 +181,6 @@ const acknowledge = async (id) => {
       }),
     });
 
-    // 👉 navigation baad me
     navigate(`/confirm-location/${id}`, {
       state: {
         incident,

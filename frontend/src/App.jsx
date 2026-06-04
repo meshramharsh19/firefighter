@@ -13,6 +13,11 @@ import RoleProtectedRoute from "./components/common/auth/RoleProtectedRoute";
 import { ThemeProvider } from "./Context/ThemeContext";
 import { Toaster } from "react-hot-toast";
 
+// New Incident Notification System
+import { IncidentNotificationProvider } from "./Context/IncidentNotificationContext";
+import IncidentToast from "./components/fire-fighter/fire-fighter-dashboard/IncidentToast";
+import useUserInfo from "./components/common/auth/useUserInfo";
+
 // Admin Pages
 
 import AdminDroneMonitoring from "./pages/admin/AdminDroneMonitoring";
@@ -41,6 +46,18 @@ import PilotDashboard from "./pages/pilot/PilotDashboard";
 import ScheduleMaintenance from "./pages/pilot/SheduleMaintenance";
 import PilotLiveIncidentCommand from "./pages/pilot/PilotLiveIncidentCommand";
 import PilotMaintenanceRecord from "./pages/pilot/MaintenanceRecord";
+
+// ✅ FireFighter routes ko station ke saath wrap karne ke liye
+function FireFighterWrapper() {
+  const { station } = useUserInfo();
+
+  return (
+    <IncidentNotificationProvider station={station}>
+      <IncidentToast />
+    </IncidentNotificationProvider>
+  );
+}
+
 
 function App() {
   return (
@@ -86,6 +103,7 @@ function App() {
                     "Fire Station Command Control"
                   ]}
                 >
+                  <FireFighterWrapper/>
                   <FireFighterLayout />
                 </RoleProtectedRoute>
               </ProtectedRoute>

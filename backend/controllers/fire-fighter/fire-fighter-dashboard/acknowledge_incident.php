@@ -19,9 +19,4 @@ $description = "Incident ID: $incidentId acknowledged";
 $stmt->bind_param("issss", $userId, $userName, $role, $description, $ip);
 $stmt->execute();
 
-// optional: update incident
-$update = $conn->prepare("UPDATE incidents SET status='assigned' WHERE id=?");
-$update->bind_param("s", $incidentId);
-$update->execute();
-
 echo json_encode(["success" => true]);

@@ -350,7 +350,7 @@ export default function ConfirmLocationPage() {
               <Button
                 variant="outlined"
                 startIcon={<ChevronLeftIcon />}
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/fire-fighter-dashboard", { replace: true })}
               >
                 Back
               </Button>

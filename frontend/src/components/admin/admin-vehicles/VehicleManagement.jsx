@@ -52,15 +52,18 @@ export default function VehicleManagement() {
   const dropdownStyle = { backgroundColor: dropdownBg, color: dropdownColor };
 
   const loadVehicles = async () => {
-    try {
-      const res = await fetch(`${API}/get_vehicles.php`);
-      const data = await res.json();
-      setVehicles(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.log("Vehicle Fetch Error:", e);
-      setVehicles([]);
-    }
-  };
+  try {
+    const res = await fetch(
+      `${API}/get_vehicles.php?t=${Date.now()}`,
+      { cache: "no-store" }
+    );
+
+    const data = await res.json();
+    setVehicles(Array.isArray(data) ? data : []);
+  } catch (e) {
+    console.log("Vehicle Fetch Error:", e);
+  }
+};
 
   const loadStations = async () => {
     try {
@@ -77,6 +80,12 @@ export default function VehicleManagement() {
   useEffect(() => {
     loadVehicles();
     loadStations();
+
+    const interval = setInterval(() => {
+      loadVehicles(); // keeps syncing DB changes
+    }, 3000); // 3 sec like real-time feel
+
+    return () => clearInterval(interval);
   }, []);
 
   // Close dropdowns on outside click
