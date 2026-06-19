@@ -9,13 +9,22 @@ $incidentId = isset($_GET['incidentId']) ? trim($_GET['incidentId']) : '';
 if ($incidentId) {
     $sql = "
         SELECT
-            dm.start_time, dm.end_time, dm.status AS mission_status,
-            d.drone_name, d.drone_code, d.station, d.pilot_name,
-            i.id AS incident_id, i.name AS incident_name, i.location AS incident_location,
+            dm.start_time,
+            dm.end_time,
+            dm.status AS mission_status,
+            d.drone_name,
+            d.drone_code,
+            d.station,
+            d.pilot_name,
+            i.id AS incident_id,
+            i.name AS incident_name,
+            i.location AS incident_location,
             i.stationName AS incident_station_name
         FROM drone_missions dm
-        LEFT JOIN drones d     ON dm.drone_id    = d.id
-        LEFT JOIN incidents i  ON dm.incident_id = i.id
+        LEFT JOIN drones d
+            ON dm.drone_id = d.drone_code
+        LEFT JOIN incidents i
+            ON dm.incident_id = i.id
         WHERE dm.incident_id = ?
     ";
     $stmt = $conn->prepare($sql);

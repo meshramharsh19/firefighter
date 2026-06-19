@@ -11,11 +11,19 @@ import DetectionAlert from "./DetectionAlert";
 import { Button } from "@mui/material";
 
 export default function LiveIncidentCommandScreen() {
+  const { incidentId, droneId, vehicleId } = useParams();
   const { state } = useLocation();
-  const { incidentId, droneId, vehicleDeviceId } = useParams();
   const navigate = useNavigate();
 
   const incident = state?.incident;
+
+  // console.log("incident from state", incident);
+  // console.log("incidentId from params", incidentId);
+
+  const safeIncident = incident || {
+  id: incidentId,
+  name: incidentId,
+};
   const selectedVehicles = state?.selectedVehicles || [];
   const selectedDrones = state?.selectedDrones || [];
 
@@ -35,18 +43,19 @@ export default function LiveIncidentCommandScreen() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!incident) {
-      navigate("/firefighter-dashboard");
-    }
-  }, [incident, navigate]);
+const [layout, setLayout] = useState("split");
+const [activePanel, setActivePanel] = useState(null);
+const [focusedPanel, setFocusedPanel] = useState("vts");
+const [isFullscreen, setIsFullscreen] = useState(false);
 
-  if (!incident) return null;
+useEffect(() => {
+  const handler = () => setIsFullscreen(!!document.fullscreenElement);
 
-  const [layout, setLayout] = useState("split");
-  const [activePanel, setActivePanel] = useState(null);
-  const [focusedPanel, setFocusedPanel] = useState("vts");
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  document.addEventListener("fullscreenchange", handler);
+
+  return () =>
+    document.removeEventListener("fullscreenchange", handler);
+}, []);
 
   // ✅ All logic unchanged
   const maximizePanel = (panelKey) => {
@@ -99,9 +108,9 @@ export default function LiveIncidentCommandScreen() {
       onClick={clickable ? () => handleFocusChange(key) : undefined}
     >
       <Component
-        incident={incident}
-        selectedVehicles={selectedVehicles}
-        selectedDrones={selectedDrones}
+        incident={safeIncident}
+        // selectedVehicles={selectedVehicles}
+        // selectedDrones={selectedDrones}
         droneId={droneId} 
         onMaximize={() => maximizePanel(key)}
         isMaximized={layout === "full" && activePanel === key}
@@ -109,6 +118,14 @@ export default function LiveIncidentCommandScreen() {
       />
     </div>
   );
+
+  // useEffect(() => {
+  //   console.log("Route params changed:", {
+  //     incidentId,
+  //     droneId,
+  //     vehicleId,
+  //   });
+  // }, [incidentId, droneId, vehicleId]);
 
   return (
     <div
@@ -121,8 +138,8 @@ export default function LiveIncidentCommandScreen() {
         onFullscreen={enterBrowserFullscreen}
         onExitFullscreen={exitBrowserFullscreen}
         isFullscreen={isFullscreen}
-        incidentId={incident.id}
-        incidentName={incident.name}
+        incidentId={safeIncident.id}
+        incidentName={safeIncident.name}
       />
 
       <div

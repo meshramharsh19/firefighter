@@ -102,7 +102,7 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
 
     if (newAlerts.length > 0 && !isMuted) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
     } else {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -154,44 +154,51 @@ export default function IncidentAlertFeed({ IncidentAPI_BASE, station }) {
     return d.toLocaleDateString();
   };
 
-const acknowledge = async (id) => {
-  const incident = incidents.find((i) => i.id === id);
-  if (!incident) return;
+  const acknowledge = async (id) => {
+    const incident = incidents.find((i) => i.id === id);
+    if (!incident) return;
 
-  try {
-    const session = JSON.parse(sessionStorage.getItem("fireOpsSession"));
+    try {
+      const session = JSON.parse(
+        localStorage.getItem("fireOpsSession") || "{}"
+      );
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      if (!session.userId) {
+        alert("Session expired. Please login again.");
+        return;
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setIsMuted(true);
+
+      // 🔥 API call (LOG INSERT)
+      await fetch(`${IncidentAPI_BASE}/acknowledge_incident.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          incident_id: id,
+          user_id: session.userId,
+          user_name: session.name,
+          role: session.role,
+        }),
+      });
+
+      navigate(`/confirm-location/${id}`, {
+        state: {
+          incident,
+          sourceStation: station,
+        },
+      });
+
+    } catch (err) {
+      console.error("Acknowledge error", err);
     }
-    setIsMuted(true);
-
-    // 🔥 API call (LOG INSERT)
-    await fetch(`${IncidentAPI_BASE}/acknowledge_incident.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        incident_id: id,
-        user_id: session.userId,
-        user_name: session.name,
-        role: session.role,
-      }),
-    });
-
-    navigate(`/confirm-location/${id}`, {
-      state: {
-        incident,
-        station,
-      },
-    });
-
-  } catch (err) {
-    console.error("Acknowledge error", err);
-  }
-};
+  };
 
   const toggleSiren = () => {
     if (!audioRef.current) return;
@@ -203,35 +210,42 @@ const acknowledge = async (id) => {
     setIsMuted(!isMuted);
   };
 
-const viewDetails = async (id) => {
-  const incident = incidents.find((i) => i.id === id);
-  if (!incident) return;
+  const viewDetails = async (id) => {
+    const incident = incidents.find((i) => i.id === id);
+    if (!incident) return;
 
-  try {
-    const session = JSON.parse(sessionStorage.getItem("fireOpsSession"));
+    try {
+      const session = JSON.parse(
+        localStorage.getItem("fireOpsSession") || "{}"
+      );
 
-    // 🔥 API call (LOG INSERT)
-    await fetch(`${IncidentAPI_BASE}/view_incident.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        incident_id: id,
-        user_id: session.userId,
-        user_name: session.name,
-        role: session.role,
-      }),
-    });
+      if (!session.userId) {
+        alert("Session expired. Please login again.");
+        return;
+      }
 
-  } catch (err) {
-    console.error("View log error", err);
-  }
+      // 🔥 API call (LOG INSERT)
+      await fetch(`${IncidentAPI_BASE}/view_incident.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          incident_id: id,
+          user_id: session.userId,
+          user_name: session.name,
+          role: session.role,
+        }),
+      });
 
-  // 👉 existing UI logic
-  setSelectedIncident(incident);
-  setOpenDialog(true);
-};
+    } catch (err) {
+      console.error("View log error", err);
+    }
+
+    // 👉 existing UI logic
+    setSelectedIncident(incident);
+    setOpenDialog(true);
+  };
 
   const closeDialog = () => {
     setOpenDialog(false);

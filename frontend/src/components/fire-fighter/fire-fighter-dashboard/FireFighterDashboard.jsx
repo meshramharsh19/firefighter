@@ -51,6 +51,7 @@ export default function FireFighterDashboard() {
               location: inc.location,
               latitude: inc.latitude,
               longitude: inc.longitude,
+              stationName: inc.station,
               status: inc.status?.toLowerCase(),
               timeReported: inc.time,
               isNewAlert: inc.isNewAlert,

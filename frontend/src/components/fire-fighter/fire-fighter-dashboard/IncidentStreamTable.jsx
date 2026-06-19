@@ -89,9 +89,9 @@ const StatusChip = ({ status }) => {
   );
 };
 
-function IncidentTableComponent({ 
-    
-  
+function IncidentTableComponent({
+
+
   incidents,
   filter,
   onFilterChange,
@@ -109,7 +109,7 @@ function IncidentTableComponent({
 
   const [snackbarOpen, setSnackbarOpen] =
     useState(false);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIncidentData(incidents);
@@ -137,36 +137,74 @@ function IncidentTableComponent({
 
   const UI = isDark
     ? {
-        card: "#121314",
-        border: "#1e1f22",
-        text: "#eaeaea",
-        muted: "#9ca3af",
-        head: "#1a1b1e",
-        hover: "#1f2124",
-        dialogBg: "#121314",
-      }
+      card: "#121314",
+      border: "#1e1f22",
+      text: "#eaeaea",
+      muted: "#9ca3af",
+      head: "#1a1b1e",
+      hover: "#1f2124",
+      dialogBg: "#121314",
+    }
     : {
-        card: "#ffffff",
-        border: "#e2e8f0",
-        text: "#111827",
-        muted: "#6b7280",
-        head: "#f8fafc",
-        hover: "#f1f5f9",
-        dialogBg: "#ffffff",
-      };
- const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-const handleExportReport = (incidentId) => {
-  const phpUrl = `${API_BASE}/fire-fighter/live-incident-command/export-report.php?incidentId=${incidentId}`;
-
-  const win = window.open(phpUrl, "_blank");
-
-  if (win) {
-    win.onload = () => {
-      win.print();
+      card: "#ffffff",
+      border: "#e2e8f0",
+      text: "#111827",
+      muted: "#6b7280",
+      head: "#f8fafc",
+      hover: "#f1f5f9",
+      dialogBg: "#ffffff",
     };
-  }
-};
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+  const handleExportReport = (incidentId) => {
+    const phpUrl = `${API_BASE}/fire-fighter/live-incident-command/export-report.php?incidentId=${incidentId}`;
+
+    const win = window.open(phpUrl, "_blank");
+
+    if (win) {
+      win.onload = () => {
+        win.print();
+      };
+    }
+  };
+
+  const handleShowLiveScreen = async () => {
+    try {
+      const incidentId = selectedIncident?.id;
+
+      const response = await fetch(
+        `
+      ${API_BASE}/fire-fighter/live-incident-command/get_drone_mission.php?incident_id=${incidentId}`
+      );
+
+      const result = await response.json();
+
+      if (!result.success || !result.data?.length) {
+        alert("No drone mission found");
+        return;
+      }
+
+      const mission = result.data.find(
+        (item) => item.incident_id === incidentId
+      );
+
+      if (!mission) {
+        alert("Mission not found for this incident");
+        return;
+      }
+
+      navigate(
+        `/live-incident-command/${mission.incident_id}/${mission.drone_id}/${mission.vehicle_id}`,
+        {
+          state: {
+            incident: selectedIncident,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   // OPEN DIALOG
   const handleOpen = (incident) => {
     setSelectedIncident(incident);
@@ -195,41 +233,47 @@ const handleExportReport = (incidentId) => {
   const handleAcknowledge = () => {
     if (!selectedIncident) return;
 
-    // Update incident status
+    const stationName =
+      selectedIncident.stationName ||
+      selectedIncident.station_name ||
+      selectedIncident.station ||
+      selectedIncident.fire_station ||
+      selectedIncident.fireStation ||
+      null;
+
     const updatedIncidents = incidentData.map((incident) =>
       incident.id === selectedIncident.id
         ? {
-            ...incident,
-            status: "acknowledged",
-          }
+          ...incident,
+          status: "acknowledged",
+        }
         : incident
     );
 
     setIncidentData(updatedIncidents);
 
-    setSelectedIncident({
-      ...selectedIncident,
-      status: "acknowledged",
-    });
-
-    // Success popup
-    setSnackbarOpen(true);
-
-    // Close dialog
-    handleClose();
-
-    // Navigate to Confirm Location Page
-    navigate(`/confirm-location/${selectedIncident.id}`, {
-      state: {
-        incident: {
-          ...selectedIncident,
-          status: "acknowledged",
+    const navigationState = {
+      incident: {
+        ...selectedIncident,
+        status: "acknowledged",
+        coordinates: {
+          lat: Number(selectedIncident.latitude),
+          lng: Number(selectedIncident.longitude),
         },
       },
+      station: stationName,
+    };
+
+
+    setSnackbarOpen(true);
+
+    handleClose();
+
+    navigate(`/confirm-location/${selectedIncident.id}`, {
+      state: navigationState,
     });
   };
 
- 
   // FILTER DATA
   const filteredIncidents = useMemo(() => {
     const todayStr = new Date()
@@ -354,8 +398,8 @@ const handleExportReport = (incidentId) => {
                         filter === f
                           ? "#b91c1c"
                           : isDark
-                          ? "#1f2124"
-                          : "#f1f5f9",
+                            ? "#1f2124"
+                            : "#f1f5f9",
                     },
                   }}
                 >
@@ -428,100 +472,94 @@ const handleExportReport = (incidentId) => {
                   </TableRow>
                 )}
 
-                {sorted.map((i) => (
-                  <TableRow
-                    key={i.id}
-                    sx={{
-                      "&:hover": {
-                        background: UI.hover,
-                      },
-
-                      borderBottom: `1px solid ${UI.border}`,
-                    }}
-                  >
-                    <TableCell
+                {sorted.map((i) => {
+                  return (
+                    <TableRow
+                      key={i.id}
                       sx={{
-                        color: UI.text,
-                        borderBottom: "none",
+                        "&:hover": {
+                          background: UI.hover,
+                        },
+                        borderBottom: `1px solid ${UI.border}`,
                       }}
                     >
-                      {i.id}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        color: UI.text,
-                        borderBottom: "none",
-                      }}
-                    >
-                      {i.name}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        color: UI.muted,
-                        borderBottom: "none",
-                      }}
-                    >
-                      {i.location}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        fontSize: 12,
-                        color: UI.muted,
-                        borderBottom: "none",
-                      }}
-                    >
-                      {Number(i.latitude).toFixed(4)},
-                      {Number(i.longitude).toFixed(4)}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        color: UI.muted,
-                        borderBottom: "none",
-                      }}
-                    >
-                      {i.timeReported}
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        borderBottom: "none",
-                      }}
-                    >
-                      <StatusChip
-                        status={i.status}
-                      />
-                    </TableCell>
-
-                    <TableCell
-                      sx={{
-                        borderBottom: "none",
-                      }}
-                    >
-                      <Button
-                        size="small"
-                        startIcon={
-                          <Eye size={14} />
-                        }
-                        onClick={() =>
-                          handleOpen(i)
-                        }
+                      <TableCell
                         sx={{
-                          color: "#ff5252",
-
-                          "&:hover": {
-                            color: "#ff8080",
-                          },
+                          color: UI.text,
+                          borderBottom: "none",
                         }}
                       >
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {i.id}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          color: UI.text,
+                          borderBottom: "none",
+                        }}
+                      >
+                        {i.name}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          color: UI.muted,
+                          borderBottom: "none",
+                        }}
+                      >
+                        {i.location}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          fontSize: 12,
+                          color: UI.muted,
+                          borderBottom: "none",
+                        }}
+                      >
+                        {Number(i.latitude).toFixed(4)},
+                        {Number(i.longitude).toFixed(4)}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          color: UI.muted,
+                          borderBottom: "none",
+                        }}
+                      >
+                        {i.timeReported}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          borderBottom: "none",
+                        }}
+                      >
+                        <StatusChip status={i.status} />
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          borderBottom: "none",
+                        }}
+                      >
+                        <Button
+                          size="small"
+                          startIcon={<Eye size={14} />}
+                          onClick={() => handleOpen(i)}
+                          sx={{
+                            color: "#ff5252",
+                            "&:hover": {
+                              color: "#ff8080",
+                            },
+                          }}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Box>
@@ -633,75 +671,91 @@ const handleExportReport = (incidentId) => {
 
             {/* BUTTONS */}
             <DialogActions
-  sx={{
-    borderTop: `1px solid ${UI.border}`,
-    px: 3,
-    py: 2,
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: 2,
-  }}
->
-  {selectedIncident.status === "completed" ? (
-    <Button
-      onClick={() => handleExportReport(selectedIncident.id)}
-      variant="contained"
-      startIcon={<ImportExportIcon sx={{ fontSize: 18 }} />}
-      sx={{
-        background: "#ff4444",
-        color: "#fff",
-        px: 4,
-        fontWeight: 600,
-        "&:hover": {
-          background: "#e63939",
-        },
-      }}
-    >
-      EXPORT REPORT
-    </Button>
-  ) : (
-    <Button
-      onClick={handleAcknowledge}
-      variant="contained"
-      startIcon={<CheckCircle size={16} />}
-      sx={{
-        background: "#ff4444",
-        color: "#fff",
-        px: 4,
-        fontWeight: 600,
+              sx={{
+                borderTop: `1px solid ${UI.border}`,
+                px: 3,
+                py: 2,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+              }}
+            >
+              {selectedIncident.status === "completed" ? (
+                <Button
+                  onClick={() => handleExportReport(selectedIncident.id)}
+                  variant="contained"
+                  startIcon={<ImportExportIcon sx={{ fontSize: 18 }} />}
+                  sx={{
+                    background: "#ff4444",
+                    color: "#fff",
+                    px: 4,
+                    fontWeight: 600,
+                    "&:hover": {
+                      background: "#e63939",
+                    },
+                  }}
+                >
+                  EXPORT REPORT
+                </Button>
+              ) : selectedIncident.status === "active" ? (
+                <Button
+                  onClick={handleShowLiveScreen}
+                  variant="contained"
+                  sx={{
+                    background: "#ff4444",
+                    color: "#fff",
+                    px: 4,
+                    fontWeight: 600,
+                    "&:hover": {
+                      background: "#e63939",
+                    },
+                  }}
+                >
+                  SHOW LIVE SCREEN
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleAcknowledge}
+                  variant="contained"
+                  startIcon={<CheckCircle size={16} />}
+                  sx={{
+                    background: "#ff4444",
+                    color: "#fff",
+                    px: 4,
+                    fontWeight: 600,
 
-        "&:hover": {
-          background: "#e63939",
-        },
-      }}
-    >
-      ACKNOWLEDGE
-    </Button>
-  )}
+                    "&:hover": {
+                      background: "#e63939",
+                    },
+                  }}
+                >
+                  ACKNOWLEDGE
+                </Button>
+              )}
 
-  {/* CLOSE BUTTON */}
-  <Button
-    onClick={handleClose}
-    variant="outlined"
-    sx={{
-      border: "1px solid #ff4d4d",
-      color: "#ff6b6b",
-      px: 4,
-      fontWeight: 600,
+              {/* CLOSE BUTTON */}
+              <Button
+                onClick={handleClose}
+                variant="outlined"
+                sx={{
+                  border: "1px solid #ff4d4d",
+                  color: "#ff6b6b",
+                  px: 4,
+                  fontWeight: 600,
 
-      "&:hover": {
-        background: "rgba(255,77,77,0.1)",
-      },
-    }}
-  >
-    CLOSE
-  </Button>
-</DialogActions>
+                  "&:hover": {
+                    background: "rgba(255,77,77,0.1)",
+                  },
+                }}
+              >
+                CLOSE
+              </Button>
+            </DialogActions>
           </>
         )}
       </Dialog>
 
-      
+
     </>
   );
 }

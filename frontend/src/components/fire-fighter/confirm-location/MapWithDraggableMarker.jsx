@@ -123,7 +123,7 @@ export default function MapWithDraggableMarkerMui({
           const newPos = [lat, lng];
           setPosition(newPos);
           onMarkerMove(lat, lng, false);
-        }
+          }
       },
     };
 

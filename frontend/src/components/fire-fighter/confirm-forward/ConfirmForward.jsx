@@ -29,7 +29,7 @@ export default function ConfirmForwardIncidence() {
 
   const logActivity = async (action, description, incidentId) => {
     try {
-      const session = JSON.parse(sessionStorage.getItem("fireOpsSession"));
+      const session = JSON.parse(localStorage.getItem("fireOpsSession"));
 
       await fetch(`${API_BASE}/fire-fighter/confirm-forward/confirm_location_logs.php`, {
         method: "POST",

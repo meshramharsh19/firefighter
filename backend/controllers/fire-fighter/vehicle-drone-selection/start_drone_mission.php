@@ -9,18 +9,25 @@ $drone_id = $data['drone_id'] ?? null;
 $vehicle_id = $data['vehicle_id'] ?? null;
 
 if (!$incident_id || !$drone_id || !$vehicle_id) {
-    echo json_encode(["success" => false, "message" => "Missing data"]);
+    echo json_encode([
+        "success" => false,
+        "message" => "Missing data"
+    ]);
     exit;
 }
 
-$sql = "INSERT INTO drone_missions 
+$sql = "INSERT INTO drone_missions
         (incident_id, drone_id, vehicle_id, start_time, status)
         VALUES (?, ?, ?, NOW(), 'started')";
 
 $stmt = $conn->prepare($sql);
 
-// ✅ FIX: 3 params = 3 type specifiers
-$stmt->bind_param("sii", $incident_id, $drone_id, $vehicle_id);
+$stmt->bind_param(
+    "sss",
+    $incident_id,
+    $drone_id,
+    $vehicle_id
+);
 
 if ($stmt->execute()) {
     echo json_encode([
@@ -33,4 +40,7 @@ if ($stmt->execute()) {
         "message" => $stmt->error
     ]);
 }
+
+$stmt->close();
+$conn->close();
 ?>

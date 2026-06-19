@@ -63,7 +63,7 @@ export default function ProfileDialog({ open, onClose }) {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const sessionData = sessionStorage.getItem("fireOpsSession");
+        const sessionData = localStorage.getItem("fireOpsSession");
         if (!sessionData) return;
         const { userId } = JSON.parse(sessionData);
         const res = await fetch(

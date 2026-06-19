@@ -32,7 +32,8 @@ export default function DashboardHeader() {
   const { isDark, toggleTheme } = useTheme();
   const { name, role, initials } = useUserInfo();
 
-  const sessionData = sessionStorage.getItem("fireOpsSession");
+  const sessionData = localStorage
+  .getItem("fireOpsSession");
   const stationName = sessionData ? JSON.parse(sessionData).station : null;
 
   const warningShownRef = useRef(false);
@@ -45,7 +46,7 @@ export default function DashboardHeader() {
 
   // ⏱ Session Timer
   useEffect(() => {
-    const sessionData = sessionStorage.getItem("fireOpsSession");
+    const sessionData = localStorage.getItem("fireOpsSession");
     let expiryTime = sessionData ? JSON.parse(sessionData).sessionExpiry : null;
 
     if (!expiryTime) {

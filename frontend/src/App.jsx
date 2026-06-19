@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "./layout/AdminLayout";
 import FireFighterLayout from "./layout/FireFighterLayout";
 import PilotLayout from "./layout/PilotLayout";
@@ -119,7 +119,7 @@ function App() {
               element={<FireFighterPage />}
             />
             <Route
-              path="/live-incident-command/:id/:droneId/:vehicleDeviceId"
+              path="/live-incident-command/:incidentId/:droneId/:vehicleId"
               element={<LiveIncidentCommand />}
             />
             <Route

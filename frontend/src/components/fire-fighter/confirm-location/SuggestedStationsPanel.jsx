@@ -6,162 +6,219 @@ import {
   Typography,
   Chip,
   Box,
+  Grid,
   Radio,
-  CircularProgress
 } from "@mui/material";
 
 import BusinessIcon from "@mui/icons-material/Business";
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import FlightIcon from "@mui/icons-material/Flight";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+// ===============================
+// MAIN COMPONENT
+// ===============================
 export default function SuggestedStationsPanel({
-  incidentId,
   selectedStationName,
-  onSelectStation
+  onSelectStation,
+  onStationsLoad,
+  incidentLat,
+  incidentLng,
 }) {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function loadStations() {
-      setLoading(true);
-      setError(null);
-
-      if (!incidentId || incidentId === 0) {
-        console.warn("Invalid incidentId:", incidentId);
-        setError("Invalid incident ID");
-        setLoading(false);
-        return;
-      }
-
+    async function loadData() {
       try {
-        console.log("Fetching nearest stations for incidentId:", incidentId);
+        setLoading(true);
 
+        // ===============================
+        // VALIDATE INCIDENT COORDINATES
+        // ===============================
+        if (!incidentLat || !incidentLng) {
+          setStations([]);
+          return;
+        }
+
+        console.log("🔥 INCIDENT COORDINATES:", incidentLat, incidentLng);
+
+        // ===============================
+        // GET LOGGED-IN USER STATION
+        // ===============================
+        const sessionData = localStorage.getItem("fireOpsSession");
+
+        let currentUserStation = "";
+
+        if (sessionData) {
+          try {
+            const parsedUser = JSON.parse(sessionData);
+
+            currentUserStation = parsedUser?.station || "";
+
+            console.log("🔥 CURRENT USER STATION:", currentUserStation);
+          } catch (err) {
+            console.error("Failed to parse session", err);
+          }
+        }
+
+        // ===============================
+        // FETCH NEAREST STATIONS API
+        // ===============================
         const res = await fetch(
-          `${API_BASE}/fire-fighter/getNearestStations.php?incident_id=${incidentId}`
+          `${API_BASE}/fire-fighter/confirm-location/getNearestStations.php?lat=${incidentLat}&lng=${incidentLng}&currentStation=${encodeURIComponent(
+            currentUserStation,
+          )}`,
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch stations from API");
-        }
-
         const data = await res.json();
-        console.log("API Response:", data);
 
-        if (data.error) {
-          console.warn("API returned error:", data.error);
-          setError(data.error);
+        console.log("🔥 NEAREST STATIONS API RESPONSE:", data);
+
+        // ===============================
+        // HANDLE EMPTY RESPONSE
+        // ===============================
+        if (!data?.stations) {
           setStations([]);
-        } else {
-          // Log incident coordinates
-          console.log("Incident Coordinates:", {
-            latitude: data.incident.latitude,
-            longitude: data.incident.longitude,
-            station: data.incident.stationName
-          });
-
-          setStations(data.nearest_stations || []);
+          return;
         }
+
+        // ===============================
+        // UPDATE STATE
+        // ===============================
+        setStations(data.stations);
+
+        // SEND TO MAP
+        onStationsLoad?.(data.stations);
       } catch (err) {
-        console.error("Error fetching stations:", err);
-        setError("Unable to load stations");
+        console.error("Failed to load stations", err);
       } finally {
         setLoading(false);
       }
     }
 
-    loadStations();
-  }, [incidentId]);
+    loadData();
+  }, [incidentLat, incidentLng]);
 
-  const handleSelect = (stationName) => {
-    onSelectStation(selectedStationName === stationName ? null : stationName);
+  // ===============================
+  // HANDLE STATION SELECTION
+  // ===============================
+  const handleSelect = (station) => {
+    const nextSelection =
+      selectedStationName === station.name
+        ? null
+        : {
+            name: station.name,
+            lat: parseFloat(station.lat),
+            lng: parseFloat(station.lng),
+          };
+
+    onSelectStation(nextSelection);
   };
 
+  // ===============================
+  // UI
+  // ===============================
   return (
     <Card>
       <CardHeader
         title={
           <Box display="flex" alignItems="center" gap={1}>
             <BusinessIcon color="primary" />
-            <Typography variant="h6">Nearest Fire Stations</Typography>
+
+            <Typography variant="h6">Nearby Fire Stations</Typography>
           </Box>
         }
       />
+
       <CardContent>
         {loading ? (
-          <Box textAlign="center" py={2}>
-            <CircularProgress size={24} />
-            <Typography variant="body2" mt={1}>
-              Loading stations...
-            </Typography>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            py={5}
+          >
+            <div className="loader"></div>
           </Box>
-        ) : error ? (
-          <Typography align="center" color="error">
-            {error}
-          </Typography>
-        ) : stations.length ? (
-          stations.map((station) => (
+        ) : stations.length === 0 ? (
+          <Typography align="center">No nearby stations found</Typography>
+        ) : (
+          stations.map((station, index) => (
             <Box
-              key={station.id}
-              onClick={() => handleSelect(station.station_name)}
+              key={station.name}
+              onClick={() => handleSelect(station)}
               sx={{
                 p: 2,
-                mb: 1.5,
-                borderRadius: 2,
+                mb: 2,
+                borderRadius: 3,
                 cursor: "pointer",
                 border: "1px solid",
                 borderColor:
-                  selectedStationName === station.station_name
+                  selectedStationName === station.name
                     ? "primary.main"
                     : "divider",
-                bgcolor:
-                  selectedStationName === station.station_name
-                    ? "primary.light"
-                    : "action.hover",
-                transition: "0.2s"
+                bgcolor: "background.paper",
               }}
             >
-              {/* Header */}
+              {/* HEADER */}
               <Box display="flex" justifyContent="space-between">
                 <Box display="flex" alignItems="center" gap={1}>
                   <Radio
-                    checked={selectedStationName === station.station_name}
+                    checked={selectedStationName === station.name}
+                    onChange={() => handleSelect(station)}
                   />
-                  <Typography fontWeight={500}>
-                    {station.station_name}
-                  </Typography>
-                </Box>
-                <Chip
-                  label={`${(station.distance_km ?? 0).toFixed(3)} km`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
-              </Box>
 
-              {/* Assets */}
-              <Box mt={1} display="flex" gap={3}>
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  <LocalFireDepartmentIcon
-                    sx={{ fontSize: 16, color: "#ff7043" }}
-                  />
-                  <Typography variant="caption">
-                    Vehicles: {station.vehicle_count ?? 0}
+                  <Typography fontWeight="bold">
+                    Fire Station : {station.name}
                   </Typography>
                 </Box>
 
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  <Typography variant="caption">
-                    Drones: {station.drone_count ?? 0}
-                  </Typography>
-                </Box>
+                <Chip label={`#${index + 1}`} size="small" color="error" />
               </Box>
+
+              {/* DISTANCE + ETA */}
+              <Box mt={1} mb={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Distance:{" "}
+                  {station.distance
+                    ? `${parseFloat(station.distance).toFixed(2)} km`
+                    : "N/A"}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  ETA:{" "}
+                  {station.eta
+                    ? `${parseFloat(station.eta).toFixed(1)} min`
+                    : "N/A"}
+                </Typography>
+              </Box>
+
+              {/* ASSETS */}
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <LocalShippingIcon fontSize="small" />
+
+                    <Typography variant="body2">
+                      {station.vehicles || 0} vehicles
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <FlightIcon fontSize="small" />
+
+                    <Typography variant="body2">
+                      {station.drones || 0} drones
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
             </Box>
           ))
-        ) : (
-          <Typography align="center">No stations found</Typography>
         )}
       </CardContent>
     </Card>

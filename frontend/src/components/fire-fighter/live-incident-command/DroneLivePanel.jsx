@@ -53,7 +53,7 @@ export default function DroneLivePanel({
   isMaximized = false,
   onExit,
 }) {
-  const { droneId: droneCode } = useParams();
+  const { incidentId, droneId: droneCode } = useParams();
 
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
@@ -62,6 +62,7 @@ export default function DroneLivePanel({
 
   const [mapMode, setMapMode] = useState("2d");
   const [droneLocations, setDroneLocations] = useState([]);
+  const [incidentLocation, setIncidentLocation] = useState(null);
 
   const cesiumInitRef = useRef(false);
   const hasZoomedRef = useRef(false);
@@ -83,6 +84,26 @@ export default function DroneLivePanel({
 
     return () => observer.disconnect();
   }, []);
+
+  // Incident Location
+  useEffect(() => {
+    if (!incidentId) return;
+
+    fetch(
+      `${API_BASE}/fire-fighter/fire-fighter-dashboard/get_active_incident.php`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const selected = data.incidents?.find(
+          (item) => item.id === incidentId
+        );
+
+        if (selected) {
+          setIncidentLocation(selected);
+        }
+      })
+      .catch(console.error);
+  }, [incidentId]);
 
   // ---------------- 2D MAP ----------------
   useEffect(() => {
@@ -271,8 +292,17 @@ export default function DroneLivePanel({
     if (!leafletMapRef.current) return;
     if (!incident) return;
 
-    const lat = parseFloat(incident.latitude ?? incident.lat);
-    const lng = parseFloat(incident.longitude ?? incident.lng);
+    const activeIncident = incidentLocation || incident;
+
+    const lat = Number(
+      activeIncident?.coordinates?.lat
+    );
+
+    const lng = Number(
+      activeIncident?.coordinates?.lng
+    );
+
+    if (isNaN(lat) || isNaN(lng)) return;
 
     if (isNaN(lat) || isNaN(lng)) return;
 
@@ -285,21 +315,134 @@ export default function DroneLivePanel({
     }
 
     leafletMapRef.current.setView([lat, lng], 14);
-  }, [incident, mapMode]);
+  }, [incident, incidentLocation, mapMode]);
 
   // ---------------- INCIDENT ON 3D ----------------
+  // const incidentEntityRef = useRef(null);
+
+  const incidentEntityRef = useRef(null);
+  const incidentBeaconRef = useRef(null);
+
   useEffect(() => {
     if (mapMode !== "3d") return;
-    if (!incident) return;
 
-    if (window.addFireHazardPoint) {
-      window.addFireHazardPoint(
-        parseFloat(incident.latitude ?? incident.lat),
-        parseFloat(incident.longitude ?? incident.lng),
-        200
-      );
-    }
-  }, [incident, mapMode]);
+    const activeIncident = incidentLocation || incident;
+    if (!activeIncident) return;
+
+    const lat = Number(activeIncident?.coordinates?.lat);
+    const lng = Number(activeIncident?.coordinates?.lng);
+
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    const addIncidentMarker = async () => {
+      const Cesium = window.Cesium;
+      const viewer = window.viewer;
+
+      if (!Cesium || !viewer) return;
+
+      try {
+        const carto = Cesium.Cartographic.fromDegrees(lng, lat);
+
+        const terrain = await Cesium.sampleTerrainMostDetailed(
+          viewer.terrainProvider,
+          [carto]
+        );
+
+        const groundHeight = terrain?.[0]?.height || 0;
+
+        // Fire icon position
+        const firePosition = Cesium.Cartesian3.fromDegrees(
+          lng,
+          lat,
+          groundHeight + 500
+        );
+
+        // Beacon center position
+        const beaconPosition = Cesium.Cartesian3.fromDegrees(
+          lng,
+          lat,
+          groundHeight + 250
+        );
+
+        // 🔥 Fire icon
+        if (!incidentEntityRef.current) {
+          incidentEntityRef.current = viewer.entities.add({
+            id: "incident_location",
+
+            position: firePosition,
+
+            billboard: {
+              image: "/assets/images/fire.png",
+              width: 60,
+              height: 60,
+              verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            },
+
+            label: {
+              text:"Incident",
+              font: "16px sans-serif",
+              fillColor: Cesium.Color.WHITE,
+              showBackground: true,
+              backgroundColor: Cesium.Color.RED.withAlpha(0.8),
+              pixelOffset: new Cesium.Cartesian2(0, -90),
+              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            },
+          });
+        } else {
+          incidentEntityRef.current.position = firePosition;
+        }
+
+        // 🔴 Red vertical beacon
+        if (!incidentBeaconRef.current) {
+          incidentBeaconRef.current = viewer.entities.add({
+            id: "incident_beacon",
+
+            position: beaconPosition,
+
+            cylinder: {
+              length: 500,
+              topRadius: 3,
+              bottomRadius: 3,
+
+              material: Cesium.Color.RED.withAlpha(0.7),
+
+              outline: false,
+            },
+          });
+        } else {
+          incidentBeaconRef.current.position = beaconPosition;
+        }
+      } catch (err) {
+        console.error("Incident marker error:", err);
+      }
+    };
+
+    const wait = setInterval(() => {
+      if (window.viewer && window.Cesium) {
+        clearInterval(wait);
+        addIncidentMarker();
+      }
+    }, 300);
+
+    return () => {
+      clearInterval(wait);
+
+      const viewer = window.viewer;
+
+      if (viewer) {
+        if (incidentEntityRef.current) {
+          viewer.entities.remove(incidentEntityRef.current);
+          incidentEntityRef.current = null;
+        }
+
+        if (incidentBeaconRef.current) {
+          viewer.entities.remove(incidentBeaconRef.current);
+          incidentBeaconRef.current = null;
+        }
+      }
+    };
+  }, [incident, incidentLocation, mapMode]);
 
   // ---------------- UI ----------------
   return (
@@ -323,9 +466,8 @@ export default function DroneLivePanel({
             }}
           >
             <div
-              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${
-                mapMode === "3d" ? "left-[50%]" : "left-1"
-              }`}
+              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${mapMode === "3d" ? "left-[50%]" : "left-1"
+                }`}
             />
 
             <button
@@ -336,8 +478,8 @@ export default function DroneLivePanel({
                   mapMode === "2d"
                     ? "#fff"
                     : isDark
-                    ? "#9ca3af"
-                    : "#6b7280",
+                      ? "#9ca3af"
+                      : "#6b7280",
               }}
             >
               2D
@@ -351,14 +493,14 @@ export default function DroneLivePanel({
                   mapMode === "3d"
                     ? "#fff"
                     : isDark
-                    ? "#9ca3af"
-                    : "#6b7280",
+                      ? "#9ca3af"
+                      : "#6b7280",
               }}
             >
               3D
             </button>
           </div>
-           {!isMaximized ? (
+          {!isMaximized ? (
             <button
               onClick={onMaximize}
               className="p-1 hover:bg-muted rounded"

@@ -7,8 +7,10 @@ import {
   CardContent,
   CardHeader,
   Typography,
+  Chip,
   Box,
   Stack,
+  Grid,
 } from "@mui/material";
 
 import PlaceIcon from "@mui/icons-material/Place";
@@ -17,7 +19,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 import MapWithDraggableMarker from "./MapWithDraggableMarker";
-import NearbyAssetsPanel from "./NearbyAssetsPanel";
+// import NearbyAssetsPanel from "./NearbyAssetsPanel";
 import SuggestedStationsPanel from "./SuggestedStationsPanel";
 
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
@@ -56,9 +58,11 @@ export default function ConfirmLocationPage() {
   // ✅ FIX: this is now REAL source of truth
   const [selectedStationName, setSelectedStationName] = useState(null);
 
-  const [stateStations, setStateStations] = useState(
-    state?.station || null
+  const [sourceStation] = useState(
+    state?.sourceStation || null
   );
+  const [nearbyStations, setNearbyStations] = useState([]);
+  const [selectedStationLocation, setSelectedStationLocation] = useState(null);
 
   const [assets, setAssets] = useState([]);
 
@@ -137,11 +141,11 @@ export default function ConfirmLocationPage() {
 
   // ---------------- FIRE STATION (NOW BASED ON SELECTION) ----------------
   useEffect(() => {
-    if (!stateStations) return;
+    if (!sourceStation) return;
 
     fetch(
       `${API_BASE}/fire-fighter/confirm-location/get_fire_station.php?station_name=${encodeURIComponent(
-        stateStations
+        sourceStation
       )}`
     )
       .then((res) => res.json())
@@ -151,7 +155,7 @@ export default function ConfirmLocationPage() {
         }
       })
       .catch((err) => console.error(err));
-  }, [stateStations]);
+  }, [sourceStation]);
 
   // ---------------- HEIGHT CALC ----------------
   const calculateHeight = (lat, lng) => {
@@ -296,21 +300,61 @@ export default function ConfirmLocationPage() {
 
       <Box sx={{ minHeight: "100vh", p: 3 }}>
         <Stack spacing={3} maxWidth="1200px" mx="auto">
-
           <Card>
-            <CardHeader title={incident.name} />
-            <CardContent>
-              <Typography>
-                Coordinates: {currentLat}, {currentLng}
-              </Typography>
+            <CardHeader
+              title={<Typography variant="h6">{incident.name}</Typography>}
+            />
 
-              {flyingHeight !== null && (
-                <Typography color="primary" fontWeight={600}>
-                  Flying Height: {Math.round(flyingHeight)} meters
-                </Typography>
-              )}
+            <CardContent>
+              <Stack direction="row" spacing={4} flexWrap="wrap">
+                <InfoField label="Incident ID" value={incident.id} mono />
+
+                <InfoField
+                  label="Type"
+                  value={incident.type || incident.name}
+                  mono
+                />
+
+                <InfoField
+                  label="Status"
+                  value={
+                    <Chip
+                      size="small"
+                      label={incident.status}
+                      color="error"
+                    />
+                  }
+                />
+
+                <InfoField
+                  label="Location"
+                  value={incident.location}
+                />
+
+                <InfoField
+                  label="Coordinates"
+                  value={
+                    Number.isFinite(currentLat) && Number.isFinite(currentLng)
+                      ? `${currentLat}, ${currentLng}`
+                      : "Not Available"
+                  }
+                  mono
+                />
+
+                <InfoField
+                  label="Flying Height"
+                  value={
+                    flyingHeight !== null
+                      ? `${Math.round(flyingHeight)} m`
+                      : "Not Available"
+                  }
+                  mono
+                />
+              </Stack>
             </CardContent>
           </Card>
+
+
 
           <Stack direction={{ xs: "column", lg: "row" }} spacing={3}>
 
@@ -319,6 +363,20 @@ export default function ConfirmLocationPage() {
                 <MapWithDraggableMarker
                   initialLat={currentLat}
                   initialLng={currentLng}
+                  incidentName={incident.name}
+                  hasMarkerMoved={hasMarkerMoved}
+
+                  // VEHICLES
+                  // nearbyEngines={nearbyEngines}
+
+                  // SELECTED VEHICLES
+                  // selectedAsset={selectedAsset}
+
+                  // STATIONS
+                  nearbyStations={nearbyStations}
+
+                  // SELECTED STATION
+                  selectedStation={selectedStationLocation}
                   onMarkerMove={(lat, lng) => {
                     setCurrentLat(lat);
                     setCurrentLng(lng);
@@ -330,13 +388,26 @@ export default function ConfirmLocationPage() {
 
             <Stack flex={1} spacing={3}>
 
-              <NearbyAssetsPanel assets={assets} />
+              {/* <NearbyAssetsPanel assets={assets} /> */}
 
               {/* ✅ FIXED CONNECTION */}
               <SuggestedStationsPanel
-                incidentId={incident.id}
                 selectedStationName={selectedStationName}
-                onSelectStation={setSelectedStationName}
+
+                // ✅ CURRENT INCIDENT COORDINATES
+                incidentLat={currentLat}
+                incidentLng={currentLng}
+
+                // ✅ SEND STATIONS TO MAP
+                onStationsLoad={(stations) => {
+                  console.log("🔥 Stations sent to map:", stations);
+                  setNearbyStations(stations);
+                }}
+
+                onSelectStation={(station) => {
+                  setSelectedStationName(station?.name || null);
+                  setSelectedStationLocation(station || null);
+                }}
               />
 
               <Button
@@ -372,5 +443,30 @@ export default function ConfirmLocationPage() {
         </Stack>
       </Box>
     </ThemeProvider>
+  );
+}
+
+function InfoField({ label, value, mono }) {
+  return (
+    <Box>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        component="div"
+      >
+        {label}
+      </Typography>
+
+      <Box
+        sx={{
+          fontFamily: mono ? "monospace" : "inherit",
+          fontWeight: 500,
+          fontSize: "0.875rem",
+          mt: 0.5,
+        }}
+      >
+        {value}
+      </Box>
+    </Box>
   );
 }

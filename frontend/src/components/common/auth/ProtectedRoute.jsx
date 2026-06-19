@@ -1,8 +1,11 @@
 import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children }) {
-  const sessionData = sessionStorage.getItem("fireOpsSession");
-
+  const sessionData = localStorage.getItem("fireOpsSession");
+console.log(
+  "ProtectedRoute Session:",
+  sessionData
+);
   if (!sessionData) {
     return <Navigate to="/" replace />;
   }

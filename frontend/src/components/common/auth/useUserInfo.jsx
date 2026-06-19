@@ -13,7 +13,7 @@ export default function useUserInfo() {
   });
 
   useEffect(() => {
-    const session = sessionStorage.getItem("fireOpsSession");
+    const session = localStorage.getItem("fireOpsSession");
     if (!session) return;
 
     const parsed = JSON.parse(session);

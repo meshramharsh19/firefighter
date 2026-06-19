@@ -39,6 +39,7 @@
 
   <script>
     console.log("🚀 Map loaded");
+
     initMap();
 
     let incidentLat = null;
@@ -48,54 +49,214 @@
     let stationLat = null;
     let stationLng = null;
 
-    // ----------------- Receive Incident -----------------
+    let routeInterval = null;
+    let lastRouteKey = null;
+
+    // ----------------- CLEAR EVERYTHING ROUTE RELATED -----------------
+    function clearOldRoute() {
+
+      if (!window.viewer) return;
+
+      try {
+
+        console.log("🗑️ Clearing previous route...");
+
+        // Remove all entities except base map entities
+        const entities = [...window.viewer.entities.values];
+
+        entities.forEach(entity => {
+          try {
+            window.viewer.entities.remove(entity);
+          } catch (e) { }
+        });
+
+        // Remove datasource entities if route is stored there
+        if (window.viewer.dataSources) {
+
+          const dataSources = [...window.viewer.dataSources._dataSources];
+
+          dataSources.forEach(ds => {
+            try {
+              window.viewer.dataSources.remove(ds, true);
+            } catch (e) { }
+          });
+        }
+
+        // Common globals used by route scripts
+        if (window.routeEntity) {
+          try {
+            window.viewer.entities.remove(window.routeEntity);
+          } catch (e) { }
+          window.routeEntity = null;
+        }
+
+        if (window.routePolyline) {
+          try {
+            window.viewer.entities.remove(window.routePolyline);
+          } catch (e) { }
+          window.routePolyline = null;
+        }
+
+        if (window.routeLayer) {
+          try {
+            window.viewer.entities.remove(window.routeLayer);
+          } catch (e) { }
+          window.routeLayer = null;
+        }
+
+        if (window.vehicleMarker) {
+          try {
+            window.viewer.entities.remove(window.vehicleMarker);
+          } catch (e) { }
+          window.vehicleMarker = null;
+        }
+
+        console.log("✅ Previous route cleared");
+
+      } catch (err) {
+        console.error("❌ Clear route error:", err);
+      }
+    }
+
+    // ----------------- EXECUTE ROUTE -----------------
+    function executeRoute() {
+
+      if (
+        typeof getRoute !== "function" ||
+        incidentLat == null ||
+        incidentLng == null ||
+        stationLat == null ||
+        stationLng == null ||
+        !vehicleDeviceId
+      ) {
+        return false;
+      }
+
+      const routeKey =
+        incidentLat +
+        "_" +
+        incidentLng +
+        "_" +
+        stationLat +
+        "_" +
+        stationLng +
+        "_" +
+        vehicleDeviceId;
+
+      if (lastRouteKey === routeKey) {
+        return true;
+      }
+
+      // IMPORTANT
+      clearOldRoute();
+
+      lastRouteKey = routeKey;
+
+      console.log("🧭 Drawing NEW route");
+
+      setTimeout(() => {
+
+        getRoute(
+          String(incidentLat),
+          String(incidentLng),
+          String(stationLat),
+          String(stationLng),
+          [vehicleDeviceId]
+        );
+
+      }, 300);
+
+      return true;
+    }
+
+    // ----------------- WAIT -----------------
+    function waitForRouteAndCall() {
+
+      if (routeInterval) {
+        clearInterval(routeInterval);
+        routeInterval = null;
+      }
+
+      if (executeRoute()) {
+        return;
+      }
+
+      routeInterval = setInterval(() => {
+
+        if (executeRoute()) {
+          clearInterval(routeInterval);
+          routeInterval = null;
+        }
+
+      }, 500);
+    }
+
+    // ----------------- INCIDENT -----------------
     window.setIncidentLocation = function (lat, lng, deviceId) {
+
+      lat = Number(lat);
+      lng = Number(lng);
+
+      const changed =
+        incidentLat !== lat ||
+        incidentLng !== lng ||
+        vehicleDeviceId !== deviceId;
+
       incidentLat = lat;
       incidentLng = lng;
       vehicleDeviceId = deviceId;
 
-      console.log("📍 Incident received:", lat, lng);
-      console.log("🚓 Vehicle Device ID received:", deviceId);
+      if (changed) {
 
-      waitForRouteAndCall();
+        console.log("📍 INCIDENT CHANGED");
+
+        lastRouteKey = null;
+
+        clearOldRoute();
+
+        waitForRouteAndCall();
+      }
     };
 
-    // ----------------- Receive Station -----------------
+    // ----------------- STATION -----------------
     window.setStationLocation = function (lat, lng) {
+
+      lat = Number(lat);
+      lng = Number(lng);
+
+      const changed =
+        stationLat !== lat ||
+        stationLng !== lng;
+
       stationLat = lat;
       stationLng = lng;
 
-      console.log("🏢 Station received:", lat, lng);
+      if (changed) {
 
-      waitForRouteAndCall();  // call getRoute if incident is already set
+        console.log("🏢 STATION CHANGED");
+
+        lastRouteKey = null;
+
+        clearOldRoute();
+
+        waitForRouteAndCall();
+      }
     };
 
-    // ---------------- Wait for getRoute -----------------
-    function waitForRouteAndCall() {
-      const interval = setInterval(() => {
-        if (
-          typeof getRoute === "function" &&
-          incidentLat &&
-          incidentLng &&
-          vehicleDeviceId &&
-          stationLat &&
-          stationLng
-        ) {
-          console.log("🧭 Calling getRoute using incident + station coordinates");
-
-          // Use real station coordinates here
-          getRoute(
-            incidentLat.toString(),
-            incidentLng.toString(),
-            stationLat.toString(),   // station latitude
-            stationLng.toString(),   // station longitude
-            [vehicleDeviceId]        // vehicle array
-          );
-
-          clearInterval(interval);
-        }
-      }, 500);
-    }
+    // ----------------- DEBUG -----------------
+    window.getCurrentRouteState = function () {
+      return {
+        incidentLat,
+        incidentLng,
+        stationLat,
+        stationLng,
+        vehicleDeviceId,
+        lastRouteKey,
+        entityCount: window.viewer
+          ? window.viewer.entities.values.length
+          : 0
+      };
+    };
   </script>
 
 

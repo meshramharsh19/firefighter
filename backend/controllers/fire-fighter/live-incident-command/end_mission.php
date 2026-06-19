@@ -71,10 +71,10 @@ try {
         $stmtGet = $conn->prepare("
             SELECT drone_code
             FROM drones
-            WHERE id = ?
+            WHERE drone_code = ?
             LIMIT 1
         ");
-        $stmtGet->bind_param("i", $droneId);
+        $stmtGet->bind_param("s", $droneId);
         $stmtGet->execute();
         $stmtGet->bind_result($droneCode);
         $stmtGet->fetch();
@@ -103,7 +103,7 @@ try {
             SET status = 'Active',
                 is_ready = 1,
                 pilot_status = 'available'
-            WHERE id = ?
+            WHERE drone_code = ?
         ");
         $stmt3->bind_param("i", $droneId);
         $stmt3->execute();
@@ -117,7 +117,7 @@ try {
         $stmt4 = $conn->prepare("
             UPDATE vehicles
             SET status = 'Available'
-            WHERE id = ?
+            WHERE device_id = ?
         ");
         $stmt4->bind_param("i", $vehicleId);
         $stmt4->execute();

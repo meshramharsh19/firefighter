@@ -59,7 +59,7 @@ const normalizeDroneRow = (row = {}) => ({
 
 const logActivity = async (action, description, incidentId) => {
   try {
-    const session = JSON.parse(sessionStorage.getItem("fireOpsSession"));
+    const session = JSON.parse(localStorage.getItem("fireOpsSession"));
 
     await fetch(`${API_BASE}/fire-fighter/confirm-forward/confirm_location_logs.php`, {
       method: "POST",
@@ -91,7 +91,7 @@ export default function VehicleDroneSelectionPage() {
 
   const flyingHeight = incident?.flyingHeight;
 
-  const session = JSON.parse(sessionStorage.getItem("fireOpsSession") || "{}");
+  const session = JSON.parse(localStorage.getItem("fireOpsSession") || "{}");
   const userStation = session.station;
 
   // Theme observer
@@ -356,6 +356,10 @@ export default function VehicleDroneSelectionPage() {
                 const droneCode = selectedDrone?.drone_id;
                 const vehicleDeviceId = selectedVehicle?.device_id;
                 const vehicleId = selectedVehicle?.id;    
+                console.log("Selected Drone DB ID:", droneDbId);
+                console.log("Selected Drone Code:", droneCode);
+                console.log("Selected Vehicle ID:", vehicleId); 
+                console.log("Selected Vehicle Device ID:", vehicleDeviceId);
 
                 if (!droneDbId || !vehicleDeviceId) {
                   setSnack({
@@ -442,8 +446,8 @@ export default function VehicleDroneSelectionPage() {
                     },
                     body: JSON.stringify({
                       incident_id: incidentId,
-                      drone_id: droneDbId,
-                      vehicle_id: vehicleId,
+                      drone_id: droneCode,
+                      vehicle_id: vehicleDeviceId,
                     }),
                   });
 
@@ -479,13 +483,9 @@ export default function VehicleDroneSelectionPage() {
                       state: {
                         incident: {
                           ...incident,
-                          status: "in_progress",
-                          isNewAlert: 0,
                         },
                         selectedVehicles: selectedVehicleObjects,
-                        selectedDrones: selectedDroneObjects,
-                        droneId: droneCode,
-                        vehicleDeviceId,
+                        selectedDrones: selectedDroneObjects
                       },
                     }
                   );

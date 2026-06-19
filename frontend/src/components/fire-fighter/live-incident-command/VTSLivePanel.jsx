@@ -25,6 +25,9 @@ export default function VTSLivePanel({
   isMaximized = false,
   onExit,
 }) {
+
+  // console.log("Panel incident prop:", incident);
+
   const iframeRef = useRef(null);
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
@@ -33,12 +36,38 @@ export default function VTSLivePanel({
   const [incidentMarker, setIncidentMarker] = useState(null);
   const [stationMarker, setStationMarker] = useState(null);
 
-  const { incidentId, vehicleDeviceId } = useParams();
+  const { incidentId, vehicleId } = useParams();
+  const [incidentLocation, setIncidentLocation] = useState(null);
   const { station } = useUserInfo();
 
   const [isDark, setIsDark] = useState(
     document.documentElement.classList.contains("dark")
   );
+
+  // console.log("VTS Panel incident:", incident);
+  // console.log("VTS Panel incidentId param:", incidentId);
+
+  // Fetch Incident Location
+  useEffect(() => {
+    if (!incidentId) return;
+
+    fetch(
+      `${API_BASE}/fire-fighter/fire-fighter-dashboard/get_active_incident.php`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const incident = data.incidents?.find(
+          (item) => item.id === incidentId
+        );
+
+        // console.log("Fetched Incident:", incident);
+
+        if (incident) {
+          setIncidentLocation(incident);
+        }
+      })
+      .catch(console.error);
+  }, [incidentId]);
 
   /** Watch theme changes */
   useEffect(() => {
@@ -104,14 +133,28 @@ export default function VTSLivePanel({
     if (mapMode !== "2d" || !leafletMapRef.current) return;
 
     // Incident Marker
-    if (incident?.latitude && incident?.longitude) {
-      const lat = parseFloat(incident.latitude || incident.lat);
-      const lng = parseFloat(incident.longitude || incident.lng);
+    const activeIncident = incidentLocation || incident;
 
+    const lat = Number(
+      activeIncident?.latitude ??
+      activeIncident?.lat ??
+      activeIncident?.coordinates?.lat
+    );
+
+    const lng = Number(
+      activeIncident?.longitude ??
+      activeIncident?.lng ??
+      activeIncident?.coordinates?.lng
+    );
+
+    if (!isNaN(lat) && !isNaN(lng)) {
       if (incidentMarker) {
         incidentMarker.setLatLng([lat, lng]);
       } else {
-        const marker = L.marker([lat, lng]).addTo(leafletMapRef.current).bindPopup("Incident");
+        const marker = L.marker([lat, lng])
+          .addTo(leafletMapRef.current)
+          .bindPopup("Incident");
+
         setIncidentMarker(marker);
       }
 
@@ -131,31 +174,76 @@ export default function VTSLivePanel({
         setStationMarker(marker);
       }
     }
-  }, [incident, stationCoords, mapMode, leafletMapRef.current]);
+
+  }, [incident, incidentLocation, stationCoords, mapMode]);
+
 
   /** Update 3D iframe with incident & station */
   useEffect(() => {
-    if (mapMode !== "3d" || !iframeRef.current) return;
+    if (mapMode !== "3d") return;
 
-    const interval = setInterval(() => {
+    const sendDataToIframe = () => {
       const iframeWindow = iframeRef.current?.contentWindow;
+
       if (!iframeWindow) return;
 
-      if (incident?.latitude && incident?.longitude && iframeWindow.setIncidentLocation) {
-        const lat = parseFloat(incident.latitude || incident.lat);
-        const lng = parseFloat(incident.longitude || incident.lng);
-        iframeWindow.setIncidentLocation(lat, lng, vehicleDeviceId);
+      const activeIncident = incidentLocation || incident;
+
+      const lat = Number(
+        activeIncident?.latitude ??
+        activeIncident?.lat ??
+        activeIncident?.coordinates?.lat
+      );
+
+      const lng = Number(
+        activeIncident?.longitude ??
+        activeIncident?.lng ??
+        activeIncident?.coordinates?.lng
+      );
+
+      console.log("📍 Sending Incident To Iframe", {
+        incidentId: activeIncident?.id,
+        lat,
+        lng,
+        vehicleId,
+      });
+
+      if (
+        !isNaN(lat) &&
+        !isNaN(lng) &&
+        typeof iframeWindow.setIncidentLocation === "function"
+      ) {
+        iframeWindow.setIncidentLocation(
+          lat,
+          lng,
+          vehicleId
+        );
       }
 
-      if (stationCoords && iframeWindow.setStationLocation) {
-        iframeWindow.setStationLocation(stationCoords.lat, stationCoords.lng);
+      if (
+        stationCoords &&
+        typeof iframeWindow.setStationLocation === "function"
+      ) {
+        iframeWindow.setStationLocation(
+          stationCoords.lat,
+          stationCoords.lng
+        );
       }
+    };
 
-      clearInterval(interval);
-    }, 500);
+    sendDataToIframe();
+
+    const interval = setInterval(sendDataToIframe, 2000);
 
     return () => clearInterval(interval);
-  }, [mapMode, incident, stationCoords, vehicleDeviceId]);
+
+  }, [
+    mapMode,
+    incident,
+    incidentLocation,
+    stationCoords,
+    vehicleId
+  ]);
 
   return (
     <div className="flex flex-col h-full p-4">
@@ -176,9 +264,8 @@ export default function VTSLivePanel({
             }}
           >
             <div
-              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${
-                mapMode === "3d" ? "left-[50%]" : "left-1"
-              }`}
+              className={`absolute top-1 bottom-1 w-1/2 rounded-full bg-red-600 transition-all duration-300 ${mapMode === "3d" ? "left-[50%]" : "left-1"
+                }`}
             />
             <button
               onClick={() => setMapMode("2d")}

@@ -185,7 +185,7 @@ export default function LoginForm() {
       const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
       const sessionExpiry = Date.now() + SESSION_DURATION;
 
-      sessionStorage.setItem(
+      localStorage.setItem(
         "fireOpsSession",
         JSON.stringify({
           userId: user.id,

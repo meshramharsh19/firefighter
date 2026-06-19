@@ -109,18 +109,18 @@ export default function DashboardContent() {
         color: "green",
       },
       {
-        id: "standby",
-        title: "StandBy",
-        value: stats.standby,
-        description: "Spare Drone",
-        color: "green",
-      },
-      {
         id: "inactive",
         title: "Maintenance ",
         value: stats.inactive_drones,
         description: "Need attention",
         color: "red",
+      },
+      {
+        id: "standby",
+        title: "StandBy",
+        value: stats.standby,
+        description: "Spare Drone",
+        color: "green",
       },
     ],
     [stats]
