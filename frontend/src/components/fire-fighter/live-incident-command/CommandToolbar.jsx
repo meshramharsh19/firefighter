@@ -26,12 +26,12 @@ import SafeIcon from "@/components/common/SafeIcon";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const ENDPOINTS = {
-  endMission:      `${API_BASE}/fire-fighter/live-incident-command/end_mission.php`,
+  endMission: `${API_BASE}/fire-fighter/live-incident-command/end_mission.php`,
   activeIncidents: `${API_BASE}/fire-fighter/fire-fighter-dashboard/get_active_incident.php`,
-  activityLog:     `${API_BASE}/fire-fighter/confirm-forward/confirm_location_logs.php`,
+  activityLog: `${API_BASE}/fire-fighter/confirm-forward/confirm_location_logs.php`,
   droneMission: `${API_BASE}/fire-fighter/live-incident-command/get_drone_mission.php`,
-  exportReport:    (incidentId) => `${API_BASE}/fire-fighter/live-incident-command/export-report.php?incidentId=${incidentId}`,
-  controlPanel:    "http://43.205.31.167:8081/",
+  exportReport: (incidentId) => `${API_BASE}/fire-fighter/live-incident-command/export-report.php?incidentId=${incidentId}`,
+  controlPanel: "http://43.205.31.167:8081/",
 };
 
 const LAYOUT_TYPES = ["split", "full", "focus"];
@@ -43,25 +43,25 @@ const INCIDENT_POLL_INTERVAL_MS = 10_000;
 const buildTheme = (isDark) =>
   isDark
     ? {
-        toolbarBg:     "#141414",
-        toolbarBorder: "#1f1f1f",
-        iconBoxBg:     "#291818",
-        iconBoxBorder: "#dc2626",
-        menuBg:        "#1a1a1a",
-        menuColor:     "#ffffff",
-        menuHover:     "#2a2a2a",
-        menuBorder:    "#2E2E2E",
-      }
+      toolbarBg: "#141414",
+      toolbarBorder: "#1f1f1f",
+      iconBoxBg: "#291818",
+      iconBoxBorder: "#dc2626",
+      menuBg: "#1a1a1a",
+      menuColor: "#ffffff",
+      menuHover: "#2a2a2a",
+      menuBorder: "#2E2E2E",
+    }
     : {
-        toolbarBg:     "#ffffff",
-        toolbarBorder: "#e2e8f0",
-        iconBoxBg:     "#fff1f2",
-        iconBoxBorder: "#dc2626",
-        menuBg:        "#ffffff",
-        menuColor:     "#111827",
-        menuHover:     "#f3f4f6",
-        menuBorder:    "#e2e8f0",
-      };
+      toolbarBg: "#ffffff",
+      toolbarBorder: "#e2e8f0",
+      iconBoxBg: "#fff1f2",
+      iconBoxBorder: "#dc2626",
+      menuBg: "#ffffff",
+      menuColor: "#111827",
+      menuHover: "#f3f4f6",
+      menuBorder: "#e2e8f0",
+    };
 
 // ─── Custom hooks ─────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ function useDarkMode() {
     });
 
     observer.observe(document.documentElement, {
-      attributes:      true,
+      attributes: true,
       attributeFilter: ["class"],
     });
 
@@ -92,7 +92,7 @@ function useActiveIncidents() {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res  = await fetch(ENDPOINTS.activeIncidents);
+        const res = await fetch(ENDPOINTS.activeIncidents);
         const data = await res.json();
 
         if (data.success) {
@@ -119,14 +119,14 @@ async function logActivity({ action, description, incidentId }) {
     const session = JSON.parse(localStorage.getItem("fireOpsSession"));
 
     await fetch(ENDPOINTS.activityLog, {
-      method:  "POST",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({
-        user_id:     session.userId,
-        user_name:   session.name,
-        role:        session.role,
+      body: JSON.stringify({
+        user_id: session.userId,
+        user_name: session.name,
+        role: session.role,
         action,
-        module:      "INCIDENT",
+        module: "INCIDENT",
         description,
         incident_id: incidentId,
       }),
@@ -137,20 +137,20 @@ async function logActivity({ action, description, incidentId }) {
 }
 
 async function endMissionRequest(incidentId) {
-  const res  = await fetch(ENDPOINTS.endMission, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ incidentId }),
+  console.log("Sending:", JSON.stringify({ incidentId }));
+
+  const res = await fetch(ENDPOINTS.endMission, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ incidentId }),
   });
 
   const text = await res.text();
+  console.log("Response:", text);
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    console.error("Failed to parse end-mission response:", text);
-    throw new Error("Invalid JSON response from server");
-  }
+  return JSON.parse(text);
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -161,12 +161,12 @@ function IncidentSelect({ incidents, value, onChange, isDark }) {
       sx={{
         minWidth: 320,
         "& .MuiOutlinedInput-root": {
-          height:          60,
-          color:           isDark ? "#fff" : "#000",
+          height: 60,
+          color: isDark ? "#fff" : "#000",
           backgroundColor: isDark ? "#1a1a1a" : "#fff",
-          "& fieldset":            { borderColor: "#dc2626", borderWidth: "2px" },
-          "&:hover fieldset":      { borderColor: "#ef4444" },
-          "&.Mui-focused fieldset":{ borderColor: "#dc2626", borderWidth: "2px" },
+          "& fieldset": { borderColor: "#dc2626", borderWidth: "2px" },
+          "&:hover fieldset": { borderColor: "#ef4444" },
+          "&.Mui-focused fieldset": { borderColor: "#dc2626", borderWidth: "2px" },
         },
         "& .MuiSvgIcon-root": { color: "#ffffff" },
       }}
@@ -210,7 +210,7 @@ function LayoutButtons({ layout, onLayoutChange }) {
           onClick={() => onLayoutChange(type)}
           sx={{
             backgroundColor: layout === type ? "#dc2626" : "transparent",
-            color:           layout === type ? "#fff" : undefined,
+            color: layout === type ? "#fff" : undefined,
           }}
         >
           {type}
@@ -239,7 +239,10 @@ function EndMissionDialog({ open, loading, incidentName, onConfirm, onCancel }) 
         </Button>
 
         <Button
-          onClick={onConfirm}
+          onClick={() => {
+            console.log("Confirm clicked");
+            onConfirm();
+          }}
           color="error"
           variant="contained"
           disabled={loading}
@@ -266,15 +269,15 @@ export default function CommandToolbar({
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [selectedIncident, setSelectedIncident] = useState("");
-  const [menuAnchorEl,     setMenuAnchorEl]     = useState(null);
-  const [confirmOpen,      setConfirmOpen]      = useState(false);
-  const [loading,          setLoading]          = useState(false);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const isDark    = useDarkMode();
+  const isDark = useDarkMode();
   const incidents = useActiveIncidents();
-  const C         = buildTheme(isDark);
-  const menuOpen  = Boolean(menuAnchorEl);
+  const C = buildTheme(isDark);
+  const menuOpen = Boolean(menuAnchorEl);
 
   // ── Effects ────────────────────────────────────────────────────────────────
 
@@ -287,63 +290,63 @@ export default function CommandToolbar({
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
-const handleIncidentChange = useCallback(
-  async (event) => {
-    const selectedIncidentId = event.target.value;
+  const handleIncidentChange = useCallback(
+    async (event) => {
+      const selectedIncidentId = event.target.value;
 
-    setSelectedIncident(selectedIncidentId);
-    // console.log(selectedIncidentId)
+      setSelectedIncident(selectedIncidentId);
+      // console.log(selectedIncidentId)
 
-    try {
-      const res = await fetch(ENDPOINTS.droneMission);
-      const data = await res.json();
+      try {
+        const res = await fetch(ENDPOINTS.droneMission);
+        const data = await res.json();
 
-      if (!data.success) {
-        toast.error("Failed to load mission");
-        return;
+        if (!data.success) {
+          toast.error("Failed to load mission");
+          return;
+        }
+
+        const mission = data.data
+          .filter(
+            (m) =>
+              m.incident_id === selectedIncidentId &&
+              m.status === "started"
+          )
+          .sort((a, b) => b.id - a.id)[0];
+
+        if (!mission) {
+          toast.error("No active mission found");
+          return;
+        }
+
+        const droneId = mission.drone_id;
+        // console.log(droneId)
+        const vehicleId = mission.vehicle_id;
+        // console.log(vehicleId)
+
+        const url = `/live-incident-command/${selectedIncidentId}/${String(
+          droneId
+        ).padStart(3, "0")}/${String(vehicleId).padStart(3, "0")}`;
+
+        // console.log("Navigating to:", url);
+
+        navigate(url);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to switch incident");
       }
+    },
+    [navigate]
+  );
 
-     const mission = data.data
-  .filter(
-    (m) =>
-      m.incident_id === selectedIncidentId &&
-      m.status === "started"
-  )
-  .sort((a, b) => b.id - a.id)[0];
-
-      if (!mission) {
-        toast.error("No active mission found");
-        return;
-      }
-
-      const droneId = mission.drone_id;
-      // console.log(droneId)
-      const vehicleId = mission.vehicle_id;
-      // console.log(vehicleId)
-
-      const url = `/live-incident-command/${selectedIncidentId}/${String(
-        droneId
-      ).padStart(3, "0")}/${String(vehicleId).padStart(3, "0")}`;
-
-      // console.log("Navigating to:", url);
-
-      navigate(url);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to switch incident");
-    }
-  },
-  [navigate]
-);
-
-  const handleMenuOpen  = (e) => setMenuAnchorEl(e.currentTarget);
-  const handleMenuClose = ()  => setMenuAnchorEl(null);
+  const handleMenuOpen = (e) => setMenuAnchorEl(e.currentTarget);
+  const handleMenuClose = () => setMenuAnchorEl(null);
 
   const handleExportReport = async () => {
     handleMenuClose();
 
     await logActivity({
-      action:      "EXPORT_REPORT",
+      action: "EXPORT_REPORT",
       description: `Exported report for Incident ${incidentId}`,
       incidentId,
     });
@@ -360,7 +363,7 @@ const handleIncidentChange = useCallback(
   const handleEndMissionConfirm = async () => {
     try {
       setLoading(true);
-
+      console.log("incidentId =", incidentId);
       const data = await endMissionRequest(incidentId);
 
       if (!data.success) {
@@ -369,7 +372,7 @@ const handleIncidentChange = useCallback(
       }
 
       await logActivity({
-        action:      "END_MISSION",
+        action: "END_MISSION",
         description: `Mission ended for Incident ${incidentId}`,
         incidentId,
       });
@@ -395,7 +398,7 @@ const handleIncidentChange = useCallback(
         className="backdrop-blur-sm p-4"
         style={{
           backgroundColor: C.toolbarBg,
-          borderBottom:    `1px solid ${C.toolbarBorder}`,
+          borderBottom: `1px solid ${C.toolbarBorder}`,
         }}
       >
         <div className="flex items-center justify-between gap-4">
@@ -406,7 +409,7 @@ const handleIncidentChange = useCallback(
               className="flex h-10 w-10 items-center justify-center rounded-lg"
               style={{
                 backgroundColor: C.iconBoxBg,
-                border:          `1px solid ${C.iconBoxBorder}`,
+                border: `1px solid ${C.iconBoxBorder}`,
               }}
             >
               <SafeIcon name="AlertTriangle" className="h-5 w-5 text-primary" />
