@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar, Toolbar, Typography, IconButton, Badge,
   Menu, MenuItem, Box, Chip, Avatar, Divider
@@ -20,6 +21,7 @@ import SafeIcon from "@/components/common/SafeIcon";
 import { toast } from "react-hot-toast";
 import ProfileDialog from "@/components/common/profile/ProfileDialog";
 
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API = `${API_BASE}/fire-fighter/vehicle-drone-selection`;
 
@@ -28,12 +30,15 @@ export default function DashboardHeader() {
   const [notificationCount, setNotificationCount] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   const { isDark, toggleTheme } = useTheme();
   const { name, role, initials } = useUserInfo();
+  const navigate = useNavigate();
 
   const sessionData = localStorage
-  .getItem("fireOpsSession");
+    .getItem("fireOpsSession");
   const stationName = sessionData ? JSON.parse(sessionData).station : null;
 
   const warningShownRef = useRef(false);
@@ -103,6 +108,10 @@ export default function DashboardHeader() {
         if (!isActive) return;
 
         setNotificationCount(data.count);
+
+        if (data.notifications) {
+          setNotifications(data.notifications);
+        }
         poll(data.count);
       } catch (err) {
         console.error("Polling error:", err);
@@ -201,7 +210,10 @@ export default function DashboardHeader() {
               }}
             />
 
-            <IconButton sx={{ color: textColor }}>
+            <IconButton
+              sx={{ color: textColor }}
+              onClick={(e) => setNotificationAnchor(e.currentTarget)}
+            >
               <Badge
                 badgeContent={notificationCount}
                 color="error"
@@ -244,7 +256,7 @@ export default function DashboardHeader() {
                   borderRadius: "7px",
                   border: `1px solid ${dividerColor}`,
                   mt: 1.5,
-                  px: 1, 
+                  px: 1,
                   boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
                 },
               }}
@@ -263,7 +275,7 @@ export default function DashboardHeader() {
                 </Typography>
               </Box>
 
-              <Divider sx={{ borderColor: dividerColor , marginBottom: 1 }} />
+              <Divider sx={{ borderColor: dividerColor, marginBottom: 1 }} />
 
               {/* 👤 PROFILE */}
               <MenuItem
@@ -317,6 +329,76 @@ export default function DashboardHeader() {
                 )}
                 Logout
               </MenuItem>
+            </Menu>
+
+            <Menu
+              anchorEl={notificationAnchor}
+              open={Boolean(notificationAnchor)}
+              onClose={() => setNotificationAnchor(null)}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              PaperProps={{
+                sx: {
+                  width: 350,
+                  background: headerBg,
+                  color: textColor,
+                  border: `1px solid ${dividerColor}`,
+                  mt: 1,
+                },
+              }}
+            >
+              <Box px={2} py={1}>
+                <Typography fontWeight="bold">
+                  Notifications
+                </Typography>
+              </Box>
+
+              <Divider sx={{ borderColor: dividerColor }} />
+
+              {notifications.length === 0 ? (
+                <MenuItem>No notifications</MenuItem>
+              ) : (
+                notifications.map((item) => (
+                  <MenuItem
+                    key={item.incident_id}
+                    onClick={() => {
+                      setNotificationAnchor(null);
+
+                     navigate(`/fire-fighter-dashboard`);
+                    }}
+                    sx={{
+                      alignItems: "flex-start",
+                      py: 1.5,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        fontWeight="bold"
+                        color="error"
+                      >
+                        🚨 {item.incident_type}
+                      </Typography>
+
+                      <Typography variant="body2">
+                        {item.location}
+                      </Typography>
+
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {item.created_at}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                ))
+              )}
             </Menu>
           </Box>
         </Toolbar>

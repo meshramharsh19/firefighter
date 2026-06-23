@@ -10,13 +10,31 @@ $incidentId = $data["incident_id"];
 $ip = $_SERVER['REMOTE_ADDR'];
 
 // 🔥 ACTIVITY LOG
-$stmt = $conn->prepare("INSERT INTO activity_logs 
-(user_id, user_name, role, action, module, description, ip_address, created_at)
-VALUES (?, ?, ?, 'ACKNOWLEDGE', 'INCIDENT', ?, ?, NOW())");
+$stmt = $conn->prepare("
+    INSERT INTO activity_logs
+    (user_id, user_name, role, action, module, description, ip_address, created_at)
+    VALUES (?, ?, ?, 'ACKNOWLEDGE', 'INCIDENT', ?, ?, NOW())
+");
 
 $description = "Incident ID: $incidentId acknowledged";
 
 $stmt->bind_param("issss", $userId, $userName, $role, $description, $ip);
 $stmt->execute();
+$stmt->close();
 
-echo json_encode(["success" => true]);
+
+// 🔔 REMOVE ALERT FROM NOTIFICATIONS
+$updateStmt = $conn->prepare("
+    UPDATE incidents
+    SET isNewAlert = 0
+    WHERE id = ?
+");
+
+$updateStmt->bind_param("s", $incidentId);
+$updateStmt->execute();
+$updateStmt->close();
+
+echo json_encode([
+    "success" => true
+]);
+?>

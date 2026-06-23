@@ -49,16 +49,16 @@ export default function MapWithDraggableMarkerMui({
 
   // ✅ Backend unchanged
   useEffect(() => {
-    if (
-      Number.isFinite(initialLat) &&
-      Number.isFinite(initialLng) &&
-      !originalPosition
-    ) {
-      const startPos = [initialLat, initialLng];
-      setPosition(startPos);
-      setOriginalPosition(startPos);
-    }
-  }, [initialLat, initialLng, originalPosition]);
+  if (
+    Number.isFinite(initialLat) &&
+    Number.isFinite(initialLng)
+  ) {
+    const startPos = [initialLat, initialLng];
+
+    setPosition(startPos);
+    setOriginalPosition(startPos);
+  }
+}, [initialLat, initialLng]);
 
   const C = isDark
     ? {
@@ -169,6 +169,7 @@ export default function MapWithDraggableMarkerMui({
 
       <CardContent>
         <MapContainer
+           key={`${position[0]}-${position[1]}`}
           center={position}
           zoom={15}
           scrollWheelZoom

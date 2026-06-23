@@ -89,6 +89,9 @@ const StatusChip = ({ status }) => {
   );
 };
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const IncidentAPI_BASE = `${API_BASE}/fire-fighter/fire-fighter-dashboard`;
+
 function IncidentTableComponent({
 
 
@@ -96,6 +99,7 @@ function IncidentTableComponent({
   filter,
   onFilterChange,
 }) {
+  
   const [sortField, setSortField] = useState("timeReported");
   const [sortDirection, setSortDirection] = useState("desc");
 
@@ -230,48 +234,61 @@ function IncidentTableComponent({
   };
 
   // ACKNOWLEDGE FUNCTION
-  const handleAcknowledge = () => {
+
+
+  const handleAcknowledge = async () => {
     if (!selectedIncident) return;
 
-    const stationName =
-      selectedIncident.stationName ||
-      selectedIncident.station_name ||
-      selectedIncident.station ||
-      selectedIncident.fire_station ||
-      selectedIncident.fireStation ||
-      null;
+    try {
+      const session = JSON.parse(
+        localStorage.getItem("fireOpsSession") || "{}"
+      );
 
-    const updatedIncidents = incidentData.map((incident) =>
-      incident.id === selectedIncident.id
-        ? {
-          ...incident,
-          status: "acknowledged",
-        }
-        : incident
-    );
+      if (!session.userId) {
+        alert("Session expired. Please login again.");
+        return;
+      }
 
-    setIncidentData(updatedIncidents);
-
-    const navigationState = {
-      incident: {
-        ...selectedIncident,
-        status: "acknowledged",
-        coordinates: {
-          lat: Number(selectedIncident.latitude),
-          lng: Number(selectedIncident.longitude),
+      // 🔥 Log insert + isNewAlert = 0
+      await fetch(`${IncidentAPI_BASE}/acknowledge_incident.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      },
-      station: stationName,
-    };
+        body: JSON.stringify({
+          incident_id: selectedIncident.id,
+          user_id: session.userId,
+          user_name: session.name,
+          role: session.role,
+        }),
+      });
 
+      const stationName =
+        selectedIncident.stationName ||
+        selectedIncident.station_name ||
+        selectedIncident.station ||
+        selectedIncident.fire_station ||
+        selectedIncident.fireStation ||
+        null;
 
-    setSnackbarOpen(true);
+      handleClose();
 
-    handleClose();
+      navigate(`/confirm-location/${selectedIncident.id}`, {
+        state: {
+          incident: {
+            ...selectedIncident,
+            coordinates: {
+              lat: Number(selectedIncident.latitude),
+              lng: Number(selectedIncident.longitude),
+            },
+          },
+          sourceStation: stationName,
+        },
+      });
 
-    navigate(`/confirm-location/${selectedIncident.id}`, {
-      state: navigationState,
-    });
+    } catch (err) {
+      console.error("Acknowledge error:", err);
+    }
   };
 
   // FILTER DATA

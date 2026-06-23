@@ -91,28 +91,36 @@ export default function ConfirmLocationPage() {
 
   // ---------------- INCIDENT LOAD ----------------
   useEffect(() => {
-    if (incident) {
-      setLoading(false);
-      return;
-    }
+  setLoading(true);
 
-    fetch(`${API_BASE}/fire-fighter/fire-fighter-dashboard/get_incidents.php`)
-      .then((res) => res.json())
-      .then((data) => {
-        const inc = data.find((i) => i.id === id);
-        if (!inc) {
-          alert("Incident not found");
-          navigate("/fire-fighter-dashboard");
-          return;
-        }
-        setIncident(inc);
-        setLoading(false);
-      })
-      .catch(() => {
-        alert("Failed to load incident");
+  // If coming from navigate(..., {state})
+  if (state?.incident && state.incident.id === id) {
+    setIncident(state.incident);
+    setLoading(false);
+    return;
+  }
+
+  fetch(`${API_BASE}/fire-fighter/fire-fighter-dashboard/get_incidents.php`)
+    .then((res) => res.json())
+    .then((data) => {
+      const inc = data.find((i) => i.id === id);
+
+      if (!inc) {
+        alert("Incident not found");
         navigate("/fire-fighter-dashboard");
-      });
-  }, [id, incident, navigate]);
+        return;
+      }
+
+      setIncident(inc);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Failed to load incident");
+      navigate("/fire-fighter-dashboard");
+    });
+
+}, [id, state, navigate]);
 
   // ---------------- COORDS ----------------
   useEffect(() => {

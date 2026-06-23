@@ -60,8 +60,43 @@ while (true) {
 
     // return immediately on change
     if ($currentCount !== $lastCount) {
-        error_log("Count changed. Returning response.");
-        echo json_encode(['count' => $currentCount]);
+
+       $stmt2 = $conn->prepare("
+            SELECT
+                id,
+                name,
+                location,
+                timeReported
+            FROM incidents
+            WHERE status='new'
+            AND isNewAlert=1
+            AND LOWER(TRIM(stationName))=LOWER(TRIM(?))
+            ORDER BY timeReported DESC
+            LIMIT 10
+        ");
+
+        $stmt2->bind_param("s", $station);
+        $stmt2->execute();
+        $result2 = $stmt2->get_result();
+
+        $notifications = [];
+
+        while ($row = $result2->fetch_assoc()) {
+
+            $notifications[] = [
+                "incident_id" => $row["id"],
+                "incident_type" => $row["name"],
+                "location" => $row["location"],
+                "created_at" => $row["timeReported"]
+            ];
+
+        }
+
+        echo json_encode([
+            "count" => $currentCount,
+            "notifications" => $notifications
+        ]);
+
         exit;
     }
 
