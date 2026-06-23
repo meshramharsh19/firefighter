@@ -1,7 +1,7 @@
 <?php
 $host = getenv("DB_HOST") ?: "mysql"; // Use "mysql" for Docker, "localhost" for local development
 $user = getenv("DB_USER") ?: "root";
-$pass = getenv("DB_PASSWORD") ?: root"";
+$pass = getenv("DB_PASSWORD") ?: "root";
 $db   = getenv("DB_NAME") ?: "fire-fighter";
 
 $conn = new mysqli($host, $user, $pass, $db);
