@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 23, 2026 at 09:57 AM
+-- Generation Time: Jun 23, 2026 at 12:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -605,7 +605,7 @@ CREATE TABLE `incidents` (
 INSERT INTO `incidents` (`id`, `name`, `location`, `latitude`, `longitude`, `stationName`, `timeReported`, `status`, `isNewAlert`) VALUES
 ('INC-20251122-002', 'Warehouse Fire - Industrial Zone', 'Plot No. 45, Industrial Area, Katraj', 18.4445, 73.8521, 'Katraj Fire Station', '2026-06-01 14:10:00', 'completed', 0),
 ('INC-20260115-003', 'Residential Building Fire', 'Near Katraj Bus Depot, Pune', 18.4445, 73.8521, 'Katraj Fire Station', '2026-06-02 18:40:00', 'new', 1),
-('INC-20260410-010', 'School Bus Fire', 'Katraj Bus Depot Road', 18.4554, 73.8597, 'Katraj Fire Station', '2026-06-04 12:37:41', 'new', 0);
+('INC-20260410-010', 'School Bus Fire', 'Katraj Bus Depot Road', 18.4554, 73.8597, 'Katraj Fire Station', '2026-06-04 12:37:41', 'new', 1);
 
 -- --------------------------------------------------------
 
