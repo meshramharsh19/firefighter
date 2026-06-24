@@ -119,7 +119,7 @@ try {
             SET status = 'Available'
             WHERE device_id = ?
         ");
-        $stmt4->bind_param("i", $vehicleId);
+        $stmt4->bind_param("s", $vehicleId);
         $stmt4->execute();
     }
 
