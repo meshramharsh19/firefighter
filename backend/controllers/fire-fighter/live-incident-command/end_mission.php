@@ -105,7 +105,7 @@ try {
                 pilot_status = 'available'
             WHERE drone_code = ?
         ");
-        $stmt3->bind_param("i", $droneId);
+        $stmt3->bind_param("s", $droneId);
         $stmt3->execute();
     }
 
