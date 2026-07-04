@@ -24,8 +24,10 @@ import logoutUser from "../auth/logout";
 import useUserInfo from "@/components/common/auth/useUserInfo";
 import ProfileDialog from "@/components/common/profile/ProfileDialog";
 
-export default function PilotHeader({ notificationCount = 0 }) {
+export default function PilotHeader() {
   const [mounted, setMounted] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [anchorNotif, setAnchorNotif] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -35,6 +37,57 @@ export default function PilotHeader({ notificationCount = 0 }) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // fetch pilot-specific notifications
+  useEffect(() => {
+    const session = JSON.parse(localStorage.getItem("fireOpsSession") || "{}");
+    const pilotId = session.userId;
+    if (!pilotId) return;
+
+    const fetchNotifs = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/common/get_notification_logs.php?pilot_id=${pilotId}`
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+          setNotifications(data.data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchNotifs();
+
+    const interval = setInterval(fetchNotifs, 5000); // every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const notificationCount = notifications.length;
+
+  const handleNotificationClick = async (notif) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/common/mark_read.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: notif.id }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error || "Mark read failed");
+      }
+
+      setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
+      setAnchorNotif(null);
+    } catch (e) {
+      console.error("mark notification read error", e);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -87,7 +140,7 @@ export default function PilotHeader({ notificationCount = 0 }) {
           <Box display="flex" alignItems="center" gap={2}>
 
             {/* 🔔 Notifications */}
-            <IconButton sx={{ color: textColor }}>
+            <IconButton sx={{ color: textColor }} onClick={(e) => setAnchorNotif(e.currentTarget)}>
               <Badge
                 badgeContent={notificationCount}
                 color="error"
@@ -96,6 +149,31 @@ export default function PilotHeader({ notificationCount = 0 }) {
                 <NotificationsIcon />
               </Badge>
             </IconButton>
+
+            <Menu
+              anchorEl={anchorNotif}
+              open={Boolean(anchorNotif)}
+              onClose={() => setAnchorNotif(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <Box px={2} py={1}>
+                <Typography fontSize={13} fontWeight={600}>Notifications</Typography>
+              </Box>
+              <Divider />
+              {notifications.length === 0 ? (
+                <MenuItem>No notifications</MenuItem>
+              ) : (
+                notifications.map((n) => (
+                  <MenuItem key={n.id} onClick={() => handleNotificationClick(n)}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography fontSize={13} fontWeight={600}>{n.message}</Typography>
+                      <Typography fontSize={11} color="text.secondary">{n.created_at}</Typography>
+                    </Box>
+                  </MenuItem>
+                ))
+              )}
+            </Menu>
 
             {/* 👤 USER */}
             <Box
@@ -137,7 +215,7 @@ export default function PilotHeader({ notificationCount = 0 }) {
                   borderRadius: "7px",
                   border: `1px solid ${dividerColor}`,
                   mt: 1.5,
-                  px: 1, 
+                  px: 1,
                   boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
                 },
               }}

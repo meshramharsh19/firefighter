@@ -49,8 +49,13 @@ while ($row = mysqli_fetch_assoc($result)) {
         "health_status" => $row["health_status"],
         "firmware_version" => $row["firmware_version"],
         "station" => $row["station"],
+        "pilot_id" => $row["pilot_id"],
         "pilot_name" => $row["pilot_name"],
         "pilot_number" => $row["pilot_number"],
+        "pilot_email" => $row["pilot_email"],
+        "pilot_phone" => $row["pilot_phone"],
+        "pilot_role" => $row["pilot_role"],
+        "pilot_status" => $row["pilot_status"],
         "is_ready" => ((int)$row["is_ready"] === 1),
         
         "_raw" => $row

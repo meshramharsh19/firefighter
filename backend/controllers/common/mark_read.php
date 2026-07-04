@@ -10,7 +10,7 @@ if (!$id) {
     exit;
 }
 
-$stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE id = ?");
+$stmt = $conn->prepare("UPDATE notification_logs SET is_read = 0 WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 

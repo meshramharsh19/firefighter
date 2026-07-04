@@ -47,13 +47,18 @@ const normalizeVehicleRow = (v = {}) => ({
 const normalizeDroneRow = (row = {}) => ({
   id: row.id,
   drone_id: row.drone_code,
-  name: row.name,
+  name: row.name ?? row.drone_name,
   status: row.status,
   battery: row.battery,
   flight_hours: row.flight_hours,
   station: row.station,
+  pilot_id: row.pilot_id,
   pilot_name: row.pilot_name,
   pilot_number: row.pilot_number,
+  pilot_email: row.pilot_email,
+  pilot_phone: row.pilot_phone,
+  pilot_role: row.pilot_role,
+  pilot_status: row.pilot_status,
   is_ready: Boolean(row.is_ready),
 });
 
@@ -227,8 +232,11 @@ export default function VehicleDroneSelectionPage() {
     [drones, selectedAssets]
   );
 
+  const selectedDroneForActivation = selectedDroneObjects[0] ?? null;
+  const selectedVehicleForActivation = selectedVehicleObjects[0] ?? null;
+
   const canActivate =
-    selectedDroneObjects.length > 0 && selectedVehicleObjects.length > 0;
+    selectedDroneObjects.length === 1 && selectedVehicleObjects.length === 1;
 
   return (
     <ThemeProvider theme={incidentTheme}>
@@ -287,9 +295,7 @@ export default function VehicleDroneSelectionPage() {
                       onToggle={() =>
                         setSelectedAssets((p) => ({
                           ...p,
-                          vehicleIds: p.vehicleIds.includes(v.id)
-                            ? p.vehicleIds.filter((id) => id !== v.id)
-                            : [...p.vehicleIds, v.id],
+                          vehicleIds: p.vehicleIds.includes(v.id) ? [] : [v.id],
                         }))
                       }
                     />
@@ -316,9 +322,7 @@ export default function VehicleDroneSelectionPage() {
                       onToggle={() =>
                         setSelectedAssets((p) => ({
                           ...p,
-                          droneIds: p.droneIds.includes(d.id)
-                            ? p.droneIds.filter((id) => id !== d.id)
-                            : [...p.droneIds, d.id],
+                          droneIds: p.droneIds.includes(d.id) ? [] : [d.id],
                         }))
                       }
                     />
@@ -340,9 +344,36 @@ export default function VehicleDroneSelectionPage() {
                   });
                   return;
                 }
-                // For simplicity, we take the first selected drone and vehicle for activation
-                const selectedDrone = selectedDroneObjects[0];
-                const selectedVehicle = selectedVehicleObjects[0];
+
+                if (selectedDroneObjects.length !== 1 || selectedVehicleObjects.length !== 1) {
+                  setSnack({
+                    open: true,
+                    severity: "warning",
+                    message: "Please select exactly one drone and one vehicle before activating.",
+                  });
+                  return;
+                }
+
+                const selectedDrone = selectedDroneForActivation;
+                const selectedVehicle = selectedVehicleForActivation;
+
+                if (!selectedDrone || !selectedVehicle) {
+                  setSnack({
+                    open: true,
+                    severity: "error",
+                    message: "Select both drone and vehicle",
+                  });
+                  return;
+                }
+
+                if (!selectedDrone.pilot_id) {
+                  setSnack({
+                    open: true,
+                    severity: "warning",
+                    message: "Selected drone has no pilot assigned. Assign a pilot before activating a mission.",
+                  });
+                  return;
+                }
 
                 const vehicleNames = selectedVehicleObjects
                   .map((v) => v.name)
@@ -475,8 +506,54 @@ export default function VehicleDroneSelectionPage() {
                     `Activated with Vehicles: ${vehicleNames} | Drones: ${droneNames}`,
                     incidentId
                   );
+                  // ✅ 6. SEND NOTIFICATIONS TO PILOTS (if assigned to the activated drone)
+                  try {
+                    const notifUrl = `${API_BASE}/common/create_notification.php`;
+                    const activatedDroneObjects = [selectedDrone];
 
-                  // ✅ 6. NAVIGATE
+                    for (const d of activatedDroneObjects) {
+                      // if pilot is assigned on drone record, notify them
+                      const pilotId = d.pilot_id || d.pilot_id === 0 ? d.pilot_id : null;
+                      const pilotName = d.pilot_name || null;
+
+                      if (!pilotId) continue;
+
+                      const droneCode = d.drone_id || "unknown";
+                      const droneName = d.name?.trim();
+                      const droneLabel = droneName
+                        ? `${droneCode} (${droneName})`
+                        : droneCode;
+
+                      const message = `Incident ${incidentId} assigned to drone ${droneLabel} — please respond to location.`;
+
+                      await fetch(notifUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          type: "incident",
+                          message,
+                          created_by: session?.name || "System",
+                          data: {
+                            pilot_id: pilotId,
+                            pilot_name: pilotName,
+                            drone_code: d.drone_id,
+                            drone_name: d.name,
+                            incident_id: incidentId,
+                            latitude: lat,
+                            longitude: lng,
+                            station: userStation,
+                          },
+                        }),
+                      });
+                    }
+
+                    // let other headers/components refresh
+                    window.dispatchEvent(new Event("new-notification"));
+                  } catch (e) {
+                    console.warn("Notification error:", e);
+                  }
+
+                  // ✅ 7. NAVIGATE
                   navigate(
                     `/live-incident-command/${incidentId}/${droneCode}/${vehicleDeviceId}`,
                     {
